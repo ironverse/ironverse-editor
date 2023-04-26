@@ -7,3 +7,11 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.10.1"
+rapier3d = { version = "0.17.2", features = [ "simd-stable" ] }
+# voxels = { git = "https://github.com/ironverse/voxels.git", branch="0.1" }
+voxels = { path = "../voxels" }
+
+
+
+# bevy_rapier3d = { version = "0.21.0" }
+# bevy = { version = "0.10.1", features = ["dynamic_linking"] }
