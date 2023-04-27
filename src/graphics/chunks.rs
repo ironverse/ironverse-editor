@@ -30,8 +30,8 @@ fn startup(
   commands.insert_resource(ChunkTexture {
     is_loaded: false,
     // albedo: asset_server.load("textures/array_texture.png"),
-    albedo: asset_server.load("textures/terrains_albedo_1.png"),
-    normal: asset_server.load("textures/terrains_normal_1.png"),
+    albedo: asset_server.load("textures/terrain_albedo_8.png"),
+    normal: asset_server.load("textures/terrain_normal_8.png"),
   });
 
 
