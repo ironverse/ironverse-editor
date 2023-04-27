@@ -10,6 +10,12 @@ impl Plugin for CustomPlugin {
       .add_startup_system(startup)
       .add_system(add)
       ;
+
+    // app
+    //   .add_plugin(MaterialPlugin::<ArrayTextureMaterial>::default())
+    //   .add_startup_system(setup)
+    //   .add_system(create_array_texture)
+    //   ;
   }
 }
 
@@ -21,7 +27,7 @@ fn startup(
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-  commands.insert_resource(LoadingTexture {
+  commands.insert_resource(ChunkTexture {
     is_loaded: false,
     // handle: asset_server.load("textures/textures_2d.png"),
     albedo: asset_server.load("textures/terrains_albedo_1.png"),
@@ -33,19 +39,41 @@ fn startup(
     mesh: meshes.add(shape::Plane::from_size(5.0).into()),
     material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
     ..default()
-});
+  });
+
+  commands.spawn(PointLightBundle {
+    point_light: PointLight {
+      intensity: 3000.0,
+      ..Default::default()
+    },
+    transform: Transform::from_xyz(-3.0, 2.0, -1.0),
+    ..Default::default()
+  });
+  commands.spawn(PointLightBundle {
+    point_light: PointLight {
+      intensity: 3000.0,
+      ..Default::default()
+    },
+    transform: Transform::from_xyz(3.0, 2.0, 1.0),
+    ..Default::default()
+  });
+
+  commands.spawn(Camera3dBundle {
+    transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+    ..default()
+  });
 
 }
 
 fn add(
   mut commands: Commands,
   mut meshes: ResMut<Assets<Mesh>>,
-  // mut materials: ResMut<Assets<CustomMaterial>>,
+  mut custom_materials: ResMut<Assets<CustomMaterial>>,
   mut materials: ResMut<Assets<StandardMaterial>>,
   terrains: Query<(Entity, &TerrainGraphics)>,
   asset_server: Res<AssetServer>,
 
-  mut loading_texture: ResMut<LoadingTexture>,
+  mut loading_texture: ResMut<ChunkTexture>,
   mut local_res: ResMut<LocalResource>,
   mut images: ResMut<Assets<Image>>,
 ) {
@@ -57,8 +85,6 @@ fn add(
   }
   loading_texture.is_loaded = true;
 
-  info!("testing");
-
   let image = images.get_mut(&loading_texture.albedo).unwrap();
   let array_layers = 12;
   image.reinterpret_stacked_2d_as_array(array_layers);
@@ -69,7 +95,6 @@ fn add(
 
   for key in local_res.keys.iter() {
     info!("key {:?}", key);
-
     for (entity, terrain) in terrains.iter() {
       if key == &terrain.key {
         commands.entity(entity).despawn_recursive();
@@ -95,35 +120,37 @@ fn add(
 
 
     let mesh_handle = meshes.add(render_mesh);
-    // let material_handle = materials.add(CustomMaterial {
-    //   albedo: loading_texture.albedo.clone(),
-    //   normal: loading_texture.albedo.clone(),
-    //   voxel: 0,
-    // });
-
-    // let seamless_size = chunk_manager.seamless_size();
-    // let coord_f32 = key_to_world_coord_f32(key, seamless_size);
-    // commands
-    //   .spawn(MaterialMeshBundle {
-    //     mesh: mesh_handle,
-    //     material: material_handle,
-    //     transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
-    //     ..default()
-    //   })
-    //   .insert(TerrainGraphics {key: *key });
-
+    let material_handle = custom_materials.add(CustomMaterial {
+      albedo: loading_texture.albedo.clone(),
+      normal: loading_texture.albedo.clone(),
+      voxel: 0,
+    });
 
     let seamless_size = chunk_manager.seamless_size();
     let coord_f32 = key_to_world_coord_f32(key, seamless_size);
-    commands.spawn((
-      PbrBundle {
+    commands
+      .spawn(MaterialMeshBundle {
         mesh: mesh_handle,
-        material: materials.add(Color::SILVER.into()),
+        material: material_handle,
         transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
         ..default()
-      },
-      TerrainGraphics{ key: *key },
-    ));
+      })
+      .insert(TerrainGraphics {key: *key });
+
+
+
+
+    // let seamless_size = chunk_manager.seamless_size();
+    // let coord_f32 = key_to_world_coord_f32(key, seamless_size);
+    // commands.spawn((
+    //   PbrBundle {
+    //     mesh: mesh_handle,
+    //     material: materials.add(Color::SILVER.into()),
+    //     transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
+    //     ..default()
+    //   },
+    //   TerrainGraphics{ key: *key },
+    // ));
     
   }
 }
@@ -143,7 +170,7 @@ impl Default for LocalResource {
 
 
 #[derive(Resource)]
-struct LoadingTexture {
+struct ChunkTexture {
   is_loaded: bool,
   albedo: Handle<Image>,
   normal: Handle<Image>,
@@ -151,10 +178,10 @@ struct LoadingTexture {
 
 
 pub const VOXEL_WEIGHT: MeshVertexAttribute =
-  MeshVertexAttribute::new("Voxel_Weight", 2222, VertexFormat::Float32x4);
+  MeshVertexAttribute::new("Voxel_Weight", 988540917, VertexFormat::Float32x4);
 
 pub const VOXEL_TYPE_1: MeshVertexAttribute =
-  MeshVertexAttribute::new("Voxel_Type_1", 1111, VertexFormat::Uint32x4);
+  MeshVertexAttribute::new("Voxel_Type_1", 988540918, VertexFormat::Uint32x4);
 
 
 
@@ -201,3 +228,98 @@ pub struct TerrainGraphics {
   pub key: [i64; 3]
 }
 
+
+
+
+
+
+
+
+
+#[derive(Resource)]
+struct LoadingTexture {
+    is_loaded: bool,
+    handle: Handle<Image>,
+}
+
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    // Start loading the texture.
+    commands.insert_resource(LoadingTexture {
+        is_loaded: false,
+        // handle: asset_server.load("textures/array_texture.png"),
+        handle: asset_server.load("textures/terrains_albedo_1.png"),
+    });
+
+    // light
+    commands.spawn(PointLightBundle {
+        point_light: PointLight {
+            intensity: 3000.0,
+            ..Default::default()
+        },
+        transform: Transform::from_xyz(-3.0, 2.0, -1.0),
+        ..Default::default()
+    });
+    commands.spawn(PointLightBundle {
+        point_light: PointLight {
+            intensity: 3000.0,
+            ..Default::default()
+        },
+        transform: Transform::from_xyz(3.0, 2.0, 1.0),
+        ..Default::default()
+    });
+
+    // camera
+    commands.spawn(Camera3dBundle {
+        transform: Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::new(1.5, 0.0, 0.0), Vec3::Y),
+        ..Default::default()
+    });
+}
+
+fn create_array_texture(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut loading_texture: ResMut<LoadingTexture>,
+    mut images: ResMut<Assets<Image>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ArrayTextureMaterial>>,
+) {
+    if loading_texture.is_loaded
+        || asset_server.get_load_state(loading_texture.handle.clone()) != LoadState::Loaded
+    {
+        return;
+    }
+    loading_texture.is_loaded = true;
+    let image = images.get_mut(&loading_texture.handle).unwrap();
+
+    // Create a new array texture asset from the loaded texture.
+    let array_layers = 8;
+    image.reinterpret_stacked_2d_as_array(array_layers);
+
+    // Spawn some cubes using the array texture
+    let mesh_handle = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
+    let material_handle = materials.add(ArrayTextureMaterial {
+        array_texture: loading_texture.handle.clone(),
+    });
+    for x in -5..=5 {
+        commands.spawn(MaterialMeshBundle {
+            mesh: mesh_handle.clone(),
+            material: material_handle.clone(),
+            transform: Transform::from_xyz(x as f32 + 0.5, 0.0, 0.0),
+            ..Default::default()
+        });
+    }
+}
+
+#[derive(AsBindGroup, Debug, Clone, TypeUuid)]
+#[uuid = "9c5a0ddf-1eaf-41b4-9832-ed736fd26af3"]
+struct ArrayTextureMaterial {
+    #[texture(0, dimension = "2d_array")]
+    #[sampler(1)]
+    array_texture: Handle<Image>,
+}
+
+impl Material for ArrayTextureMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/array_texture.wgsl".into()
+    }
+}
