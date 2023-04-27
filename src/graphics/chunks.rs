@@ -29,9 +29,9 @@ fn startup(
 ) {
   commands.insert_resource(ChunkTexture {
     is_loaded: false,
-    // handle: asset_server.load("textures/textures_2d.png"),
-    albedo: asset_server.load("textures/terrains_albedo_1.png"),
-    normal: asset_server.load("textures/terrains_normal_1.png"),
+    albedo: asset_server.load("textures/array_texture.png"),
+    // albedo: asset_server.load("textures/terrains_albedo_1.png"),
+    // normal: asset_server.load("textures/terrains_normal_1.png"),
   });
 
 
@@ -79,27 +79,38 @@ fn add(
 ) {
   if loading_texture.is_loaded
     || asset_server.get_load_state(loading_texture.albedo.clone()) != LoadState::Loaded
-    || asset_server.get_load_state(loading_texture.normal.clone()) != LoadState::Loaded
+    // || asset_server.get_load_state(loading_texture.normal.clone()) != LoadState::Loaded
   {
     return;
   }
   loading_texture.is_loaded = true;
 
+  let array_layers = 4;
   let image = images.get_mut(&loading_texture.albedo).unwrap();
-  let array_layers = 12;
   image.reinterpret_stacked_2d_as_array(array_layers);
+
+  // let normal = images.get_mut(&loading_texture.normal).unwrap();
+  // normal.reinterpret_stacked_2d_as_array(array_layers);
 
   // println!("add {}", local_res.output_cache.len());
 
   let mut chunk_manager = ChunkManager::default();
 
+  let mut index = 0;
   for key in local_res.keys.iter() {
+    if index == 1 {
+      break;
+    }
+    index += 1;
+
     info!("key {:?}", key);
     for (entity, terrain) in terrains.iter() {
       if key == &terrain.key {
         commands.entity(entity).despawn_recursive();
       }
     }
+
+    
 
     let chunk = ChunkManager::new_chunk(
       key, 
@@ -122,35 +133,35 @@ fn add(
     let mesh_handle = meshes.add(render_mesh);
     let material_handle = custom_materials.add(CustomMaterial {
       albedo: loading_texture.albedo.clone(),
-      normal: loading_texture.albedo.clone(),
+      // normal: loading_texture.normal.clone(),
       voxel: 0,
     });
 
-    let seamless_size = chunk_manager.seamless_size();
-    let coord_f32 = key_to_world_coord_f32(key, seamless_size);
-    commands
-      .spawn(MaterialMeshBundle {
-        mesh: mesh_handle,
-        material: material_handle,
-        transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
-        ..default()
-      })
-      .insert(TerrainGraphics {key: *key });
-
-
-
-
     // let seamless_size = chunk_manager.seamless_size();
     // let coord_f32 = key_to_world_coord_f32(key, seamless_size);
-    // commands.spawn((
-    //   PbrBundle {
+    // commands
+    //   .spawn(MaterialMeshBundle {
     //     mesh: mesh_handle,
-    //     material: materials.add(Color::SILVER.into()),
+    //     material: material_handle,
     //     transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
     //     ..default()
-    //   },
-    //   TerrainGraphics{ key: *key },
-    // ));
+    //   })
+    //   .insert(TerrainGraphics {key: *key });
+
+
+
+
+    let seamless_size = chunk_manager.seamless_size();
+    let coord_f32 = key_to_world_coord_f32(key, seamless_size);
+    commands.spawn((
+      PbrBundle {
+        mesh: mesh_handle,
+        material: materials.add(Color::SILVER.into()),
+        transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
+        ..default()
+      },
+      TerrainGraphics{ key: *key },
+    ));
     
   }
 }
@@ -173,7 +184,7 @@ impl Default for LocalResource {
 struct ChunkTexture {
   is_loaded: bool,
   albedo: Handle<Image>,
-  normal: Handle<Image>,
+  // normal: Handle<Image>,
 }
 
 
@@ -193,9 +204,9 @@ struct CustomMaterial {
   #[texture(1, dimension = "2d_array")]
   #[sampler(2)]
   albedo: Handle<Image>,
-  #[texture(3, dimension = "2d_array")]
-  #[sampler(4)]
-  normal: Handle<Image>,
+  // #[texture(3, dimension = "2d_array")]
+  // #[sampler(4)]
+  // normal: Handle<Image>,
 }
 
 impl Material for CustomMaterial {
@@ -214,8 +225,8 @@ impl Material for CustomMaterial {
     let vertex_layout = layout.get_layout(&[
       Mesh::ATTRIBUTE_POSITION.at_shader_location(0),
       Mesh::ATTRIBUTE_NORMAL.at_shader_location(1),
-      VOXEL_WEIGHT.at_shader_location(2),
-      VOXEL_TYPE_1.at_shader_location(3),
+      // VOXEL_WEIGHT.at_shader_location(2),
+      // VOXEL_TYPE_1.at_shader_location(3),
     ])?;
     descriptor.vertex.buffers = vec![vertex_layout];
 
