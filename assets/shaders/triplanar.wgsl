@@ -8,7 +8,7 @@
 #import bevy_pbr::lighting
 #import bevy_pbr::shadows
 #import bevy_pbr::fog
-#import bevy_pbr::pbr_functions
+// #import bevy_pbr::pbr_functions
 #import bevy_pbr::pbr_ambient
 
 // struct CustomMaterial {
@@ -20,9 +20,9 @@
 
 
 @group(1) @binding(0)
-var my_array_texture: texture_2d_array<f32>;
+var albedo: texture_2d_array<f32>;
 @group(1) @binding(1)
-var my_array_texture_sampler: sampler;
+var albedo_sampler: sampler;
 
 // NOTE: Bindings must come before functions that use them!
 
@@ -39,44 +39,37 @@ var my_array_texture_sampler: sampler;
 
 struct Vertex {
   @location(0) position: vec3<f32>,
-  // @location(1) normal: vec3<f32>,
-  // @location(2) voxel_weight: vec4<f32>,
-  // @location(3) voxel_type_1: vec4<u32>,
+  @location(1) normal: vec3<f32>,
+  @location(2) voxel_weight: vec4<f32>,
+  @location(3) voxel_type_1: vec4<u32>,
 };
 
 struct VertexOutput {
   @builtin(position) clip_position: vec4<f32>,
-  // @location(0) world_position: vec4<f32>,
-  // @location(1) world_normal: vec3<f32>,
-  // @location(2) voxel_weight: vec4<f32>,
-  // @location(3) voxel_type_1: vec4<u32>,
+  @location(0) world_position: vec4<f32>,
+  @location(1) world_normal: vec3<f32>,
+  @location(2) voxel_weight: vec4<f32>,
+  @location(3) voxel_type_1: vec4<u32>,
 };
 
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
   var out: VertexOutput;
+  out.world_position = mesh_position_local_to_world(mesh.model, vec4<f32>(vertex.position, 1.0));
   out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(vertex.position, 1.0));
+  out.world_normal = vertex.normal;
 
-
-  // out.world_position = mesh_position_local_to_world(mesh.model, vec4<f32>(vertex.position, 1.0));
-  // out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(vertex.position, 1.0));
-  // out.world_normal = vertex.normal;
-
-  // out.voxel_weight = vertex.voxel_weight;
-  // out.voxel_type_1 = vertex.voxel_type_1;
+  out.voxel_weight = vertex.voxel_weight;
+  out.voxel_type_1 = vertex.voxel_type_1;
   return out;
 }
 
 struct FragmentInput {
-  // @builtin(position) frag_coord: vec4<f32>,
-  // @location(0) world_position: vec4<f32>,
-  // @location(1) world_normal: vec3<f32>,
-  // @location(2) voxel_weight: vec4<f32>,
-  // @location(3) voxel_type_1: vec4<u32>,
-
-  @builtin(front_facing) is_front: bool,
   @builtin(position) frag_coord: vec4<f32>,
-  #import bevy_pbr::mesh_vertex_output
+  @location(0) world_position: vec4<f32>,
+  @location(1) world_normal: vec3<f32>,
+  @location(2) voxel_weight: vec4<f32>,
+  @location(3) voxel_type_1: vec4<u32>,
 };
 
 
@@ -152,98 +145,98 @@ struct FragmentInput {
 
 @fragment
 fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
-  // var zy = input.world_position.zy % 1.0;
-  // if zy.x < 0.0 {
-  //   zy.x += 1.0;
-  // }
-  // if zy.y < 0.0 {
-  //   zy.y += 1.0;
-  // }
+  var zy = input.world_position.zy % 1.0;
+  if zy.x < 0.0 {
+    zy.x += 1.0;
+  }
+  if zy.y < 0.0 {
+    zy.y += 1.0;
+  }
 
-  // var xz = input.world_position.xz % 1.0;
-  // if xz.x < 0.0 {
-  //   xz.x += 1.0;
-  // }
-  // if xz.y < 0.0 {
-  //   xz.y += 1.0;
-  // }
+  var xz = input.world_position.xz % 1.0;
+  if xz.x < 0.0 {
+    xz.x += 1.0;
+  }
+  if xz.y < 0.0 {
+    xz.y += 1.0;
+  }
 
-  // var xy = input.world_position.xy % 1.0;
-  // if xy.x < 0.0 {
-  //   xy.x += 1.0;
-  // }
-  // if xy.y < 0.0 {
-  //   xy.y += 1.0;
-  // }
+  var xy = input.world_position.xy % 1.0;
+  if xy.x < 0.0 {
+    xy.x += 1.0;
+  }
+  if xy.y < 0.0 {
+    xy.y += 1.0;
+  }
 
-  
+  var dx0 = textureSample(albedo, albedo_sampler, zy, i32(input.voxel_type_1.x));
+  var dy0 = textureSample(albedo, albedo_sampler, xz, i32(input.voxel_type_1.x));
+  var dz0 = textureSample(albedo, albedo_sampler, xy, i32(input.voxel_type_1.x));
 
-  // var dx0 = textureSample(albedo, albedo_sampler, zy, i32(input.voxel_type_1.x));
-  // var dy0 = textureSample(albedo, albedo_sampler, xz, i32(input.voxel_type_1.x));
-  // var dz0 = textureSample(albedo, albedo_sampler, xy, i32(input.voxel_type_1.x));
+  var dx1 = textureSample(albedo, albedo_sampler, zy, i32(input.voxel_type_1.y));
+  var dy1 = textureSample(albedo, albedo_sampler, xz, i32(input.voxel_type_1.y));
+  var dz1 = textureSample(albedo, albedo_sampler, xy, i32(input.voxel_type_1.y));
 
-  // var dx1 = textureSample(albedo, albedo_sampler, zy, i32(input.voxel_type_1.y));
-  // var dy1 = textureSample(albedo, albedo_sampler, xz, i32(input.voxel_type_1.y));
-  // var dz1 = textureSample(albedo, albedo_sampler, xy, i32(input.voxel_type_1.y));
+  var dx2 = textureSample(albedo, albedo_sampler, zy, i32(input.voxel_type_1.z));
+  var dy2 = textureSample(albedo, albedo_sampler, xz, i32(input.voxel_type_1.z));
+  var dz2 = textureSample(albedo, albedo_sampler, xy, i32(input.voxel_type_1.z));
 
-  // var dx2 = textureSample(albedo, albedo_sampler, zy, i32(input.voxel_type_1.z));
-  // var dy2 = textureSample(albedo, albedo_sampler, xz, i32(input.voxel_type_1.z));
-  // var dz2 = textureSample(albedo, albedo_sampler, xy, i32(input.voxel_type_1.z));
+  var dx3 = textureSample(albedo, albedo_sampler, zy, i32(input.voxel_type_1.w));
+  var dy3 = textureSample(albedo, albedo_sampler, xz, i32(input.voxel_type_1.w));
+  var dz3 = textureSample(albedo, albedo_sampler, xy, i32(input.voxel_type_1.w));
 
-  // var dx3 = textureSample(albedo, albedo_sampler, zy, i32(input.voxel_type_1.w));
-  // var dy3 = textureSample(albedo, albedo_sampler, xz, i32(input.voxel_type_1.w));
-  // var dz3 = textureSample(albedo, albedo_sampler, xy, i32(input.voxel_type_1.w));
+  let filter_0 = 100;
+  let filter_1 = 100;
+  let filter_2 = 100;
 
-  // let filter_0 = 100;
-  // let filter_1 = 100;
-  // let filter_2 = 100;
+  var index0 = 1.0;
+  if i32(input.voxel_type_1.x) == filter_0 || i32(input.voxel_type_1.x) == filter_1
+  || i32(input.voxel_type_1.x) == filter_2 {
+    index0 = 0.0;
+  }
+  var index1 = 1.0;
+  if i32(input.voxel_type_1.y) == filter_0 || i32(input.voxel_type_1.y) == filter_1
+  || i32(input.voxel_type_1.y) == filter_2 {
+    index1 = 0.0;
+  }
+  var index2 = 1.0;
+  if i32(input.voxel_type_1.z) == filter_0 || i32(input.voxel_type_1.z) == filter_1
+  || i32(input.voxel_type_1.z) == filter_2 {
+    index2 = 0.0;
+  }
+  var index3 = 1.0;
+  if i32(input.voxel_type_1.w) == filter_0 || i32(input.voxel_type_1.w) == filter_1
+  || i32(input.voxel_type_1.w) == filter_2 {
+    index3 = 0.0;
+  }
 
-  // var index0 = 1.0;
-  // if i32(input.voxel_type_1.x) == filter_0 || i32(input.voxel_type_1.x) == filter_1
-  // || i32(input.voxel_type_1.x) == filter_2 {
-  //   index0 = 0.0;
-  // }
-  // var index1 = 1.0;
-  // if i32(input.voxel_type_1.y) == filter_0 || i32(input.voxel_type_1.y) == filter_1
-  // || i32(input.voxel_type_1.y) == filter_2 {
-  //   index1 = 0.0;
-  // }
-  // var index2 = 1.0;
-  // if i32(input.voxel_type_1.z) == filter_0 || i32(input.voxel_type_1.z) == filter_1
-  // || i32(input.voxel_type_1.z) == filter_2 {
-  //   index2 = 0.0;
-  // }
-  // var index3 = 1.0;
-  // if i32(input.voxel_type_1.w) == filter_0 || i32(input.voxel_type_1.w) == filter_1
-  // || i32(input.voxel_type_1.w) == filter_2 {
-  //   index3 = 0.0;
-  // }
+  var vx = input.voxel_weight.x * index0;
+  var vy = input.voxel_weight.y * index1;
+  var vz = input.voxel_weight.z * index2;
+  var vw = input.voxel_weight.w * index3;
 
-  // var vx = input.voxel_weight.x * index0;
-  // var vy = input.voxel_weight.y * index1;
-  // var vz = input.voxel_weight.z * index2;
-  // var vw = input.voxel_weight.w * index3;
+  let dx = dx0 * vx + dx1 * vy +
+    dx2 * vz + dx3 * vw;
 
-  // let dx = dx0 * vx + dx1 * vy +
-  //   dx2 * vz + dx3 * vw;
+  let dy = dy0 * vx + dy1 * vy +
+    dy2 * vz + dy3 * vw;
 
-  // let dy = dy0 * vx + dy1 * vy +
-  //   dy2 * vz + dy3 * vw;
+  let dz = dz0 * vx + dz1 * vy +
+    dz2 * vz + dz3 * vw;
 
-  // let dz = dz0 * vx + dz1 * vy +
-  //   dz2 * vz + dz3 * vw;
-
-  // let dx_normal = dpdx(input.world_position);
-  // let dy_normal = dpdy(input.world_position);
+  let dx_normal = dpdx(input.world_position);
+  let dy_normal = dpdy(input.world_position);
+  // let cross = cross(dx_normal, dy_normal); // Error in WebGPU
   // let normal = normalize(cross(dx_normal, dy_normal));
+  let normal = input.world_normal;
 
 
-  // let sharpness = 10.0;
-  // var weights = pow(abs(normal.xyz), vec3<f32>(sharpness, sharpness, sharpness));
-  // weights = weights / (weights.x + weights.y + weights.z);
+  let sharpness = 10.0;
+  var weights = pow(abs(normal.xyz), vec3<f32>(sharpness, sharpness, sharpness));
+  weights = weights / (weights.x + weights.y + weights.z);
 
-  // var color = dx * weights.x + dy * weights.y + dz * weights.z;
-  // // return color;
+  var color = dx * weights.x + dy * weights.y + dz * weights.z;
+  return color;
 
 
   // var pbr_input: PbrInput = pbr_input_new();
@@ -287,7 +280,7 @@ fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
 
   // return tone_mapping(pbr(pbr_input));
 
-  return vec4<f32>(0.0, 0.0, 0.0, 1.0);
+  // return vec4<f32>(0.0, 0.0, 0.0, 1.0);
 }
 
 

@@ -126,8 +126,8 @@ fn add(
     render_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, data.normals.clone());
     render_mesh.set_indices(Some(Indices::U32(data.indices.clone())));
 
-    // render_mesh.insert_attribute(VOXEL_WEIGHT, data.weights.clone());
-    // render_mesh.insert_attribute(VOXEL_TYPE_1, data.types_1.clone());
+    render_mesh.insert_attribute(VOXEL_WEIGHT, data.weights.clone());
+    render_mesh.insert_attribute(VOXEL_TYPE_1, data.types_1.clone());
 
 
     // let mut render_mesh = Mesh::from(shape::Cube { size: 1.0 });
@@ -140,10 +140,7 @@ fn add(
 
     let mesh_handle = meshes.add(render_mesh);
     let material_handle = custom_materials.add(CustomMaterial {
-      // color: Color::WHITE,
       albedo: loading_texture.albedo.clone(),
-      // normal: loading_texture.normal.clone(),
-      // voxel: 0,
     });
 
     let seamless_size = chunk_manager.seamless_size();
@@ -216,11 +213,6 @@ struct CustomMaterial {
   #[sampler(1)]
   albedo: Handle<Image>,
 
-  // #[uniform(0)]
-  // color: Color,
-
-  // #[uniform(0)]
-  // voxel: u32,
   // #[texture(1, dimension = "2d_array")]
   // #[sampler(2)]
   // albedo: Handle<Image>,
@@ -230,28 +222,28 @@ struct CustomMaterial {
 }
 
 impl Material for CustomMaterial {
-  // fn vertex_shader() -> ShaderRef {
-  //   "shaders/triplanar.wgsl".into()
-  // }
+  fn vertex_shader() -> ShaderRef {
+    "shaders/triplanar.wgsl".into()
+  }
   fn fragment_shader() -> ShaderRef {
     "shaders/triplanar.wgsl".into()
   }
-  // fn specialize(
-  //   _pipeline: &MaterialPipeline<Self>,
-  //   descriptor: &mut RenderPipelineDescriptor,
-  //   layout: &MeshVertexBufferLayout,
-  //   _key: MaterialPipelineKey<Self>,
-  // ) -> Result<(), SpecializedMeshPipelineError> {
-  //   let vertex_layout = layout.get_layout(&[
-  //     Mesh::ATTRIBUTE_POSITION.at_shader_location(0),
-  //     // Mesh::ATTRIBUTE_NORMAL.at_shader_location(1),
-  //     // VOXEL_WEIGHT.at_shader_location(2),
-  //     // VOXEL_TYPE_1.at_shader_location(3),
-  //   ])?;
-  //   descriptor.vertex.buffers = vec![vertex_layout];
+  fn specialize(
+    _pipeline: &MaterialPipeline<Self>,
+    descriptor: &mut RenderPipelineDescriptor,
+    layout: &MeshVertexBufferLayout,
+    _key: MaterialPipelineKey<Self>,
+  ) -> Result<(), SpecializedMeshPipelineError> {
+    let vertex_layout = layout.get_layout(&[
+      Mesh::ATTRIBUTE_POSITION.at_shader_location(0),
+      Mesh::ATTRIBUTE_NORMAL.at_shader_location(1),
+      VOXEL_WEIGHT.at_shader_location(2),
+      VOXEL_TYPE_1.at_shader_location(3),
+    ])?;
+    descriptor.vertex.buffers = vec![vertex_layout];
 
-  //   Ok(())
-  // }
+    Ok(())
+  }
 }
 
 #[derive(Component)]
