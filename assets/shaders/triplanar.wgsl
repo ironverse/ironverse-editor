@@ -11,11 +11,18 @@
 #import bevy_pbr::pbr_functions
 #import bevy_pbr::pbr_ambient
 
-struct CustomMaterial {
-  voxel: u32,
-};
+// struct CustomMaterial {
+//   // voxel: u32,
+//   color: vec4<f32>,
+// };
+// @group(1) @binding(0)
+// var<uniform> material: CustomMaterial;
+
+
 @group(1) @binding(0)
-var<uniform> material: CustomMaterial;
+var my_array_texture: texture_2d_array<f32>;
+@group(1) @binding(1)
+var my_array_texture_sampler: sampler;
 
 // NOTE: Bindings must come before functions that use them!
 
@@ -32,15 +39,15 @@ var<uniform> material: CustomMaterial;
 
 struct Vertex {
   @location(0) position: vec3<f32>,
-  @location(1) normal: vec3<f32>,
+  // @location(1) normal: vec3<f32>,
   // @location(2) voxel_weight: vec4<f32>,
   // @location(3) voxel_type_1: vec4<u32>,
 };
 
 struct VertexOutput {
   @builtin(position) clip_position: vec4<f32>,
-  @location(0) world_position: vec4<f32>,
-  @location(1) world_normal: vec3<f32>,
+  // @location(0) world_position: vec4<f32>,
+  // @location(1) world_normal: vec3<f32>,
   // @location(2) voxel_weight: vec4<f32>,
   // @location(3) voxel_type_1: vec4<u32>,
 };
@@ -48,14 +55,29 @@ struct VertexOutput {
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
   var out: VertexOutput;
-  out.world_position = mesh_position_local_to_world(mesh.model, vec4<f32>(vertex.position, 1.0));
   out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(vertex.position, 1.0));
-  out.world_normal = vertex.normal;
+
+
+  // out.world_position = mesh_position_local_to_world(mesh.model, vec4<f32>(vertex.position, 1.0));
+  // out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(vertex.position, 1.0));
+  // out.world_normal = vertex.normal;
 
   // out.voxel_weight = vertex.voxel_weight;
   // out.voxel_type_1 = vertex.voxel_type_1;
   return out;
 }
+
+struct FragmentInput {
+  // @builtin(position) frag_coord: vec4<f32>,
+  // @location(0) world_position: vec4<f32>,
+  // @location(1) world_normal: vec3<f32>,
+  // @location(2) voxel_weight: vec4<f32>,
+  // @location(3) voxel_type_1: vec4<u32>,
+
+  @builtin(front_facing) is_front: bool,
+  @builtin(position) frag_coord: vec4<f32>,
+  #import bevy_pbr::mesh_vertex_output
+};
 
 
 // struct Triplanar {
@@ -126,13 +148,7 @@ fn vertex(vertex: Vertex) -> VertexOutput {
 
 
 
-struct FragmentInput {
-  @builtin(position) frag_coord: vec4<f32>,
-  @location(0) world_position: vec4<f32>,
-  @location(1) world_normal: vec3<f32>,
-  // @location(2) voxel_weight: vec4<f32>,
-  // @location(3) voxel_type_1: vec4<u32>,
-};
+
 
 @fragment
 fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {

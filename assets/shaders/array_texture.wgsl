@@ -1,5 +1,6 @@
 #import bevy_pbr::mesh_view_bindings
 #import bevy_pbr::mesh_bindings
+#import bevy_pbr::mesh_functions
 
 #import bevy_pbr::pbr_types
 #import bevy_pbr::utils

@@ -58,10 +58,10 @@ fn startup(
     ..Default::default()
   });
 
-  commands.spawn(Camera3dBundle {
-    transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-    ..default()
-  });
+  // commands.spawn(Camera3dBundle {
+  //   transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+  //   ..default()
+  // });
 
 }
 
@@ -126,45 +126,58 @@ fn add(
     render_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, data.normals.clone());
     render_mesh.set_indices(Some(Indices::U32(data.indices.clone())));
 
-    render_mesh.insert_attribute(VOXEL_WEIGHT, data.weights.clone());
-    render_mesh.insert_attribute(VOXEL_TYPE_1, data.types_1.clone());
+    // render_mesh.insert_attribute(VOXEL_WEIGHT, data.weights.clone());
+    // render_mesh.insert_attribute(VOXEL_TYPE_1, data.types_1.clone());
+
+
+    // let mut render_mesh = Mesh::from(shape::Cube { size: 1.0 });
+    // render_mesh.insert_attribute(
+    //     ATTRIBUTE_BLEND_COLOR,
+    //     // The cube mesh has 24 vertices (6 faces, 4 vertices per face), so we insert one BlendColor for each
+    //     vec![[1.0, 0.0, 0.0, 1.0]; 24],
+    // );
 
 
     let mesh_handle = meshes.add(render_mesh);
     let material_handle = custom_materials.add(CustomMaterial {
+      // color: Color::WHITE,
       albedo: loading_texture.albedo.clone(),
       // normal: loading_texture.normal.clone(),
-      voxel: 0,
+      // voxel: 0,
     });
-
-    // let seamless_size = chunk_manager.seamless_size();
-    // let coord_f32 = key_to_world_coord_f32(key, seamless_size);
-    // commands
-    //   .spawn(MaterialMeshBundle {
-    //     mesh: mesh_handle,
-    //     material: material_handle,
-    //     transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
-    //     ..default()
-    //   })
-    //   .insert(TerrainGraphics {key: *key });
-
-
-
 
     let seamless_size = chunk_manager.seamless_size();
     let coord_f32 = key_to_world_coord_f32(key, seamless_size);
-    commands.spawn((
-      PbrBundle {
+    commands
+      .spawn(MaterialMeshBundle {
         mesh: mesh_handle,
-        material: materials.add(Color::SILVER.into()),
+        material: material_handle,
         transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
         ..default()
-      },
-      TerrainGraphics{ key: *key },
-    ));
+      })
+      // .insert(TerrainGraphics {key: *key })
+      ;
+
+
+
+
+    // let seamless_size = chunk_manager.seamless_size();
+    // let coord_f32 = key_to_world_coord_f32(key, seamless_size);
+    // commands.spawn((
+    //   PbrBundle {
+    //     mesh: mesh_handle,
+    //     material: materials.add(Color::SILVER.into()),
+    //     transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
+    //     ..default()
+    //   },
+    //   TerrainGraphics{ key: *key },
+    // ));
     
   }
 }
+
+const ATTRIBUTE_BLEND_COLOR: MeshVertexAttribute =
+    MeshVertexAttribute::new("BlendColor", 988540917, VertexFormat::Float32x4);
 
 #[derive(Resource)]
 struct LocalResource {
@@ -199,39 +212,46 @@ pub const VOXEL_TYPE_1: MeshVertexAttribute =
 #[derive(AsBindGroup, Debug, Clone, TypeUuid)]
 #[uuid = "5f2e1d29-b8ad-4680-8c96-f8b78a580718"]
 struct CustomMaterial {
-  #[uniform(0)]
-  voxel: u32,
-  #[texture(1, dimension = "2d_array")]
-  #[sampler(2)]
+  #[texture(0, dimension = "2d_array")]
+  #[sampler(1)]
   albedo: Handle<Image>,
+
+  // #[uniform(0)]
+  // color: Color,
+
+  // #[uniform(0)]
+  // voxel: u32,
+  // #[texture(1, dimension = "2d_array")]
+  // #[sampler(2)]
+  // albedo: Handle<Image>,
   // #[texture(3, dimension = "2d_array")]
   // #[sampler(4)]
   // normal: Handle<Image>,
 }
 
 impl Material for CustomMaterial {
-  fn vertex_shader() -> ShaderRef {
-    "shaders/triplanar.wgsl".into()
-  }
+  // fn vertex_shader() -> ShaderRef {
+  //   "shaders/triplanar.wgsl".into()
+  // }
   fn fragment_shader() -> ShaderRef {
     "shaders/triplanar.wgsl".into()
   }
-  fn specialize(
-    _pipeline: &MaterialPipeline<Self>,
-    descriptor: &mut RenderPipelineDescriptor,
-    layout: &MeshVertexBufferLayout,
-    _key: MaterialPipelineKey<Self>,
-  ) -> Result<(), SpecializedMeshPipelineError> {
-    let vertex_layout = layout.get_layout(&[
-      Mesh::ATTRIBUTE_POSITION.at_shader_location(0),
-      Mesh::ATTRIBUTE_NORMAL.at_shader_location(1),
-      // VOXEL_WEIGHT.at_shader_location(2),
-      // VOXEL_TYPE_1.at_shader_location(3),
-    ])?;
-    descriptor.vertex.buffers = vec![vertex_layout];
+  // fn specialize(
+  //   _pipeline: &MaterialPipeline<Self>,
+  //   descriptor: &mut RenderPipelineDescriptor,
+  //   layout: &MeshVertexBufferLayout,
+  //   _key: MaterialPipelineKey<Self>,
+  // ) -> Result<(), SpecializedMeshPipelineError> {
+  //   let vertex_layout = layout.get_layout(&[
+  //     Mesh::ATTRIBUTE_POSITION.at_shader_location(0),
+  //     // Mesh::ATTRIBUTE_NORMAL.at_shader_location(1),
+  //     // VOXEL_WEIGHT.at_shader_location(2),
+  //     // VOXEL_TYPE_1.at_shader_location(3),
+  //   ])?;
+  //   descriptor.vertex.buffers = vec![vertex_layout];
 
-    Ok(())
-  }
+  //   Ok(())
+  // }
 }
 
 #[derive(Component)]
