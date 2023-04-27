@@ -29,9 +29,9 @@ fn startup(
 ) {
   commands.insert_resource(ChunkTexture {
     is_loaded: false,
-    albedo: asset_server.load("textures/array_texture.png"),
-    // albedo: asset_server.load("textures/terrains_albedo_1.png"),
-    // normal: asset_server.load("textures/terrains_normal_1.png"),
+    // albedo: asset_server.load("textures/array_texture.png"),
+    albedo: asset_server.load("textures/terrains_albedo_1.png"),
+    normal: asset_server.load("textures/terrains_normal_1.png"),
   });
 
 
@@ -79,7 +79,7 @@ fn add(
 ) {
   if loading_texture.is_loaded
     || asset_server.get_load_state(loading_texture.albedo.clone()) != LoadState::Loaded
-    // || asset_server.get_load_state(loading_texture.normal.clone()) != LoadState::Loaded
+    || asset_server.get_load_state(loading_texture.normal.clone()) != LoadState::Loaded
   {
     return;
   }
@@ -89,8 +89,8 @@ fn add(
   let image = images.get_mut(&loading_texture.albedo).unwrap();
   image.reinterpret_stacked_2d_as_array(array_layers);
 
-  // let normal = images.get_mut(&loading_texture.normal).unwrap();
-  // normal.reinterpret_stacked_2d_as_array(array_layers);
+  let normal = images.get_mut(&loading_texture.normal).unwrap();
+  normal.reinterpret_stacked_2d_as_array(array_layers);
 
   // println!("add {}", local_res.output_cache.len());
 
@@ -141,6 +141,7 @@ fn add(
     let mesh_handle = meshes.add(render_mesh);
     let material_handle = custom_materials.add(CustomMaterial {
       albedo: loading_texture.albedo.clone(),
+      normal: loading_texture.normal.clone(),
     });
 
     let seamless_size = chunk_manager.seamless_size();
@@ -194,7 +195,7 @@ impl Default for LocalResource {
 struct ChunkTexture {
   is_loaded: bool,
   albedo: Handle<Image>,
-  // normal: Handle<Image>,
+  normal: Handle<Image>,
 }
 
 
@@ -212,6 +213,9 @@ struct CustomMaterial {
   #[texture(0, dimension = "2d_array")]
   #[sampler(1)]
   albedo: Handle<Image>,
+  #[texture(2, dimension = "2d_array")]
+  #[sampler(3)]
+  normal: Handle<Image>,
 
   // #[texture(1, dimension = "2d_array")]
   // #[sampler(2)]
