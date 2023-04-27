@@ -8,8 +8,8 @@ use voxels::{chunk::{adjacent_keys, chunk_manager::ChunkManager}, utils::key_to_
 mod terrain;
 mod physics;
 mod graphics;
-mod camera;
 mod utils;
+mod wasm;
 
 fn main() {
   App::new()
@@ -18,7 +18,7 @@ fn main() {
     .add_plugin(terrain::CustomPlugin)
     .add_plugin(physics::CustomPlugin)
     .add_plugin(graphics::CustomPlugin)
-    // .add_plugin(camera::CustomPlugin)
+    .add_plugin(wasm::CustomPlugin)
     // .add_startup_system(startup)
     .run();
 

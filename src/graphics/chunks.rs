@@ -34,13 +34,6 @@ fn startup(
     normal: asset_server.load("textures/terrain_normal_8.png"),
   });
 
-
-  commands.spawn(PbrBundle {
-    mesh: meshes.add(shape::Plane::from_size(5.0).into()),
-    material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
-    ..default()
-  });
-
   commands.spawn(PointLightBundle {
     point_light: PointLight {
       intensity: 3000.0,
@@ -57,12 +50,6 @@ fn startup(
     transform: Transform::from_xyz(3.0, 2.0, 1.0),
     ..Default::default()
   });
-
-  // commands.spawn(Camera3dBundle {
-  //   transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-  //   ..default()
-  // });
-
 }
 
 fn add(
@@ -96,21 +83,12 @@ fn add(
 
   let mut chunk_manager = ChunkManager::default();
 
-  let mut index = 0;
   for key in local_res.keys.iter() {
-    if index == 1 {
-      break;
-    }
-    index += 1;
-
-    info!("key {:?}", key);
     for (entity, terrain) in terrains.iter() {
       if key == &terrain.key {
         commands.entity(entity).despawn_recursive();
       }
     }
-
-    
 
     let chunk = ChunkManager::new_chunk(
       key, 
@@ -216,13 +194,6 @@ struct CustomMaterial {
   #[texture(2, dimension = "2d_array")]
   #[sampler(3)]
   normal: Handle<Image>,
-
-  // #[texture(1, dimension = "2d_array")]
-  // #[sampler(2)]
-  // albedo: Handle<Image>,
-  // #[texture(3, dimension = "2d_array")]
-  // #[sampler(4)]
-  // normal: Handle<Image>,
 }
 
 impl Material for CustomMaterial {
