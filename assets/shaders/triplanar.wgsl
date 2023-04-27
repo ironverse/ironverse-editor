@@ -26,26 +26,6 @@ var normal: texture_2d_array<f32>;
 var normal_sampler: sampler;
 
 
-fn alpha_discard(material: StandardMaterial, output_color: vec4<f32>) -> vec4<f32> {
-    var color = output_color;
-    let alpha_mode = material.flags & STANDARD_MATERIAL_FLAGS_ALPHA_MODE_RESERVED_BITS;
-    if alpha_mode == STANDARD_MATERIAL_FLAGS_ALPHA_MODE_OPAQUE {
-        // NOTE: If rendering as opaque, alpha should be ignored so set to 1.0
-        color.a = 1.0;
-    } else if alpha_mode == STANDARD_MATERIAL_FLAGS_ALPHA_MODE_MASK {
-        if color.a >= material.alpha_cutoff {
-            // NOTE: If rendering as masked alpha and >= the cutoff, render as fully opaque
-            color.a = 1.0;
-        } else {
-            // NOTE: output_color.a < in.material.alpha_cutoff should not is not rendered
-            // NOTE: This and any other discards mean that early-z testing cannot be done!
-            discard;
-        }
-    }
-    return color;
-}
-
-
 struct PbrInput {
   material: StandardMaterial,
   occlusion: f32,
@@ -116,121 +96,6 @@ fn calculate_view(
   }
   return V;
 }
-
-#ifndef NORMAL_PREPASS
-fn pbr(
-    in: PbrInput,
-) -> vec4<f32> {
-    var output_color: vec4<f32> = in.material.base_color;
-
-    // TODO use .a for exposure compensation in HDR
-    let emissive = in.material.emissive;
-
-    // calculate non-linear roughness from linear perceptualRoughness
-    let metallic = in.material.metallic;
-    let perceptual_roughness = in.material.perceptual_roughness;
-    let roughness = perceptualRoughnessToRoughness(perceptual_roughness);
-
-    let occlusion = in.occlusion;
-
-    output_color = alpha_discard(in.material, output_color);
-
-    // Neubelt and Pettineo 2013, "Crafting a Next-gen Material Pipeline for The Order: 1886"
-    let NdotV = max(dot(in.N, in.V), 0.0001);
-
-    // Remapping [0,1] reflectance to F0
-    // See https://google.github.io/filament/Filament.html#materialsystem/parameterization/remapping
-    let reflectance = in.material.reflectance;
-    let F0 = 0.16 * reflectance * reflectance * (1.0 - metallic) + output_color.rgb * metallic;
-
-    // Diffuse strength inversely related to metallicity
-    let diffuse_color = output_color.rgb * (1.0 - metallic);
-
-    let R = reflect(-in.V, in.N);
-
-    let f_ab = F_AB(perceptual_roughness, NdotV);
-
-    var direct_light: vec3<f32> = vec3<f32>(0.0);
-
-    let view_z = dot(vec4<f32>(
-        view.inverse_view[0].z,
-        view.inverse_view[1].z,
-        view.inverse_view[2].z,
-        view.inverse_view[3].z
-    ), in.world_position);
-    let cluster_index = fragment_cluster_index(in.frag_coord.xy, view_z, in.is_orthographic);
-    let offset_and_counts = unpack_offset_and_counts(cluster_index);
-
-    // Point lights (direct)
-    for (var i: u32 = offset_and_counts[0]; i < offset_and_counts[0] + offset_and_counts[1]; i = i + 1u) {
-        let light_id = get_light_id(i);
-        var shadow: f32 = 1.0;
-        if ((in.flags & MESH_FLAGS_SHADOW_RECEIVER_BIT) != 0u
-                && (point_lights.data[light_id].flags & POINT_LIGHT_FLAGS_SHADOWS_ENABLED_BIT) != 0u) {
-            shadow = fetch_point_shadow(light_id, in.world_position, in.world_normal);
-        }
-        let light_contrib = point_light(in.world_position.xyz, light_id, roughness, NdotV, in.N, in.V, R, F0, f_ab, diffuse_color);
-        direct_light += light_contrib * shadow;
-    }
-
-    // Spot lights (direct)
-    for (var i: u32 = offset_and_counts[0] + offset_and_counts[1]; i < offset_and_counts[0] + offset_and_counts[1] + offset_and_counts[2]; i = i + 1u) {
-        let light_id = get_light_id(i);
-        var shadow: f32 = 1.0;
-        if ((in.flags & MESH_FLAGS_SHADOW_RECEIVER_BIT) != 0u
-                && (point_lights.data[light_id].flags & POINT_LIGHT_FLAGS_SHADOWS_ENABLED_BIT) != 0u) {
-            shadow = fetch_spot_shadow(light_id, in.world_position, in.world_normal);
-        }
-        let light_contrib = spot_light(in.world_position.xyz, light_id, roughness, NdotV, in.N, in.V, R, F0, f_ab, diffuse_color);
-        direct_light += light_contrib * shadow;
-    }
-
-    // Directional lights (direct)
-    let n_directional_lights = lights.n_directional_lights;
-    for (var i: u32 = 0u; i < n_directional_lights; i = i + 1u) {
-        var shadow: f32 = 1.0;
-        if ((in.flags & MESH_FLAGS_SHADOW_RECEIVER_BIT) != 0u
-                && (lights.directional_lights[i].flags & DIRECTIONAL_LIGHT_FLAGS_SHADOWS_ENABLED_BIT) != 0u) {
-            shadow = fetch_directional_shadow(i, in.world_position, in.world_normal, view_z);
-        }
-        var light_contrib = directional_light(i, roughness, NdotV, in.N, in.V, R, F0, f_ab, diffuse_color);
-#ifdef DIRECTIONAL_LIGHT_SHADOW_MAP_DEBUG_CASCADES
-        light_contrib = cascade_debug_visualization(light_contrib, i, view_z);
-#endif
-        direct_light += light_contrib * shadow;
-    }
-
-    // Ambient light (indirect)
-    var indirect_light = ambient_light(in.world_position, in.N, in.V, NdotV, diffuse_color, F0, perceptual_roughness, occlusion);
-
-    // Environment map light (indirect)
-#ifdef ENVIRONMENT_MAP
-    let environment_light = environment_map_light(perceptual_roughness, roughness, diffuse_color, NdotV, f_ab, in.N, R, F0);
-    indirect_light += (environment_light.diffuse * occlusion) + environment_light.specular;
-#endif
-
-    let emissive_light = emissive.rgb * output_color.a;
-
-    // Total light
-    output_color = vec4<f32>(
-        direct_light + indirect_light + emissive_light,
-        output_color.a
-    );
-
-    output_color = cluster_debug_visualization(
-        output_color,
-        view_z,
-        in.is_orthographic,
-        offset_and_counts,
-        cluster_index,
-    );
-
-    return output_color;
-}
-#endif // NORMAL_PREPASS
-
-
-
 
 
 struct Vertex {
@@ -437,41 +302,41 @@ fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
   weights = weights / (weights.x + weights.y + weights.z);
 
   var color = dx * weights.x + dy * weights.y + dz * weights.z;
-  // return color;
+  return color;
 
 
-  var pbr_input: PbrInput = pbr_input_new();
-  pbr_input.material.base_color = pbr_input.material.base_color * color;
-  pbr_input.frag_coord = input.frag_coord;
-  pbr_input.world_position = input.world_position;
-  pbr_input.world_normal = prepare_world_normal(
-    input.world_normal,
-    true,
-    false,
-  );
+  // var pbr_input: PbrInput = pbr_input_new();
+  // pbr_input.material.base_color = pbr_input.material.base_color * color;
+  // pbr_input.frag_coord = input.frag_coord;
+  // pbr_input.world_position = input.world_position;
+  // pbr_input.world_normal = prepare_world_normal(
+  //   input.world_normal,
+  //   true,
+  //   false,
+  // );
 
-  pbr_input.is_orthographic = view.projection[3].w == 1.0;
+  // pbr_input.is_orthographic = view.projection[3].w == 1.0;
 
-  let sharpness_1 = 8.0;
-  var weights_1 = pow(abs(input.world_normal), vec3(sharpness_1));
-  weights_1 = weights_1 / (weights_1.x + weights_1.y + weights_1.z);
+  // let sharpness_1 = 8.0;
+  // var weights_1 = pow(abs(input.world_normal), vec3(sharpness_1));
+  // weights_1 = weights_1 / (weights_1.x + weights_1.y + weights_1.z);
 
-  let scale = 1.0;
-  let uv_x = input.world_position.yz * scale;
-  let uv_y = input.world_position.zx * scale;
-  let uv_z = input.world_position.xy * scale;
-  var triplanar = Triplanar(weights_1, uv_x, uv_y, uv_z);
+  // let scale = 1.0;
+  // let uv_x = input.world_position.yz * scale;
+  // let uv_y = input.world_position.zx * scale;
+  // let uv_z = input.world_position.xy * scale;
+  // var triplanar = Triplanar(weights_1, uv_x, uv_y, uv_z);
 
-  pbr_input.N = triplanar_normal_to_world_splatted(
-    input.voxel_weight, 
-    input.world_normal, 
-    input.voxel_type_1, 
-    triplanar
-  );
+  // pbr_input.N = triplanar_normal_to_world_splatted(
+  //   input.voxel_weight, 
+  //   input.world_normal, 
+  //   input.voxel_type_1, 
+  //   triplanar
+  // );
 
-  pbr_input.V = calculate_view(input.world_position, pbr_input.is_orthographic);
+  // pbr_input.V = calculate_view(input.world_position, pbr_input.is_orthographic);
 
-  return tone_mapping(pbr(pbr_input));
+  // return tone_mapping(pbr(pbr_input));
 
   // return vec4<f32>(0.0, 0.0, 0.0, 1.0);
 }

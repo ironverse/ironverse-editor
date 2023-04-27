@@ -85,7 +85,7 @@ fn add(
   }
   loading_texture.is_loaded = true;
 
-  let array_layers = 4;
+  let array_layers = 8; // WebGPU implementation not allowing 12 layers
   let image = images.get_mut(&loading_texture.albedo).unwrap();
   image.reinterpret_stacked_2d_as_array(array_layers);
 
