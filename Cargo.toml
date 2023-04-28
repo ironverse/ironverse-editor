@@ -30,3 +30,6 @@ features = [
   "ErrorEvent", 
   "Window",
 ]
+
+# [features]
+# default = ["wasm32"]
