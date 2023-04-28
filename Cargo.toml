@@ -20,4 +20,13 @@ bevy_flycam = { path = "../bevy_flycam" }
 
 flume = "0.10.14"
 wasm-bindgen = "0.2.84"
-web-sys = { version = "0.3.61", features = ["HtmlElement", "ErrorEvent"] }
+# web-sys = { version = "0.3.61", features = [] }
+
+[dependencies.web-sys]
+version = "0.3.61"
+features = [
+  "Document",
+  "HtmlElement", 
+  "ErrorEvent", 
+  "Window",
+]
