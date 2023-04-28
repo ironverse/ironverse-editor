@@ -36,6 +36,11 @@ fn update_fullscreen(input: Res<Input<KeyCode>>,) {
   if input.just_pressed(KeyCode::F) {
     info!("Fullscreen");
     html_body().request_fullscreen();
+    html_body().request_pointer_lock();
+  }
+
+  if input.just_pressed(KeyCode::LAlt) {
+    html_body().request_pointer_lock();
   }
 }
 
@@ -45,6 +50,15 @@ fn update_resize(
   for _resize in local_res.recv_resize.drain() {
     info!("resize");
   }
+
+  // let window = web_sys::window().expect("no global `window` exists");
+  // let document = window.document().expect("should have a document on window");
+  // let body = document.body().expect("document should have a body");
+  // let res = document.has_focus();
+  // if res.is_ok() {
+  //   info!("focus {}", res.unwrap());
+    
+  // }
 }
 
 
