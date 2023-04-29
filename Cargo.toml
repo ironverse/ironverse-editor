@@ -8,19 +8,14 @@ edition = "2021"
 [dependencies]
 bevy = "0.10.1"
 rapier3d = { version = "0.17.2", features = [ "simd-stable" ] }
-# voxels = { git = "https://github.com/ironverse/voxels.git", branch="0.1" }
-voxels = { path = "../voxels" }
+voxels = { git = "https://github.com/ironverse/voxels.git", branch="0.2" }
+bevy_flycam = { git = "https://github.com/Nickan/bevy_flycam.git", branch="MakeMouseMovementWorkOnWasm" }
 
-# bevy_flycam = "0.10.1"
-bevy_flycam = { path = "../bevy_flycam" }
-
-# bevy_rapier3d = { version = "0.21.0" }
-# bevy = { version = "0.10.1", features = ["dynamic_linking"] }
-
+# voxels = { path = "../voxels" }
+# bevy_flycam = { path = "../bevy_flycam" }
 
 flume = "0.10.14"
 wasm-bindgen = "0.2.84"
-# web-sys = { version = "0.3.61", features = [] }
 
 [dependencies.web-sys]
 version = "0.3.61"
