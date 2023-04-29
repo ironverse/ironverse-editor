@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rapier3d::{prelude::{RigidBodySet, ColliderSet, PhysicsPipeline, ColliderBuilder, RigidBodyBuilder, Real, Vector, IntegrationParameters, IslandManager, PhysicsHooks, EventHandler, MultibodyJointSet, ImpulseJointSet, NarrowPhase, BroadPhase, CCDSolver, RigidBodyHandle, Collider, ColliderHandle, InteractionGroups, QueryPipeline, Group}, na::Vector3};
+use rapier3d::{prelude::{RigidBodySet, ColliderSet, PhysicsPipeline, ColliderBuilder, RigidBodyBuilder, Real, Vector, IntegrationParameters, IslandManager, MultibodyJointSet, ImpulseJointSet, NarrowPhase, BroadPhase, CCDSolver, RigidBodyHandle, Collider, ColliderHandle, InteractionGroups, QueryPipeline, Group}, na::Vector3};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -80,7 +80,7 @@ impl Physics {
       &self.collider_set
     );
   }
-
+  #[allow(dead_code)]
   pub fn spawn_character(&mut self, depth: f32, radius: f32, pos: Vec3) -> (RigidBodyHandle, ColliderHandle) {
     let collider = ColliderBuilder::capsule_y(depth * 0.5, radius)
       // .collision_groups(InteractionGroups::new(Group::GROUP_2, Group::GROUP_1))
@@ -96,13 +96,13 @@ impl Physics {
     let collider_handle = self.insert_with_parent(collider, body_handle.clone());
     (body_handle, collider_handle)
   }
-
+  #[allow(dead_code)]
   pub fn insert_with_parent(&mut self, collider: Collider, handle: RigidBodyHandle) -> ColliderHandle {
     self
       .collider_set
       .insert_with_parent(collider, handle, &mut self.rigid_body_set)
   }
-
+  #[allow(dead_code)]
   pub fn remove_collider(&mut self, handle: ColliderHandle) {
     self
       .collider_set

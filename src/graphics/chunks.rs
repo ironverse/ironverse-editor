@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::{mesh::{MeshVertexAttribute, MeshVertexBufferLayout, Indices}, render_resource::{VertexFormat, AsBindGroup, ShaderRef, RawRenderPipelineDescriptor, SpecializedMeshPipelineError, RenderPipelineDescriptor, PrimitiveTopology}}, reflect::TypeUuid, pbr::{MaterialPipeline, MaterialPipelineKey}, asset::LoadState};
+use bevy::{prelude::*, render::{mesh::{MeshVertexAttribute, MeshVertexBufferLayout, Indices}, render_resource::{VertexFormat, AsBindGroup, ShaderRef, SpecializedMeshPipelineError, RenderPipelineDescriptor, PrimitiveTopology}}, reflect::TypeUuid, pbr::{MaterialPipeline, MaterialPipelineKey}, asset::LoadState};
 use voxels::{chunk::{adjacent_keys, chunk_manager::ChunkManager}, utils::key_to_world_coord_f32, data::voxel_octree::VoxelMode};
 
 pub struct CustomPlugin;
@@ -10,12 +10,6 @@ impl Plugin for CustomPlugin {
       .add_startup_system(startup)
       .add_system(add)
       ;
-
-    // app
-    //   .add_plugin(MaterialPlugin::<ArrayTextureMaterial>::default())
-    //   .add_startup_system(setup)
-    //   .add_system(create_array_texture)
-    //   ;
   }
 }
 
@@ -23,9 +17,6 @@ impl Plugin for CustomPlugin {
 fn startup(
   mut commands: Commands, 
   asset_server: Res<AssetServer>,
-
-  mut meshes: ResMut<Assets<Mesh>>,
-  mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
   commands.insert_resource(ChunkTexture {
     is_loaded: false,
@@ -56,12 +47,12 @@ fn add(
   mut commands: Commands,
   mut meshes: ResMut<Assets<Mesh>>,
   mut custom_materials: ResMut<Assets<CustomMaterial>>,
-  mut materials: ResMut<Assets<StandardMaterial>>,
+  mut _materials: ResMut<Assets<StandardMaterial>>,
   terrains: Query<(Entity, &TerrainGraphics)>,
   asset_server: Res<AssetServer>,
 
   mut loading_texture: ResMut<ChunkTexture>,
-  mut local_res: ResMut<LocalResource>,
+  local_res: Res<LocalResource>,
   mut images: ResMut<Assets<Image>>,
 ) {
   if loading_texture.is_loaded
@@ -152,9 +143,6 @@ fn add(
   }
 }
 
-const ATTRIBUTE_BLEND_COLOR: MeshVertexAttribute =
-    MeshVertexAttribute::new("BlendColor", 988540917, VertexFormat::Float32x4);
-
 #[derive(Resource)]
 struct LocalResource {
   keys: Vec<[i64; 3]>,
@@ -224,100 +212,4 @@ impl Material for CustomMaterial {
 #[derive(Component)]
 pub struct TerrainGraphics {
   pub key: [i64; 3]
-}
-
-
-
-
-
-
-
-
-
-#[derive(Resource)]
-struct LoadingTexture {
-    is_loaded: bool,
-    handle: Handle<Image>,
-}
-
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // Start loading the texture.
-    commands.insert_resource(LoadingTexture {
-        is_loaded: false,
-        // handle: asset_server.load("textures/array_texture.png"),
-        handle: asset_server.load("textures/terrains_albedo_1.png"),
-    });
-
-    // light
-    commands.spawn(PointLightBundle {
-        point_light: PointLight {
-            intensity: 3000.0,
-            ..Default::default()
-        },
-        transform: Transform::from_xyz(-3.0, 2.0, -1.0),
-        ..Default::default()
-    });
-    commands.spawn(PointLightBundle {
-        point_light: PointLight {
-            intensity: 3000.0,
-            ..Default::default()
-        },
-        transform: Transform::from_xyz(3.0, 2.0, 1.0),
-        ..Default::default()
-    });
-
-    // camera
-    commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::new(1.5, 0.0, 0.0), Vec3::Y),
-        ..Default::default()
-    });
-}
-
-fn create_array_texture(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut loading_texture: ResMut<LoadingTexture>,
-    mut images: ResMut<Assets<Image>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ArrayTextureMaterial>>,
-) {
-    if loading_texture.is_loaded
-        || asset_server.get_load_state(loading_texture.handle.clone()) != LoadState::Loaded
-    {
-        return;
-    }
-    loading_texture.is_loaded = true;
-    let image = images.get_mut(&loading_texture.handle).unwrap();
-
-    // Create a new array texture asset from the loaded texture.
-    let array_layers = 8;
-    image.reinterpret_stacked_2d_as_array(array_layers);
-
-    // Spawn some cubes using the array texture
-    let mesh_handle = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
-    let material_handle = materials.add(ArrayTextureMaterial {
-        array_texture: loading_texture.handle.clone(),
-    });
-    for x in -5..=5 {
-        commands.spawn(MaterialMeshBundle {
-            mesh: mesh_handle.clone(),
-            material: material_handle.clone(),
-            transform: Transform::from_xyz(x as f32 + 0.5, 0.0, 0.0),
-            ..Default::default()
-        });
-    }
-}
-
-#[derive(AsBindGroup, Debug, Clone, TypeUuid)]
-#[uuid = "9c5a0ddf-1eaf-41b4-9832-ed736fd26af3"]
-struct ArrayTextureMaterial {
-    #[texture(0, dimension = "2d_array")]
-    #[sampler(1)]
-    array_texture: Handle<Image>,
-}
-
-impl Material for ArrayTextureMaterial {
-    fn fragment_shader() -> ShaderRef {
-        "shaders/array_texture.wgsl".into()
-    }
 }

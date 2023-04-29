@@ -17,7 +17,7 @@ fn startup() {
   let config = ChunkManager::default().config.clone();
 
   for key in keys.iter() {
-    let chunk = ChunkManager::new_chunk(key, config.depth, config.lod, config.noise);
+    let _chunk = ChunkManager::new_chunk(key, config.depth, config.lod, config.noise);
     
   }
 }
