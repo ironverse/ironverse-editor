@@ -98,6 +98,8 @@ fn render(
           //   ui_res.load_file_init = false;
           //   next_state.set(UIState::Load);
           // }
+
+          // load();
         }
 
         ui.add_space(20.0);
@@ -120,3 +122,28 @@ fn render(
     });
 
 }
+
+// fn load() {
+//   let task = rfd::AsyncFileDialog::new().pick_file();
+
+//   // Await somewhere else
+//   execute(async {
+//       let file = task.await;
+
+//       if let Some(file) = file {
+//           // If you are on native platform you can just get the path
+//           #[cfg(not(target_arch = "wasm32"))]
+//           println!("{:?}", file.path());
+
+//           // If you care about wasm support you just read() the file
+//           file.read().await;
+//       }
+//   });
+// }
+
+// use std::future::Future;
+
+// #[cfg(target_arch = "wasm32")]
+// fn execute<F: Future<Output = ()> + 'static>(f: F) {
+//     wasm_bindgen_futures::spawn_local(f);
+// }
