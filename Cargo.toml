@@ -14,6 +14,10 @@ bevy_flycam = { git = "https://github.com/Nickan/bevy_flycam.git", branch="MakeM
 # voxels = { path = "../voxels" }
 # bevy_flycam = { path = "../bevy_flycam" }
 
+bevy_egui = "0.20.3"
+rfd = "0.11"
+
+#Requirements for wasm
 flume = "0.10.14"
 wasm-bindgen = "0.2.84"
 
