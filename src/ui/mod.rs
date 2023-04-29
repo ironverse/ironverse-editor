@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_egui::{egui::{self, Frame, Ui, Rect}, EguiPlugin};
+use bevy_flycam::MovementSettings;
 
 mod menu;
 
@@ -15,11 +16,15 @@ impl Plugin for CustomPlugin {
       // .add_plugin(new::CustomPlugin)
       // .add_plugin(load::CustomPlugin)
       // .add_plugin(inventory::CustomPlugin)
+      .add_startup_system(startup)
+      .add_system(update)
+      .add_system(update_wasm_mouse)
       ;
-
-    app
-      .add_system(update);
   }
+}
+
+fn startup(mut move_setting_res: ResMut<MovementSettings>,) {
+  move_setting_res.sensitivity = 0.0;
 }
 
 fn update(
@@ -27,15 +32,22 @@ fn update(
   state: Res<State<UIState>>,
   mut next_state: ResMut<NextState<UIState>>,
 ) {
-  if key_input.just_pressed(KeyCode::F) {
-    
+  if key_input.just_pressed(KeyCode::LAlt) {
     match state.0 {
       UIState::Default => { next_state.set(UIState::Menu); },
       UIState::Menu => { next_state.set(UIState::Default); },
       _ => { next_state.set(UIState::Default); },
     }
+    info!("Toggle show menu {:?}", state.0);
+  }
+}
 
-    println!("Toggle show menu {:?}", state.0);
+fn update_wasm_mouse(
+  mut move_setting_res: ResMut<MovementSettings>,
+  mouse: Res<Input<MouseButton>>,
+) {
+  if mouse.just_pressed(MouseButton::Left) {
+    move_setting_res.sensitivity = 0.00012;
   }
 }
 
@@ -57,7 +69,7 @@ impl Default for UIResource {
 #[derive(States, PartialEq, Eq, Debug, Clone, Hash, Default)]
 pub enum UIState {
   #[default]
-  None,
+  // None,
   Default,
   Menu,
   New,
