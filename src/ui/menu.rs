@@ -50,24 +50,22 @@ fn test_download_file() {
     };
 
     let config = config::standard();
+    // let encoded: Vec<u8> = bincode::encode_to_vec(&data, config).unwrap();
+    // let str = array_bytes::bytes2hex("", encoded);
+
+    // let str = toml::to_string_pretty(&data).unwrap();
+    // let t = toml::to_string(&data).unwrap();
     let encoded: Vec<u8> = bincode::encode_to_vec(&data, config).unwrap();
     let str = array_bytes::bytes2hex("", encoded);
     
-    info!("a");
+    info!("a: {:?}", str);
     let a = a_ops.unwrap();
     a.set_attribute("download", "save.toml");
-    a.set_attribute("href", format!("data:text/plain;base64,{}", str).as_str() );
+    a.set_attribute("href", format!("data:,{:?}", str).as_str());
     // a.set_attribute("innerHTML", "download");
 
     let a1: HtmlElement = a.dyn_into::<HtmlElement>().unwrap();
-    // a1.click();
-
-
-    // Decode
-    // let en1 = array_bytes::hex2bytes(str).unwrap();
-    // let (data, len): (Data, usize) = bincode::decode_from_slice(&en1[..], config).unwrap();
-
-    // info!("data {:?}", data);
+    a1.click();
 
   }
 
@@ -195,7 +193,7 @@ fn recv_file(local_res: Res<LocalResource>,) {
   for file in local_res.recv.drain() {
     let config = config::standard();
     
-
+    
     // let res = bincode::decode_from_slice::<Data, Configuration>(&file[..], config);
     // match res {
     //   Ok(r) => { info!("ok"); },
@@ -206,6 +204,24 @@ fn recv_file(local_res: Res<LocalResource>,) {
     // let (data, len): (Data, usize) = bincode::decode_from_slice(&en1[..], config).unwrap();
 
     // info!("data {:?}", data);
+    let mut str = String::from_utf8(file).unwrap();
+    str = str.replace('"', "");
+    info!("str {:?}", str);
+    let vec = array_bytes::hex2bytes(str).unwrap();
+
+    let res = bincode::decode_from_slice::<Data, Configuration>(&vec[..], config);
+    let (data, usize) = match res {
+      Ok(r) => { 
+        info!("ok");
+        r
+      },
+      Err(e) => {
+        info!("{:?}", e);
+        return;
+      }
+    };
+
+    info!("data {:?}", data);
   }
 }
 
@@ -228,7 +244,7 @@ fn load_file(send: Sender<Vec<u8>>) {
 
       // If you care about wasm support you just read() the file
       let res = file.read().await;
-      info!("Sand {}", res.len());
+      info!("Send {}", res.len());
       send.send(res);
     }
   });
