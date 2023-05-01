@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_flycam::MovementSettings;
 use web_sys::HtmlElement;
 use flume::*;
 use wasm_bindgen::prelude::*;
@@ -8,7 +9,9 @@ impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
       .insert_resource(LocalResource::default())
-      .add_system(update_fullscreen);
+      .add_event::<PointerLockEvent>()
+      .add_event::<MouseMoveEvent>()
+      .add_system((update_fullscreen, update_pointer_events, update_mouse_events));
   }
 }
 
@@ -32,6 +35,35 @@ fn update_fullscreen(
     html_body().request_pointer_lock();
   }
 }
+
+fn update_pointer_events(mut events: EventReader<PointerLockEvent>) {
+  // TODO: Need to confirm if truly locked the pointer or exit later on
+
+  for e in events.iter() {
+    if e.0 {
+      html_body().request_pointer_lock();
+    } else {
+      let window = web_sys::window().expect("no global `window` exists");
+      let document = window.document().expect("should have a document on window");
+      document.exit_pointer_lock();
+    }
+  }
+}
+
+fn update_mouse_events(
+  mut event: EventReader<MouseMoveEvent>,
+  mut move_setting_res: ResMut<MovementSettings>,
+) {
+  for e in events.iter() {
+    if e.0 {
+      move_setting_res.sensitivity = 0.00012;
+    } else {
+      move_setting_res.sensitivity = 0.0;
+    }
+  }
+}
+
+
 
 pub fn html_body() -> HtmlElement {
   let window = web_sys::window().expect("no global `window` exists");
@@ -57,3 +89,7 @@ impl Default for LocalResource {
     }
   }
 }
+
+pub struct PointerLockEvent(bool);
+
+pub struct MouseMoveEvent(bool);

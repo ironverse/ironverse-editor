@@ -95,3 +95,9 @@ impl FromWorld for Images {
     }
   }
 }
+
+
+// #[derive(Resource)]
+// pub struct HotbarResource {
+  
+// }

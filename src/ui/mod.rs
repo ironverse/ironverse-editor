@@ -4,6 +4,7 @@ use bevy_flycam::MovementSettings;
 
 mod menu;
 mod hotbar;
+mod inventory;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -14,9 +15,7 @@ impl Plugin for CustomPlugin {
       .add_state::<UIState>()
       .add_plugin(hotbar::CustomPlugin)
       .add_plugin(menu::CustomPlugin)
-      // .add_plugin(new::CustomPlugin)
-      // .add_plugin(load::CustomPlugin)
-      // .add_plugin(inventory::CustomPlugin)
+      .add_plugin(inventory::CustomPlugin)
       .add_startup_system(startup)
       .add_system(update)
       .add_system(update_wasm_mouse)
@@ -69,14 +68,15 @@ impl Default for UIResource {
 
 #[derive(States, PartialEq, Eq, Debug, Clone, Hash, Default)]
 pub enum UIState {
-  #[default]
-  // None,
+  // #[default]
   Default,
   Menu,
   New,
   Restarting,
   Load,
   Save,
+
+  #[default]
   Inventory,
 }
 

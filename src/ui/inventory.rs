@@ -1,0 +1,153 @@
+use bevy::{prelude::*, window::PrimaryWindow};
+use bevy_egui::{EguiContexts, egui::{self, TextureId, Frame, Color32, Style, ImageButton, Rect, Vec2, Pos2}};
+
+use super::UIState;
+
+
+pub struct CustomPlugin;
+impl Plugin for CustomPlugin {
+  fn build(&self, app: &mut App) {
+    app
+      .insert_resource(LocalResource::default())
+      .add_startup_system(startup)
+      .add_systems((prepare_texture, render).in_set(OnUpdate(UIState::Inventory)))
+      ;
+  }
+}
+
+fn startup(
+  mut commands: Commands, asset_server: Res<AssetServer>
+) {
+  commands.insert_resource(InventoryTexture {
+    is_loaded: false,
+    slot: asset_server.load("slot.png"),
+    albedo: asset_server.load("textures/terrains_albedo_8.png"),
+    slot_id: TextureId::default(),
+    albedo_id: TextureId::default(),
+  });
+}
+
+
+fn prepare_texture(
+  mut ctx: EguiContexts,
+  mut loading_texture: ResMut<InventoryTexture>,
+) {
+  if !loading_texture.is_loaded {
+    loading_texture.slot_id = ctx.add_image(loading_texture.slot.clone_weak());
+    loading_texture.albedo_id = ctx.add_image(loading_texture.albedo.clone_weak());
+    loading_texture.is_loaded = true;
+  }
+}
+
+fn render(
+  mut ctx: EguiContexts,
+  windows: Query<&Window, With<PrimaryWindow>>,
+
+  loading_texture: Res<InventoryTexture>,
+  mut local_res: ResMut<LocalResource>,
+) {
+  let res = windows.get_single();
+  if res.is_err() || !loading_texture.is_loaded {
+    return;
+  }
+  let window = res.unwrap();
+  
+  let frame = Frame {
+    fill: Color32::from_rgba_unmultiplied(50, 50, 50, 255),
+    ..Default::default()
+  };
+
+  let size = [400.0, 200.0];
+  let x = (window.width() * 0.5) - size[0] * 0.5;
+  let y = window.height() * 0.1;
+
+  let slot_size = [40.0, 40.0];
+  let item_size = [31.0, 31.0];
+  egui::Window::new("inventory")
+    .title_bar(false)
+    .frame(frame)
+    .fixed_rect(egui::Rect {
+      min: [x, y].into(),
+      max: [x + size[0], y + size[1]].into(),
+    })
+    .show(ctx.ctx_mut(), |ui| {
+      ui.set_min_size(size.into());
+      ui.set_max_size(size.into());
+
+      egui::Grid::new("inventory_grid").show(ui, |ui| {
+        let total_items = 12.0;
+        let max = 1.0 / total_items;
+
+        for i in 0..local_res.slots.len() {
+          let slot = &mut local_res.slots[i];
+          let index = slot.item_id as f32;
+
+          let img = egui::Image::new(loading_texture.slot_id, slot_size.clone());
+          let rect = ui.add(img).rect;
+          slot.pos = rect.min;
+
+          let item = egui::Image::new(loading_texture.albedo_id, item_size.clone()).uv(Rect {
+            min: Pos2::new(0.0, max * index),
+            max: Pos2::new(1.0, max * (index + 1.0) ),
+          });
+
+          let adj = Vec2::new(4.0, 4.0);
+          let pos = slot.pos + adj;
+          let rect = Rect::from_min_size(pos, item_size.into());
+          let _item_res = ui.put(rect, item);
+        }
+
+
+      });
+    });
+}
+
+
+
+#[derive(Resource)]
+pub struct InventoryTexture {
+  pub is_loaded: bool,
+  slot: Handle<Image>,
+  pub albedo: Handle<Image>,
+  slot_id: TextureId,
+  pub albedo_id: TextureId,
+}
+
+#[derive(Resource)]
+struct LocalResource {
+  slots: Vec<Slot>
+}
+
+impl Default for LocalResource {
+  fn default() -> Self {
+    Self {
+      slots: vec![
+        Slot { 
+          pos: Pos2::new(0.0, 0.0), 
+          anchor_pos: Vec2::new(0.0, 0.0),
+          is_dragged: false,
+          item_id: 1, 
+        },
+        Slot { 
+          pos: Pos2::new(0.0, 0.0), 
+          anchor_pos: Vec2::new(0.0, 0.0),
+          is_dragged: false,
+          item_id: 2, 
+        },
+        Slot { 
+          pos: Pos2::new(0.0, 0.0), 
+          anchor_pos: Vec2::new(0.0, 0.0),
+          is_dragged: false,
+          item_id: 3, 
+        }
+      ],
+    }
+  }
+}
+
+struct Slot {
+  pos: Pos2,
+  anchor_pos: Vec2,
+  is_dragged: bool,
+  item_id: u32,
+}
