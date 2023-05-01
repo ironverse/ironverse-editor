@@ -22,8 +22,8 @@ impl Plugin for CustomPlugin {
 
       // app
       //   .add_system(test_download_file.in_schedule(OnEnter(UIState::Menu)));
-      app
-        .add_startup_system(test_download_file);
+      // app
+      //   .add_startup_system(test_download_file);
   }
 }
 

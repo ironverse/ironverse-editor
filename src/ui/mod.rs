@@ -3,6 +3,7 @@ use bevy_egui::{egui::{self, Frame, Ui, Rect}, EguiPlugin};
 use bevy_flycam::MovementSettings;
 
 mod menu;
+mod hotbar;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -11,7 +12,7 @@ impl Plugin for CustomPlugin {
       .insert_resource(UIResource::default())
       .add_plugin(EguiPlugin)
       .add_state::<UIState>()
-      // .add_plugin(hotbar::CustomPlugin)
+      .add_plugin(hotbar::CustomPlugin)
       .add_plugin(menu::CustomPlugin)
       // .add_plugin(new::CustomPlugin)
       // .add_plugin(load::CustomPlugin)
