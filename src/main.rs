@@ -5,6 +5,7 @@ mod physics;
 mod graphics;
 mod utils;
 mod ui;
+mod input;
 
 #[cfg(target_arch = "wasm32")]
 mod wasm;
@@ -27,7 +28,9 @@ fn main() {
     .add_plugin(terrain::CustomPlugin)
     .add_plugin(physics::CustomPlugin)
     .add_plugin(graphics::CustomPlugin)
-    .add_plugin(ui::CustomPlugin);
+    .add_plugin(ui::CustomPlugin)
+    .add_plugin(input::CustomPlugin)
+    ;
   
   #[cfg(target_arch = "wasm32")]
   app

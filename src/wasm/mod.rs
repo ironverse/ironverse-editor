@@ -11,7 +11,7 @@ impl Plugin for CustomPlugin {
       .insert_resource(LocalResource::default())
       .add_event::<PointerLockEvent>()
       .add_event::<MouseMoveEvent>()
-      .add_system((update_fullscreen, update_pointer_events, update_mouse_events));
+      .add_systems((update_fullscreen, update_pointer_events, update_mouse_events));
   }
 }
 
@@ -51,7 +51,7 @@ fn update_pointer_events(mut events: EventReader<PointerLockEvent>) {
 }
 
 fn update_mouse_events(
-  mut event: EventReader<MouseMoveEvent>,
+  mut events: EventReader<MouseMoveEvent>,
   mut move_setting_res: ResMut<MovementSettings>,
 ) {
   for e in events.iter() {

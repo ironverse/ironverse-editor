@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_egui::{egui::{self, Frame, Ui, Rect}, EguiPlugin};
-use bevy_flycam::MovementSettings;
+use bevy_flycam::{MovementSettings, WasmResource};
 
 mod menu;
 mod hotbar;
@@ -23,8 +23,12 @@ impl Plugin for CustomPlugin {
   }
 }
 
-fn startup(mut move_setting_res: ResMut<MovementSettings>,) {
+fn startup(
+  mut move_setting_res: ResMut<MovementSettings>,
+  mut wasm_res: ResMut<WasmResource>,
+) {
   move_setting_res.sensitivity = 0.0;
+  wasm_res.pointer_lock_enabled = false;
 }
 
 fn update(
@@ -47,7 +51,7 @@ fn update_wasm_mouse(
   mouse: Res<Input<MouseButton>>,
 ) {
   if mouse.just_pressed(MouseButton::Left) {
-    move_setting_res.sensitivity = 0.00012;
+    // move_setting_res.sensitivity = 0.00012;
   }
 }
 

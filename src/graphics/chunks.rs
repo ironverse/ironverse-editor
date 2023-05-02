@@ -21,8 +21,8 @@ fn startup(
   commands.insert_resource(ChunkTexture {
     is_loaded: false,
     // albedo: asset_server.load("textures/array_texture.png"),
-    albedo: asset_server.load("textures/terrain_albedo.png"),
-    normal: asset_server.load("textures/terrain_normal.png"),
+    albedo: asset_server.load("textures/terrains_albedo.png"),
+    normal: asset_server.load("textures/terrains_normal.png"),
   });
 
   commands.spawn(PointLightBundle {
@@ -63,7 +63,7 @@ fn add(
   }
   loading_texture.is_loaded = true;
 
-  let array_layers = 16; // WebGPU implementation not allowing 12 layers
+  let array_layers = 16;
   let image = images.get_mut(&loading_texture.albedo).unwrap();
   image.reinterpret_stacked_2d_as_array(array_layers);
 

@@ -54,9 +54,9 @@ fn test_download_file() {
     // let str = array_bytes::bytes2hex("", encoded);
 
     // let str = toml::to_string_pretty(&data).unwrap();
-    // let t = toml::to_string(&data).unwrap();
-    let encoded: Vec<u8> = bincode::encode_to_vec(&data, config).unwrap();
-    let str = array_bytes::bytes2hex("", encoded);
+    let str = toml::to_string(&data).unwrap();
+    // let encoded: Vec<u8> = bincode::encode_to_vec(&data, config).unwrap();
+    // let str = array_bytes::bytes2hex("", encoded);
     
     info!("a: {:?}", str);
     let a = a_ops.unwrap();

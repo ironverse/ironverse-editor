@@ -1,11 +1,13 @@
 use bevy::{prelude::*, window::PrimaryWindow};
-use bevy_egui::{EguiContexts, egui::{self, TextureId, Frame, Color32, Style, ImageButton, Rect, Vec2}};
+use bevy_egui::{EguiContexts, egui::{self, TextureId, Frame, Color32, Style, ImageButton, Rect, Vec2, Pos2}};
+use crate::input::hotbar::HotbarResource;
 
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
+      .insert_resource(HotbarUIResource::default())
       .add_system(render)
       ;
   }
@@ -22,7 +24,8 @@ fn render(
 
   // windows: Res<Windows>,
   // mut play_res: ResMut<PlayResource>,
-  // mut hotbar_res: ResMut<HotbarResource>,
+  hotbar_res: Res<HotbarResource>,
+  mut hotbar_ui_res: ResMut<HotbarUIResource>,
 ) {
   let res = windows.get_single();
   if res.is_err() {
@@ -60,25 +63,32 @@ fn render(
         style.spacing.item_spacing = Vec2::new(0.0, 0.0);
         ui.set_style(style);
 
-        // let key_mapping = play_res.key_mapping.clone();
-        // for key_map in key_mapping.iter() {
-        // for index in 0..key_mapping.len() {
-        for _ in 0..blocks {
-          // let key_map = &key_mapping[index];
+        for index in 0..hotbar_res.bars.len() {
+          // let bar = hotbar_res.bars[index];
           let mut img_button = ImageButton::new(*texture_id, size.clone()).frame(false);
-
-          // if play_res.selected_key_code == key_map.key_code {
-          //   img_button = img_button.tint(Color32::RED);
-          //   play_res.selected_voxel = key_map.voxel_type;
-          // }
-
           let res = ui.add(img_button);
-          // if res.clicked() {
-          //   play_res.selected_voxel = key_map.voxel_type;
-          // }
+          if res.clicked() {
+            
+          }
 
-          // hotbar_res.pos_bars[index] = res.rect.clone();
+          hotbar_ui_res.pos_bars[index] = res.rect.clone();
         }
+        // for _ in 0..blocks {
+        //   // let key_map = &key_mapping[index];
+        //   let mut img_button = ImageButton::new(*texture_id, size.clone()).frame(false);
+
+        //   // if play_res.selected_key_code == key_map.key_code {
+        //   //   img_button = img_button.tint(Color32::RED);
+        //   //   play_res.selected_voxel = key_map.voxel_type;
+        //   // }
+
+        //   let res = ui.add(img_button);
+        //   // if res.clicked() {
+        //   //   play_res.selected_voxel = key_map.voxel_type;
+        //   // }
+
+        //   // hotbar_res.pos_bars[index] = res.rect.clone();
+        // }
       });
     });
 }
@@ -96,8 +106,15 @@ impl FromWorld for Images {
   }
 }
 
+#[derive(Resource)]
+pub struct HotbarUIResource {
+  pub pos_bars: [Rect; 10]
+}
 
-// #[derive(Resource)]
-// pub struct HotbarResource {
-  
-// }
+impl Default for HotbarUIResource {
+  fn default() -> Self {
+    Self {
+      pos_bars: [Rect::from_min_max(Pos2::new(0.0, 0.0), Pos2::new(0.0, 0.0)); 10],
+    }
+  }
+}
