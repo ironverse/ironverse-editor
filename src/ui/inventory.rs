@@ -1,7 +1,9 @@
 use bevy::{prelude::*, window::PrimaryWindow, asset::LoadState};
 use bevy_egui::{EguiContexts, egui::{self, TextureId, Frame, Color32, Style, ImageButton, Rect, Vec2, Pos2, Sense}};
 
-use super::UIState;
+use crate::input::hotbar::HotbarResource;
+
+use super::{UIState, hotbar::HotbarUIResource};
 
 
 pub struct CustomPlugin;
@@ -87,7 +89,7 @@ fn render(
 
         for i in 0..local_res.slots.len() {
           let slot = &mut local_res.slots[i];
-          let index = slot.item_id as f32;
+          let index = slot.item_id as f32 - 1.0;
 
           let img = egui::Image::new(loading_texture.slot_id, slot_size.clone());
           let rect = ui.add(img).rect;
@@ -117,7 +119,8 @@ fn render_dragging(
   loading_texture: Res<InventoryTexture>,
   mut local_res: ResMut<LocalResource>,
 
-  // hotbar_res: Res<HotbarResource>,
+  mut hotbar_res: ResMut<HotbarResource>,
+  hotbar_ui_res: Res<HotbarUIResource>,
 ) {
   let res = windows.get_single();
   if res.is_err() || !loading_texture.is_loaded {
@@ -158,7 +161,11 @@ fn render_dragging(
             alpha = 255;
           }
 
-          let index = slot.item_id as f32;
+          if slot.item_id == 0 {
+            continue;
+          }
+
+          let index = slot.item_id as f32 - 1.0;
           let item = egui::ImageButton::new(loading_texture.albedo_id, item_size.clone()).uv(Rect {
             min: Pos2::new(0.0, max * index),
             max: Pos2::new(1.0, max * (index + 1.0) ),
@@ -175,24 +182,17 @@ fn render_dragging(
             slot.anchor_pos += item_res.drag_delta();
           }
           slot.is_dragged = item_res.dragged();
+
           if item_res.drag_released() {
             slot.anchor_pos = Vec2::new(0.0, 0.0);
+
+            'main: for hot_index in 0..hotbar_ui_res.pos_bars.len() {
+              if hotbar_ui_res.pos_bars[hot_index].intersects(rect) {
+                hotbar_res.bars[hot_index].voxel = slot.item_id as u8;
+                break 'main;
+              }
+            }
           }
-
-
-          // if item_res.drag_released() {
-          //   'main: for hot_index in 0..hotbar_res.pos_bars.len() {
-          //     if hotbar_res.pos_bars[hot_index].intersects(rect) {
-          //       let key_map = &mut play_res.key_mapping[hot_index];
-          //       key_map.voxel_type = slot.item_id + 1;
-          //       break 'main;
-          //     }
-          //   }
-          // }
-
-          
-
-          
         }
 
       });
