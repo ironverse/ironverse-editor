@@ -10,7 +10,9 @@ impl Plugin for CustomPlugin {
     app
       .insert_resource(LocalResource::default())
       .add_startup_system(startup)
-      .add_systems((prepare_texture, render, render_dragging).in_set(OnUpdate(UIState::Inventory)))
+      .add_systems(
+        (prepare_texture, render, render_dragging.after(render))
+          .in_set(OnUpdate(UIState::Inventory)))
       ;
   }
 }
@@ -126,7 +128,7 @@ fn render_dragging(
   let item_size = [31.0, 31.0];
 
   let frame = Frame {
-    fill: Color32::from_rgba_unmultiplied(0, 0, 0, 0),
+    fill: Color32::from_rgba_unmultiplied(0, 0, 0, 100),
     ..Default::default()
   };
   let drag_start = Pos2::new(0.0, 0.0);
@@ -145,7 +147,7 @@ fn render_dragging(
       ui.set_max_size(max_size);
 
       egui::Grid::new("drag_inventory_grid").show(ui, |ui| {
-        let total_items = 12.0;
+        let total_items = 16.0;
         let max = 1.0 / total_items;
 
         for i in 0..local_res.slots.len() {
@@ -158,26 +160,25 @@ fn render_dragging(
 
           let index = slot.item_id as f32;
           let item = egui::ImageButton::new(loading_texture.albedo_id, item_size.clone()).uv(Rect {
-            min: egui::Pos2 { 
-              x: 0.0, 
-              y: max * index,
-            },
-            max: egui::Pos2 { 
-              x: 1.0, 
-              y: max * (index + 1.0)
-            },
+            min: Pos2::new(0.0, max * index),
+            max: Pos2::new(1.0, max * (index + 1.0) ),
           })
           .sense(Sense::drag())
           .tint(Color32::from_rgba_unmultiplied(255, 255, 255, alpha))
           .frame(slot.is_dragged);
 
-          // let pos = slot.pos + slot.anchor_pos;
+          let pos = slot.pos + slot.anchor_pos;
 
-          // let rect = egui::Rect::from_min_size(pos, item_size.into());
-          // let item_res = ui.put(rect, item);
-          // if item_res.dragged() {
-          //   slot.anchor_pos += item_res.drag_delta();
-          // }
+          let rect = egui::Rect::from_min_size(pos, item_size.into());
+          let item_res = ui.put(rect, item);
+          if item_res.dragged() {
+            slot.anchor_pos += item_res.drag_delta();
+          }
+          slot.is_dragged = item_res.dragged();
+          if item_res.drag_released() {
+            slot.anchor_pos = Vec2::new(0.0, 0.0);
+          }
+
 
           // if item_res.drag_released() {
           //   'main: for hot_index in 0..hotbar_res.pos_bars.len() {
@@ -189,11 +190,9 @@ fn render_dragging(
           //   }
           // }
 
-          // slot.is_dragged = item_res.dragged();
+          
 
-          // if item_res.drag_released() {
-          //   slot.anchor_pos = Vec2::new(0.0, 0.0);
-          // }
+          
         }
 
       });
