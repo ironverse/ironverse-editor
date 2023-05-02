@@ -59,6 +59,7 @@ fn update_wasm_mouse(
 pub struct UIResource {
   pub load_file_path: String,
   pub load_file_init: bool,   // Have to change later after updating bevy version
+  pub total_materials: u8,
 }
 
 impl Default for UIResource {
@@ -66,6 +67,7 @@ impl Default for UIResource {
     Self {
       load_file_path: "".to_string(),
       load_file_init: true,
+      total_materials: 16,
     }
   }
 }
