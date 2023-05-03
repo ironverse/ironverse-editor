@@ -1,5 +1,7 @@
 use bevy::{prelude::*, render::{mesh::{MeshVertexAttribute, MeshVertexBufferLayout, Indices}, render_resource::{VertexFormat, AsBindGroup, ShaderRef, SpecializedMeshPipelineError, RenderPipelineDescriptor, PrimitiveTopology}}, reflect::TypeUuid, pbr::{MaterialPipeline, MaterialPipelineKey}, asset::LoadState};
-use voxels::{chunk::{adjacent_keys, chunk_manager::ChunkManager}, utils::key_to_world_coord_f32, data::voxel_octree::VoxelMode};
+use voxels::{chunk::{adjacent_keys, chunk_manager::ChunkManager}, utils::{key_to_world_coord_f32, posf32_to_world_key}, data::voxel_octree::VoxelMode};
+
+use crate::{states::GameEvent, entities::GameResource};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -8,6 +10,7 @@ impl Plugin for CustomPlugin {
       .insert_resource(LocalResource::default())
       .add_plugin(MaterialPlugin::<CustomMaterial>::default())
       .add_startup_system(startup)
+      .add_system(init_textures)
       .add_system(add)
       ;
   }
@@ -43,7 +46,7 @@ fn startup(
   });
 }
 
-fn add(
+fn init_textures(
   mut commands: Commands,
   mut meshes: ResMut<Assets<Mesh>>,
   mut custom_materials: ResMut<Assets<CustomMaterial>>,
@@ -71,9 +74,8 @@ fn add(
   normal.reinterpret_stacked_2d_as_array(array_layers);
 
   // println!("add {}", local_res.output_cache.len());
-
+/* 
   let mut chunk_manager = ChunkManager::default();
-
   for key in local_res.keys.iter() {
     for (entity, terrain) in terrains.iter() {
       if key == &terrain.key {
@@ -98,15 +100,6 @@ fn add(
     render_mesh.insert_attribute(VOXEL_WEIGHT, data.weights.clone());
     render_mesh.insert_attribute(VOXEL_TYPE_1, data.types_1.clone());
 
-
-    // let mut render_mesh = Mesh::from(shape::Cube { size: 1.0 });
-    // render_mesh.insert_attribute(
-    //     ATTRIBUTE_BLEND_COLOR,
-    //     // The cube mesh has 24 vertices (6 faces, 4 vertices per face), so we insert one BlendColor for each
-    //     vec![[1.0, 0.0, 0.0, 1.0]; 24],
-    // );
-
-
     let mesh_handle = meshes.add(render_mesh);
     let material_handle = custom_materials.add(CustomMaterial {
       albedo: loading_texture.albedo.clone(),
@@ -124,34 +117,100 @@ fn add(
       })
       // .insert(TerrainGraphics {key: *key })
       ;
-
-
-
-
-    // let seamless_size = chunk_manager.seamless_size();
-    // let coord_f32 = key_to_world_coord_f32(key, seamless_size);
-    // commands.spawn((
-    //   PbrBundle {
-    //     mesh: mesh_handle,
-    //     material: materials.add(Color::SILVER.into()),
-    //     transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
-    //     ..default()
-    //   },
-    //   TerrainGraphics{ key: *key },
-    // ));
-    
   }
+   */
 }
+
+fn add(
+  mut game_events: EventReader<GameEvent>,
+  mut game_res: ResMut<GameResource>,
+  mut local_res: ResMut<LocalResource>,
+
+  mut commands: Commands,
+  mut meshes: ResMut<Assets<Mesh>>,
+  mut custom_materials: ResMut<Assets<CustomMaterial>>,
+  mut _materials: ResMut<Assets<StandardMaterial>>,
+  mut loading_texture: ResMut<ChunkTexture>,
+  mut images: ResMut<Assets<Image>>,
+  terrains: Query<(Entity, &TerrainGraphics)>,
+) {
+  for event in game_events.iter() {
+    local_res.queued_pos.push(event.pos);
+  }
+
+  if !loading_texture.is_loaded {
+    return;   
+  }
+
+  let config = game_res.chunk_manager.config.clone();
+  for pos in local_res.queued_pos.iter() {
+    info!("spawn pos {:?}", pos);
+
+    let key = posf32_to_world_key(&[pos.x, pos.y, pos.z], config.seamless_size);
+    let keys = adjacent_keys(&key, 1, true);
+
+    for key in keys.iter() {
+      let chunk = ChunkManager::new_chunk(
+        key, 
+        config.depth, 
+        config.lod, 
+        game_res.chunk_manager.noise,
+      );
+  
+      let data = chunk.octree.compute_mesh2(
+        VoxelMode::SurfaceNets, 
+        &mut game_res.chunk_manager.voxel_reuse
+      );
+  
+      let mut render_mesh = Mesh::new(PrimitiveTopology::TriangleList);
+      render_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, data.positions.clone());
+      render_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, data.normals.clone());
+      render_mesh.set_indices(Some(Indices::U32(data.indices.clone())));
+  
+      render_mesh.insert_attribute(VOXEL_WEIGHT, data.weights.clone());
+      render_mesh.insert_attribute(VOXEL_TYPE_1, data.types_1.clone());
+  
+      let mesh_handle = meshes.add(render_mesh);
+      let material_handle = custom_materials.add(CustomMaterial {
+        albedo: loading_texture.albedo.clone(),
+        normal: loading_texture.normal.clone(),
+      });
+  
+      let coord_f32 = key_to_world_coord_f32(key, config.seamless_size);
+      commands
+        .spawn(MaterialMeshBundle {
+          mesh: mesh_handle,
+          material: material_handle,
+          transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
+          ..default()
+        })
+        // .insert(TerrainGraphics {key: *key })
+        ;
+    }
+
+
+  }
+
+  local_res.queued_pos.clear();
+}
+
+
+
+
+
+
 
 #[derive(Resource)]
 struct LocalResource {
-  keys: Vec<[i64; 3]>,
+  // keys: Vec<[i64; 3]>,
+  queued_pos: Vec<Vec3>,
 }
 
 impl Default for LocalResource {
   fn default() -> Self {
     Self {
-      keys: adjacent_keys(&[0, 0, 0], 1, true),
+      queued_pos: Vec::new(),
+      // keys: adjacent_keys(&[0, 0, 0], 1, true),
     }
   }
 }

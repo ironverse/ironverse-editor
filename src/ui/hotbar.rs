@@ -1,7 +1,6 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_egui::{EguiContexts, egui::{self, TextureId, Frame, Color32, Style, ImageButton, Rect, Vec2, Pos2}};
 use crate::input::hotbar::HotbarResource;
-
 use super::{UIResource, inventory::InventoryTexture};
 
 

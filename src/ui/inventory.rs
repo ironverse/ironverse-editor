@@ -1,8 +1,6 @@
 use bevy::{prelude::*, window::PrimaryWindow, asset::LoadState};
 use bevy_egui::{EguiContexts, egui::{self, TextureId, Frame, Color32, Style, ImageButton, Rect, Vec2, Pos2, Sense}};
-
 use crate::input::hotbar::HotbarResource;
-
 use super::{UIState, hotbar::HotbarUIResource};
 
 
@@ -131,7 +129,7 @@ fn render_dragging(
   let item_size = [31.0, 31.0];
 
   let frame = Frame {
-    fill: Color32::from_rgba_unmultiplied(0, 0, 0, 100),
+    fill: Color32::from_rgba_unmultiplied(0, 0, 0, 0),
     ..Default::default()
   };
   let drag_start = Pos2::new(0.0, 0.0);

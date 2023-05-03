@@ -109,6 +109,3 @@ impl Physics {
       .remove(handle, &mut self.island_manager, &mut self.rigid_body_set, true);
   }
 }
-
-
-
