@@ -7,10 +7,10 @@ use super::GameState;
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
-    app
-      .add_system(enter.in_schedule(OnEnter(GameState::Play)))
-      .add_system(update.in_set(OnUpdate(GameState::Play)))
-      ;
+    // app
+    //   .add_system(enter.in_schedule(OnEnter(GameState::Play)))
+    //   .add_system(update.in_set(OnUpdate(GameState::Play)))
+    //   ;
   }
 }
 

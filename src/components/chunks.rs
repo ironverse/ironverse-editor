@@ -18,7 +18,8 @@ impl Plugin for CustomPlugin {
 }
 
 fn enter() {
-
+  // Test terrain
+  
 }
 
 fn update(
