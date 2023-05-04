@@ -24,7 +24,8 @@ fn update(
     // info!("{:?}", look_at);
 
     let adj = Vec3::new(0.0, 1.5, 0.0);
-    let start_pos = transform.translation + adj;
+    // let start_pos = transform.translation + adj;
+    let start_pos = Vec3::new(0.0, 3.0, 0.0);
     let dir = look_at.clone();
     let ray = Ray::new(Point3::new(start_pos.x, start_pos.y, start_pos.z), Vector::new(dir.x, dir.y, dir.z));
     let max_toi = f32::MAX;
@@ -51,7 +52,7 @@ fn update(
         true
       );
 
-      info!("hit {:?}", hit_point);
+      // info!("hit {:?}", hit_point);
       
       // let target = Vec3::new(hit_point[0], hit_point[1], hit_point[2]);
       // let target_diff = start_pos - target;

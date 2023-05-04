@@ -1,6 +1,5 @@
 use bevy::{prelude::*, render::{mesh::{MeshVertexAttribute, MeshVertexBufferLayout, Indices}, render_resource::{VertexFormat, AsBindGroup, ShaderRef, SpecializedMeshPipelineError, RenderPipelineDescriptor, PrimitiveTopology}}, reflect::TypeUuid, pbr::{MaterialPipeline, MaterialPipelineKey}, asset::LoadState};
 use voxels::{chunk::{adjacent_keys, chunk_manager::ChunkManager}, utils::{key_to_world_coord_f32, posf32_to_world_key}, data::voxel_octree::{VoxelMode, MeshData}};
-
 use crate::{data::GameResource, components::{player::Player, chunks::Chunk}};
 
 pub struct CustomPlugin;
@@ -100,7 +99,7 @@ fn add(
   }
 
   if !loading_texture.is_loaded {
-    return;   
+    return;
   }
 
   let config = game_res.chunk_manager.config.clone();

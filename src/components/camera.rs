@@ -6,14 +6,8 @@ pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_startup_system(startup)
       .add_system(add);
   }
-}
-
-
-fn startup() {
-
 }
 
 fn add(
@@ -21,13 +15,12 @@ fn add(
   query: Query<(Entity, &Player), Added<Player>>,
 ) {
   for (entity, player) in &query {
-
     info!("Add cam");
     commands
       .entity(entity)
       .insert((
         Camera3dBundle {
-          transform: Transform::from_xyz(-2.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+          transform: Transform::from_xyz(-5.0, 2.0, 0.0).looking_to(-Vec3::Z, Vec3::Y),
           ..Default::default()
         },
         FlyCam,

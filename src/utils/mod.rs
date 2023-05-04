@@ -27,6 +27,7 @@ impl Math {
       rad_y = 0.0;
     }
 
+    
     let mut y_rot = rad_y.atan();
     if tmp_look_at.z > 0.0 {
       let half_pi = std::f32::consts::PI * 0.5;
@@ -37,10 +38,10 @@ impl Math {
   }
 
   pub fn rot_to_look_at(rot: Vec3) -> Vec3 {
-    let yaw = rot.y - std::f32::consts::PI * 0.5;
+    let yaw = -rot.y - std::f32::consts::PI * 0.5;
 
     let len = rot.x.cos();
-    return Vec3::new(yaw.cos() * len, rot.x.sin(), -yaw.sin() * len).normalize();
+    return Vec3::new(yaw.cos() * len, rot.x.sin(), yaw.sin() * len).normalize();
   }
 }
 
