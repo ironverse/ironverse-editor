@@ -94,7 +94,7 @@ fn add(
   for (_, chunk) in &chunk_query {
     local_res.queued_chunks.push(chunk.clone());
 
-    info!("chunks {:?}", chunk.key);
+    // info!("chunks {:?}", chunk.key);
   }
 
   if !loading_texture.is_loaded {

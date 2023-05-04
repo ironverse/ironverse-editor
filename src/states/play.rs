@@ -23,7 +23,7 @@ fn update(mut query: Query<&mut Transform, With<FlyCam>>,) {
     let (mut yaw, mut pitch, _) = transform.rotation.to_euler(EulerRot::YXZ);
 
     let look_at = Math::rot_to_look_at(Vec3::new(pitch, yaw, 0.0));
-    info!("{:?}", look_at);
+    // info!("{:?}", look_at);
   }
 }
 

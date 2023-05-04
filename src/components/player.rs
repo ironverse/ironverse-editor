@@ -24,7 +24,7 @@ fn enter(
   mut game_res: ResMut<GameResource>,
 ) {
 
-  let pos = [0.0, 1.0, 0.0];
+  let pos = [0.0, 5.0, 0.0];
   let (body, collider) = physics.spawn_character(1.0, 0.5, Vec3::new(pos[0], pos[1], pos[2]));
 
   let k = posf32_to_world_key(&pos, game_res.chunk_manager.config.seamless_size);
@@ -39,7 +39,7 @@ fn update() {
 
 
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Clone)]
 pub struct Player {
   pub body: RigidBodyHandle,
   pub collider: ColliderHandle,
