@@ -27,8 +27,8 @@ fn startup(
   mut move_setting_res: ResMut<MovementSettings>,
   mut wasm_res: ResMut<WasmResource>,
 ) {
-  move_setting_res.sensitivity = 0.0;
-  wasm_res.pointer_lock_enabled = false;
+  // move_setting_res.sensitivity = 0.0;
+  // wasm_res.pointer_lock_enabled = false;
 }
 
 fn update(
@@ -74,7 +74,7 @@ impl Default for UIResource {
 
 #[derive(States, PartialEq, Eq, Debug, Clone, Hash, Default)]
 pub enum UIState {
-  // #[default]
+  #[default]
   Default,
   Menu,
   New,
@@ -82,7 +82,7 @@ pub enum UIState {
   Load,
   Save,
 
-  #[default]
+  // #[default]
   Inventory,
 }
 

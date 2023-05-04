@@ -7,7 +7,8 @@ mod utils;
 mod ui;
 mod input;
 mod states;
-mod entities;
+mod data;
+mod components;
 
 #[cfg(target_arch = "wasm32")]
 mod wasm;
@@ -26,6 +27,8 @@ fn main() {
       }),
       ..default()
     }))
+    .configure_set(GameSet::PreUpdate.before(CoreSet::Update))
+    .configure_set(GameSet::PostUpdate.after(CoreSet::Update))
     .add_plugin(PlayerPlugin)
     .add_plugin(terrain::CustomPlugin)
     .add_plugin(physics::CustomPlugin)
@@ -33,7 +36,8 @@ fn main() {
     .add_plugin(ui::CustomPlugin)
     .add_plugin(input::CustomPlugin)
     .add_plugin(states::CustomPlugin)
-    .add_plugin(entities::CustomPlugin);
+    .add_plugin(data::CustomPlugin)
+    .add_plugin(components::CustomPlugin);
   
   #[cfg(target_arch = "wasm32")]
   app
@@ -41,4 +45,11 @@ fn main() {
 
   app.run();
 
+}
+
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+#[system_set(base)]
+enum GameSet {
+  PreUpdate,
+  PostUpdate,
 }

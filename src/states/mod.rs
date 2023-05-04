@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 mod start;
+mod play;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -9,6 +10,7 @@ impl Plugin for CustomPlugin {
       .add_state::<GameState>()
       .add_event::<GameEvent>()
       .add_plugin(start::CustomPlugin)
+      .add_plugin(play::CustomPlugin)
       ;
   }
 }
