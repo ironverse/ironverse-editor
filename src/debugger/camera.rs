@@ -24,7 +24,8 @@ fn setup(
     let yaw = std::f32::consts::TAU * 0.5;
     // trans.rotation = Quat::from_euler(EulerRot::XYZ, 0.0, yaw, 0.0);
 
-    *trans = Transform::from_xyz(0.0, 8.0, -25.0).looking_to(Vec3::Z, Vec3::Y);
+    // *trans = Transform::from_xyz(0.0, 8.0, -25.0).looking_to(Vec3::Z, Vec3::Y);
+    *trans = Transform::from_xyz(0.0, 1.0, 1.0).looking_to(Vec3::Z, Vec3::Y);
 
 
     commands.spawn(PbrBundle {
