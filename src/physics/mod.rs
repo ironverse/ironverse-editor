@@ -89,7 +89,7 @@ impl Physics {
     let rigid_body = RigidBodyBuilder::dynamic()
       .translation(Vector3::from([pos.x, pos.y, pos.z]))
       // .lock_rotations()
-      // .gravity_scale(0.0)
+      .gravity_scale(0.0)
       .linear_damping(5.0)
       .build();
     let body_handle = self.rigid_body_set.insert(rigid_body);

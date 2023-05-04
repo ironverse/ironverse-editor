@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use rapier3d::na::Vector3;
 
 use crate::{components::player::Player, physics::Physics};
 
@@ -36,14 +37,18 @@ fn add(
 
 fn update(
   mut query: Query<(&mut Transform, &Player)>,
-  physics: Res<Physics>,
+  mut physics: ResMut<Physics>,
 ) {
   for (mut trans, player) in &mut query {
+    // let rigid_body = &physics.rigid_body_set[player.body];
+    // let t = rigid_body.translation().xyz();
+    // trans.translation = Vec3::new(t.x, t.y, t.z);
 
-    let rigid_body = &physics.rigid_body_set[player.body];
 
-    let t = rigid_body.translation().xyz();
-    trans.translation = Vec3::new(t.x, t.y, t.z);
+    let p = trans.translation;
+    let rigid_body = &mut physics.rigid_body_set[player.body];
+    rigid_body.set_position(Vector3::new(p.x, p.y, p.z).into(), false);
+
 
     // info!("{:?}: {:?}", t.xyz(), trans.translation);
   }

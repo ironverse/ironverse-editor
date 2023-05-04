@@ -88,13 +88,15 @@ fn add(
 
   chunk_query: Query<(Entity, &Chunk), Added<Chunk>>,
 ) {
-  // for event in game_events.iter() {
-  //   local_res.queued_pos.push(event.pos);
-  // }
   for (_, chunk) in &chunk_query {
     local_res.queued_chunks.push(chunk.clone());
 
-    // info!("chunks {:?}", chunk.key);
+    'inner: for (entity, terrain) in &terrains {
+      if chunk.key == terrain.key {
+        commands.entity(entity).despawn_recursive();
+        break 'inner;
+      }
+    }
   }
 
   if !loading_texture.is_loaded {
@@ -127,55 +129,9 @@ fn add(
         transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
         ..default()
       })
-      // .insert(TerrainGraphics {key: *key })
+      .insert(TerrainGraphics { key: *key })
       ;
   }
-
-  // let config = game_res.chunk_manager.config.clone();
-  // for pos in local_res.queued_pos.iter() {
-
-  //   let key = posf32_to_world_key(&[pos.x, pos.y, pos.z], config.seamless_size);
-  //   let keys = adjacent_keys(&key, 1, true);
-
-  //   for key in keys.iter() {
-  //     let chunk = ChunkManager::new_chunk(
-  //       key, 
-  //       config.depth, 
-  //       config.lod, 
-  //       game_res.chunk_manager.noise,
-  //     );
-  
-  //     let data = chunk.octree.compute_mesh2(
-  //       VoxelMode::SurfaceNets, 
-  //       &mut game_res.chunk_manager.voxel_reuse
-  //     );
-  
-  //     let mut render_mesh = Mesh::new(PrimitiveTopology::TriangleList);
-  //     render_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, data.positions.clone());
-  //     render_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, data.normals.clone());
-  //     render_mesh.set_indices(Some(Indices::U32(data.indices.clone())));
-  
-  //     render_mesh.insert_attribute(VOXEL_WEIGHT, data.weights.clone());
-  //     render_mesh.insert_attribute(VOXEL_TYPE_1, data.types_1.clone());
-  
-  //     let mesh_handle = meshes.add(render_mesh);
-  //     let material_handle = custom_materials.add(CustomMaterial {
-  //       albedo: loading_texture.albedo.clone(),
-  //       normal: loading_texture.normal.clone(),
-  //     });
-  
-  //     let coord_f32 = key_to_world_coord_f32(key, config.seamless_size);
-  //     commands
-  //       .spawn(MaterialMeshBundle {
-  //         mesh: mesh_handle,
-  //         material: material_handle,
-  //         transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
-  //         ..default()
-  //       })
-  //       // .insert(TerrainGraphics {key: *key })
-  //       ;
-  //   }
-  // }
 
   local_res.queued_chunks.clear();
 }
