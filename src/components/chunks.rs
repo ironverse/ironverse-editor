@@ -136,11 +136,16 @@ fn add(
     let nearest = nearest_op.unwrap();
     let res = game_res.chunk_manager.set_voxel2(&nearest, voxel_op.unwrap());
 
-    chunks.data.clear();
+    
     for (key, chunk) in res.iter() {
-      'inner: for mesh_data in chunks.data.iter() {
-        if key == &mesh_data.key {
-          physics.remove_collider(mesh_data.handle);
+
+      'inner: for i in 0..chunks.data.len() {
+        let m = &chunks.data[i];
+
+      // 'inner: for mesh_data in chunks.data.iter() {
+        if key == &m.key {
+          physics.remove_collider(m.handle);
+          chunks.data.swap_remove(i);
           break 'inner;
         }
       }
@@ -155,7 +160,7 @@ fn add(
         continue;
       }
 
-      info!("edited {:?}", key);
+      // info!("edited {:?}", key);
 
       let pos_f32 = key_to_world_coord_f32(key, config.seamless_size);
       let mut pos = Vec::new();
