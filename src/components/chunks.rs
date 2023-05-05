@@ -14,8 +14,9 @@ impl Plugin for CustomPlugin {
       .add_system(
         spawn_on_add_player.in_set(OnUpdate(GameState::Play))
       )
-      .add_system(on_raycast)
-      .add_system(add);
+      // .add_system(on_raycast)
+      .add_system(add
+      );
   }
 }
 
@@ -83,9 +84,13 @@ fn spawn_on_add_player(
   
     }
 
-    commands.spawn(Chunks {
-      data: chunks
-    });
+    commands
+      .entity(entity)
+      .insert(Chunks {
+        data: chunks
+      });
+
+    info!("Added chunk");
   }
 }
 
@@ -97,55 +102,85 @@ fn add(
 
   mut physics: ResMut<Physics>,
 ) {
-  // let mut mesh_data = Vec::new();
 
-  let mut voxel = 0;
+  let mut voxel_op = None;
   for e in wasm_events.iter() {
     if e.mouse == MouseButton::Left {
-      voxel = 1;
+      voxel_op = Some(0);
     }
-    
+
+    if e.mouse == MouseButton::Right {
+      voxel_op = Some(1);
+    }
+  }
+
+  if voxel_op.is_none() {
+    return;
   }
 
   let config = game_res.chunk_manager.config.clone();
-  for (entity, raycast, chunks) in &mut raycasts {
-    if raycast.point.x != f32::NAN {
+  for (entity, raycast, mut chunks) in &mut raycasts {
+    if raycast.point.x == f32::NAN {
       continue;
     }
 
-    let pos = [raycast.point.x, raycast.point.y, raycast.point.z];
-    // let res = game_res.chunk_manager.set_voxel2(&pos, voxel);
+    let nearest_op = nearest_voxel_point_0(
+      &game_res.chunk_manager, 
+      raycast.point, 
+      true
+    );
 
-    // for (key, chunk) in res.iter() {
-    //   let data = chunk.octree.compute_mesh2(
-    //     VoxelMode::SurfaceNets, 
-    //     &mut game_res.chunk_manager.voxel_reuse
-    //   );
+    if nearest_op.is_none() {
+      continue;
+    }
+    let nearest = nearest_op.unwrap();
+    let res = game_res.chunk_manager.set_voxel2(&nearest, voxel_op.unwrap());
 
-    //   if data.indices.len() == 0 { // Temporary, should be removed once the ChunkMode detection is working
-    //     continue;
-    //   }
-    //   // chunks.data.push((key.clone(), data.clone());
+    chunks.data.clear();
+    for (key, chunk) in res.iter() {
+      'inner: for mesh_data in chunks.data.iter() {
+        if key == &mesh_data.key {
+          physics.remove_collider(mesh_data.handle);
+          break 'inner;
+        }
+      }
+      
 
-    //   let pos_f32 = key_to_world_coord_f32(key, config.seamless_size);
-    //   let mut pos = Vec::new();
-    //   for d in data.positions.iter() {
-    //     pos.push(Point::from([d[0], d[1], d[2]]));
-    //   }
+      let data = chunk.octree.compute_mesh2(
+        VoxelMode::SurfaceNets, 
+        &mut game_res.chunk_manager.voxel_reuse
+      );
+
+      if data.indices.len() == 0 { // Temporary, should be removed once the ChunkMode detection is working
+        continue;
+      }
+
+      info!("edited {:?}", key);
+
+      let pos_f32 = key_to_world_coord_f32(key, config.seamless_size);
+      let mut pos = Vec::new();
+      for d in data.positions.iter() {
+        pos.push(Point::from([d[0], d[1], d[2]]));
+      }
   
-    //   let mut indices = Vec::new();
-    //   for ind in data.indices.chunks(3) {
-    //     // println!("i {:?}", ind);
-    //     indices.push([ind[0], ind[1], ind[2]]);
-    //   }
+      let mut indices = Vec::new();
+      for ind in data.indices.chunks(3) {
+        // println!("i {:?}", ind);
+        indices.push([ind[0], ind[1], ind[2]]);
+      }
   
-    //   let mut collider = ColliderBuilder::trimesh(pos, indices)
-    //     .collision_groups(InteractionGroups::new(Group::GROUP_1, Group::GROUP_2))
-    //     .build();
-    //   collider.set_position(Isometry::from(pos_f32));
+      let mut collider = ColliderBuilder::trimesh(pos, indices)
+        .collision_groups(InteractionGroups::new(Group::GROUP_1, Group::GROUP_2))
+        .build();
+      collider.set_position(Isometry::from(pos_f32));
   
-    //   let handle = physics.collider_set.insert(collider);
-    // }
+      let handle = physics.collider_set.insert(collider);
+      chunks.data.push(Mesh {
+        key: key.clone(),
+        data: data.clone(),
+        handle: handle,
+      })
+    }
   }
 }
 
