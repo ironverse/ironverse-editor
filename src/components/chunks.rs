@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rapier3d::{na::{Point, Isometry}, prelude::{ColliderBuilder, InteractionGroups, Group, ColliderHandle}};
 use voxels::{chunk::{adjacent_keys, chunk_manager::ChunkManager}, utils::{key_to_world_coord_f32, posf32_to_world_key}, data::voxel_octree::{VoxelMode, MeshData}};
-use crate::{states::GameState, data::GameResource, physics::Physics, utils::nearest_voxel_point_0, wasm::WasmInputEvent};
+use crate::{states::GameState, data::GameResource, physics::Physics, utils::{nearest_voxel_point_0, nearest_voxel_point}, wasm::WasmInputEvent};
 use super::{player::Player, raycast::Raycast};
 
 pub struct CustomPlugin;
@@ -124,25 +124,43 @@ fn add(
       continue;
     }
 
-    let nearest_op = nearest_voxel_point_0(
-      &game_res.chunk_manager, 
-      raycast.point, 
-      true
-    );
+    
+    
+    let mut res = Vec::new();
+    let voxel = voxel_op.unwrap();
 
-    if nearest_op.is_none() {
-      continue;
+    // Add new
+    if voxel == 0 {
+      let nearest_op = nearest_voxel_point_0(
+        &game_res.chunk_manager, 
+        raycast.point, 
+        true
+      );
+      if nearest_op.is_none() {
+        continue;
+      }
+      res = game_res.chunk_manager.set_voxel2(&nearest_op.unwrap(), voxel);
     }
-    let nearest = nearest_op.unwrap();
-    let res = game_res.chunk_manager.set_voxel2(&nearest, voxel_op.unwrap());
 
+    // Delete
+    if voxel > 0 {
+      let nearest_op = nearest_voxel_point(
+        &game_res.chunk_manager, 
+        raycast.point, 
+        true,
+        0
+      );
+  
+      if nearest_op.is_none() {
+        continue;
+      }
+      res = game_res.chunk_manager.set_voxel2(&nearest_op.unwrap(), voxel);
+    }
     
     for (key, chunk) in res.iter() {
-
       'inner: for i in 0..chunks.data.len() {
         let m = &chunks.data[i];
 
-      // 'inner: for mesh_data in chunks.data.iter() {
         if key == &m.key {
           physics.remove_collider(m.handle);
           chunks.data.swap_remove(i);
