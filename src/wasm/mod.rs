@@ -11,7 +11,12 @@ impl Plugin for CustomPlugin {
       .insert_resource(LocalResource::default())
       .add_event::<PointerLockEvent>()
       .add_event::<MouseMoveEvent>()
+      .add_event::<WasmInputEvent>()
       .add_systems((update_fullscreen, update_pointer_events, update_mouse_events));
+
+    app
+      .add_startup_system(startup)
+      .add_system(mouse_move);
   }
 }
 
@@ -19,13 +24,40 @@ impl Plugin for CustomPlugin {
 fn startup(local_res: Res<LocalResource>,) {
   let send_mouse_move = local_res.send_mouse_move.clone();
   let cb = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
-    let _ = send_mouse_move.send((event.movement_x() as f32, event.movement_y() as f32));
+    // let _ = send_mouse_move.send((event.movement_x() as f32, event.movement_y() as f32));
+    let _ = send_mouse_move.send(event.button());
+    // info!("test");
   }) as Box<dyn FnMut(web_sys::MouseEvent)>);
 
   let window = web_sys::window().expect("no global `window` exists");
-  window.set_onmousemove(Some(cb.as_ref().unchecked_ref()));
+  window.set_onmousedown(Some(cb.as_ref().unchecked_ref()));
   cb.forget();
+
+
+  // let cb = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
+  //   // let _ = send_mouse_move.send((event.movement_x() as f32, event.movement_y() as f32));
+  //   event.bubbles()
+  // }) as Box<dyn FnMut(web_sys::MouseEvent)>);
+
+  // window.set_onmousedown(Some(cb.as_ref().unchecked_ref()));
 }
+
+fn mouse_move(
+  local_res: Res<LocalResource>,
+  mut wasm_events: EventWriter<WasmInputEvent>,
+) {
+  for e in local_res.recv_mouse_move.drain() {
+    // info!("recv {}", e);
+    if e == 0 {
+      wasm_events.send(WasmInputEvent { mouse: MouseButton::Left });
+    }
+    if e == 2 {
+      wasm_events.send(WasmInputEvent { mouse: MouseButton::Right });
+    }
+  }
+}
+
+
 
 fn update_fullscreen(
   input: Res<Input<KeyCode>>,
@@ -55,11 +87,11 @@ fn update_mouse_events(
   mut move_setting_res: ResMut<MovementSettings>,
 ) {
   for e in events.iter() {
-    if e.0 {
-      move_setting_res.sensitivity = 0.00012;
-    } else {
-      move_setting_res.sensitivity = 0.0;
-    }
+    // if e.0 {
+    //   move_setting_res.sensitivity = 0.00012;
+    // } else {
+    //   move_setting_res.sensitivity = 0.0;
+    // }
   }
 }
 
@@ -75,8 +107,8 @@ pub fn html_body() -> HtmlElement {
 #[allow(dead_code)]
 #[derive(Resource)]
 struct LocalResource {
-  send_mouse_move: Sender<(f32, f32)>,
-  recv_mouse_move: Receiver<(f32, f32)>,
+  send_mouse_move: Sender<i16>,
+  recv_mouse_move: Receiver<i16>,
 
 }
 
@@ -93,3 +125,7 @@ impl Default for LocalResource {
 pub struct PointerLockEvent(bool);
 
 pub struct MouseMoveEvent(bool);
+
+pub struct WasmInputEvent {
+  pub mouse: MouseButton,
+}

@@ -217,13 +217,13 @@ pub fn nearest_voxel_point(
 
 pub fn nearest_voxel_point_0(
   chunk_manager: &ChunkManager,
-  intersection: Point3<f32>,
+  intersection: Vec3,
   _include_current: bool,
 ) -> Option<[i64; 3]> {
   let point = [
-    (intersection[0].round()) as i64,
-    (intersection[1].round()) as i64,
-    (intersection[2].round()) as i64,
+    (intersection.x.round()) as i64,
+    (intersection.y.round()) as i64,
+    (intersection.z.round()) as i64,
   ];
 
   let mut shortest_dist = f32::MAX;
@@ -232,10 +232,9 @@ pub fn nearest_voxel_point_0(
   for pa in points_around.iter() {
     let val = chunk_manager.get_voxel(pa);
     if val > 0 {
-      let tmp_intersect = Vec3::new(intersection[0], intersection[1], intersection[2]);
       let current_point = Vec3::new(pa[0] as f32, pa[1] as f32, pa[2] as f32);
 
-      let dist = tmp_intersect - current_point;
+      let dist = intersection - current_point;
       // println!("tmp2 {:?} {:?}", (tmp_point[0], tmp_point[1], tmp_point[2]), dist);
       if shortest_dist > dist.length_squared() {
         shortest_dist = dist.length_squared();

@@ -14,7 +14,7 @@ impl Plugin for CustomPlugin {
 
 fn setup(
   mut commands: Commands,
-  mut query: Query<(&mut Transform), Added<FlyCam>>,
+  mut query: Query<&mut Transform, Added<FlyCam>>,
 
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<StandardMaterial>>,

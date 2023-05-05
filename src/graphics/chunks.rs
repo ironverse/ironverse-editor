@@ -1,6 +1,6 @@
 use bevy::{prelude::*, render::{mesh::{MeshVertexAttribute, MeshVertexBufferLayout, Indices}, render_resource::{VertexFormat, AsBindGroup, ShaderRef, SpecializedMeshPipelineError, RenderPipelineDescriptor, PrimitiveTopology}}, reflect::TypeUuid, pbr::{MaterialPipeline, MaterialPipelineKey}, asset::LoadState};
 use voxels::{chunk::{adjacent_keys, chunk_manager::ChunkManager}, utils::{key_to_world_coord_f32, posf32_to_world_key}, data::voxel_octree::{VoxelMode, MeshData}};
-use crate::{data::GameResource, components::{player::Player, chunks::Chunk}};
+use crate::{data::GameResource, components::{player::Player, chunks::Chunks}};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -85,17 +85,20 @@ fn add(
   mut images: ResMut<Assets<Image>>,
   terrains: Query<(Entity, &TerrainGraphics)>,
 
-  chunk_query: Query<(Entity, &Chunk), Added<Chunk>>,
+  chunk_query: Query<(Entity, &Chunks), Changed<Chunks>>,
 ) {
-  for (_, chunk) in &chunk_query {
-    local_res.queued_chunks.push(chunk.clone());
+  for (_, chunks) in &chunk_query {
+    for mesh in &chunks.data {
+      local_res.queued_chunks.push((mesh.key.clone(), mesh.data.clone()));
 
-    'inner: for (entity, terrain) in &terrains {
-      if chunk.key == terrain.key {
-        commands.entity(entity).despawn_recursive();
-        break 'inner;
+      'inner: for (entity, terrain) in &terrains {
+        if mesh.key == terrain.key {
+          commands.entity(entity).despawn_recursive();
+          break 'inner;
+        }
       }
     }
+    
   }
 
   if !loading_texture.is_loaded {
@@ -103,9 +106,7 @@ fn add(
   }
 
   let config = game_res.chunk_manager.config.clone();
-  for chunk in local_res.queued_chunks.iter() {
-    let data = &chunk.mesh_data;
-    let key = &chunk.key;
+  for (key, data) in local_res.queued_chunks.iter() {
     let mut render_mesh = Mesh::new(PrimitiveTopology::TriangleList);
     render_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, data.positions.clone());
     render_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, data.normals.clone());
@@ -143,7 +144,7 @@ fn add(
 
 #[derive(Resource)]
 struct LocalResource {
-  queued_chunks: Vec<Chunk>,
+  queued_chunks: Vec<([i64; 3], MeshData)>,
 }
 
 impl Default for LocalResource {

@@ -4,11 +4,11 @@ mod terrain;
 mod physics;
 mod graphics;
 mod utils;
-mod ui;
-mod input;
 mod states;
 mod data;
 mod components;
+// mod ui;
+// mod input;
 mod debugger;
 
 #[cfg(target_arch = "wasm32")]
@@ -34,13 +34,14 @@ fn main() {
     .add_plugin(NoCameraPlayerPlugin)
     .add_plugin(terrain::CustomPlugin)
     .add_plugin(physics::CustomPlugin)
-    .add_plugin(graphics::CustomPlugin)
-    // .add_plugin(ui::CustomPlugin)
-    // .add_plugin(input::CustomPlugin)
     .add_plugin(states::CustomPlugin)
     .add_plugin(data::CustomPlugin)
     .add_plugin(components::CustomPlugin)
-    .add_plugin(debugger::CustomPlugin);
+    .add_plugin(graphics::CustomPlugin)
+    // .add_plugin(ui::CustomPlugin)
+    // .add_plugin(input::CustomPlugin)
+    .add_plugin(debugger::CustomPlugin)
+    ;
   
   #[cfg(target_arch = "wasm32")]
   app
