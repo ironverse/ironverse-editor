@@ -56,7 +56,9 @@ fn update(
       let trans = cam_trans.compute_transform();
       let look_at = trans.forward();
 
-      let t = Transform::from_xyz(0.0, 0.0, 0.0).looking_to(look_at, Vec3::Y);
+      let adj = Vec3::new(0.0, 0.4, 0.0);
+      let pos = trans.translation + adj;
+      let t = Transform::from_xyz(pos.x, pos.y, pos.z).looking_to(look_at, Vec3::Y);
       
       *ray_trans = t;
       ray_trans.rotation *= Quat::from_rotation_x(std::f32::consts::PI * -0.5);

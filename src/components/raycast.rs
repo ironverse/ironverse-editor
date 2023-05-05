@@ -17,15 +17,12 @@ fn update(
   game_res: Res<GameResource>,
   mut query: Query<&mut Transform, With<FlyCam>>,
 ) {
-  for mut transform in query.iter_mut() {
-    let (mut yaw, mut pitch, _) = transform.rotation.to_euler(EulerRot::YXZ);
-
-    let look_at = Math::rot_to_look_at(Vec3::new(pitch, yaw, 0.0));
+  for mut trans in query.iter_mut() {
+    let look_at = trans.forward();
     // info!("{:?}", look_at);
 
-    let adj = Vec3::new(0.0, 1.5, 0.0);
-    // let start_pos = transform.translation + adj;
-    let start_pos = Vec3::new(0.0, 3.0, 0.0);
+    let adj = Vec3::new(0.0, 0.4, 0.0);
+    let start_pos = trans.translation + adj;
     let dir = look_at.clone();
     let ray = Ray::new(Point3::new(start_pos.x, start_pos.y, start_pos.z), Vector::new(dir.x, dir.y, dir.z));
     let max_toi = f32::MAX;
@@ -52,7 +49,7 @@ fn update(
         true
       );
 
-      // info!("hit {:?}", hit_point);
+      info!("hit {:?}", hit_point);
       
       // let target = Vec3::new(hit_point[0], hit_point[1], hit_point[2]);
       // let target_diff = start_pos - target;
