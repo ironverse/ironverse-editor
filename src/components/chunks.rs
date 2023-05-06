@@ -89,8 +89,6 @@ fn spawn_on_add_player(
       .insert(Chunks {
         data: chunks
       });
-
-    info!("Added chunk");
   }
 }
 
@@ -178,7 +176,7 @@ fn add(
         continue;
       }
 
-      // info!("edited {:?}", key);
+      info!("edited {:?}", key);
 
       let pos_f32 = key_to_world_coord_f32(key, config.seamless_size);
       let mut pos = Vec::new();

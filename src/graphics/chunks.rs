@@ -94,6 +94,8 @@ fn add(
       'inner: for (entity, terrain) in &terrains {
         if mesh.key == terrain.key {
           commands.entity(entity).despawn_recursive();
+
+          info!("removed {:?}", mesh.key);
           break 'inner;
         }
       }
