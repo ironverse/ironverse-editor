@@ -89,16 +89,18 @@ fn add(
 ) {
   for (_, chunks) in &chunk_query {
     for mesh in &chunks.data {
-      local_res.queued_chunks.push((mesh.key.clone(), mesh.data.clone()));
 
       'inner: for (entity, terrain) in &terrains {
         if mesh.key == terrain.key {
           commands.entity(entity).despawn_recursive();
-
-          info!("removed {:?}", mesh.key);
           break 'inner;
         }
       }
+
+      if mesh.data.positions.len() > 0 {
+        local_res.queued_chunks.push((mesh.key.clone(), mesh.data.clone()));
+      }
+      
     }
     
   }

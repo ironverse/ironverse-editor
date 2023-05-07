@@ -15,8 +15,7 @@ impl Plugin for CustomPlugin {
         spawn_on_add_player.in_set(OnUpdate(GameState::Play))
       )
       // .add_system(on_raycast)
-      .add_system(add
-      );
+      .add_system(add);
   }
 }
 
@@ -172,35 +171,43 @@ fn add(
         &mut game_res.chunk_manager.voxel_reuse
       );
 
-      if data.indices.len() == 0 { // Temporary, should be removed once the ChunkMode detection is working
-        continue;
+      
+      if data.indices.len() > 0 { // Temporary, should be removed once the ChunkMode detection is working
+        
+        let pos_f32 = key_to_world_coord_f32(key, config.seamless_size);
+        let mut pos = Vec::new();
+        for d in data.positions.iter() {
+          pos.push(Point::from([d[0], d[1], d[2]]));
+        }
+    
+        let mut indices = Vec::new();
+        for ind in data.indices.chunks(3) {
+          // println!("i {:?}", ind);
+          indices.push([ind[0], ind[1], ind[2]]);
+        }
+    
+        let mut collider = ColliderBuilder::trimesh(pos, indices)
+          .collision_groups(InteractionGroups::new(Group::GROUP_1, Group::GROUP_2))
+          .build();
+        collider.set_position(Isometry::from(pos_f32));
+    
+        let handle = physics.collider_set.insert(collider);
+
+
+        chunks.data.push(Mesh {
+          key: key.clone(),
+          data: data.clone(),
+          handle: handle,
+        })
+      } else {
+        chunks.data.push(Mesh {
+          key: key.clone(),
+          data: data.clone(),
+          handle: ColliderHandle::default(),
+        })
       }
 
-      info!("edited {:?}", key);
 
-      let pos_f32 = key_to_world_coord_f32(key, config.seamless_size);
-      let mut pos = Vec::new();
-      for d in data.positions.iter() {
-        pos.push(Point::from([d[0], d[1], d[2]]));
-      }
-  
-      let mut indices = Vec::new();
-      for ind in data.indices.chunks(3) {
-        // println!("i {:?}", ind);
-        indices.push([ind[0], ind[1], ind[2]]);
-      }
-  
-      let mut collider = ColliderBuilder::trimesh(pos, indices)
-        .collision_groups(InteractionGroups::new(Group::GROUP_1, Group::GROUP_2))
-        .build();
-      collider.set_position(Isometry::from(pos_f32));
-  
-      let handle = physics.collider_set.insert(collider);
-      chunks.data.push(Mesh {
-        key: key.clone(),
-        data: data.clone(),
-        handle: handle,
-      })
     }
   }
 }
