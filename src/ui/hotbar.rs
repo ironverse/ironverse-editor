@@ -69,10 +69,14 @@ fn render(
 
           // Background button
           let mut img_button = ImageButton::new(*texture_id, size.clone()).frame(false);
-          let res = ui.add(img_button);
-          if res.clicked() {
-            
+          if hotbar_res.selected_keycode == bar.key_code {
+            img_button = img_button.tint(Color32::RED);
           }
+
+
+          let res = ui.add(img_button);
+          
+
           let rect = res.rect.clone();
           hotbar_ui_res.pos_bars[index] = rect;
         }

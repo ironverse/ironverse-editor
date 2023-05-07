@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rapier3d::{na::{Point, Isometry}, prelude::{ColliderBuilder, InteractionGroups, Group, ColliderHandle}};
 use voxels::{chunk::{adjacent_keys, chunk_manager::ChunkManager}, utils::{key_to_world_coord_f32, posf32_to_world_key}, data::voxel_octree::{VoxelMode, MeshData}};
-use crate::{states::GameState, data::GameResource, physics::Physics, utils::{nearest_voxel_point_0, nearest_voxel_point}, wasm::WasmInputEvent};
+use crate::{states::GameState, data::GameResource, physics::Physics, utils::{nearest_voxel_point_0, nearest_voxel_point}, wasm::WasmInputEvent, input::hotbar::HotbarResource};
 use super::{player::Player, raycast::Raycast};
 
 pub struct CustomPlugin;
@@ -98,6 +98,7 @@ fn add(
   mut wasm_events: EventReader<WasmInputEvent>,
 
   mut physics: ResMut<Physics>,
+  hotbar_res: Res<HotbarResource>,
 ) {
 
   let mut voxel_op = None;
@@ -107,7 +108,15 @@ fn add(
     }
 
     if e.mouse == MouseButton::Right {
-      voxel_op = Some(1);
+      // voxel_op = Some(1);
+      for i in 0..hotbar_res.bars.len() {
+        let bar = &hotbar_res.bars[i];
+        if  hotbar_res.selected_keycode ==  bar.key_code {
+          voxel_op = Some(bar.voxel);
+        }
+      }
+      
+      
     }
   }
 
