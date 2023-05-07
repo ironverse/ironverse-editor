@@ -10,8 +10,9 @@ impl Plugin for CustomPlugin {
     app
       .insert_resource(LocalResource::default())
       .add_startup_system(startup)
+      .add_system(prepare_texture)
       .add_systems(
-        (prepare_texture, render, render_dragging.after(render))
+        (render, render_dragging.after(render))
           .in_set(OnUpdate(UIState::Inventory)))
       ;
   }
