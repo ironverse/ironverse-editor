@@ -71,7 +71,7 @@ fn render(
           let mut img_button = ImageButton::new(*texture_id, size.clone()).frame(false);
           let res = ui.add(img_button);
           if res.clicked() {
-
+            
           }
           let rect = res.rect.clone();
           hotbar_ui_res.pos_bars[index] = rect;
@@ -153,6 +153,9 @@ fn render_items(
             let pos = rect.min + adj;
             let item_rect = egui::Rect::from_min_size(pos, item_size.into());
             let item_res = ui.put(item_rect, item);
+            if item_res.clicked() {
+              info!("Item clicked");
+            }
           }
         }
         // for _ in 0..blocks {

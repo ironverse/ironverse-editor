@@ -68,16 +68,21 @@ fn update_fullscreen(
   }
 }
 
-fn update_pointer_events(mut events: EventReader<PointerLockEvent>) {
+fn update_pointer_events(
+  mut events: EventReader<PointerLockEvent>,
+  mut move_setting_res: ResMut<MovementSettings>,
+) {
   // TODO: Need to confirm if truly locked the pointer or exit later on
 
   for e in events.iter() {
     if e.0 {
       html_body().request_pointer_lock();
+      move_setting_res.sensitivity = 0.00012;
     } else {
       let window = web_sys::window().expect("no global `window` exists");
       let document = window.document().expect("should have a document on window");
       document.exit_pointer_lock();
+      move_setting_res.sensitivity = 0.0;
     }
   }
 }
@@ -122,7 +127,7 @@ impl Default for LocalResource {
   }
 }
 
-pub struct PointerLockEvent(bool);
+pub struct PointerLockEvent(pub bool);
 
 pub struct MouseMoveEvent(bool);
 

@@ -1,6 +1,6 @@
 use bevy::{prelude::*, window::PrimaryWindow, asset::LoadState};
 use bevy_egui::{EguiContexts, egui::{self, TextureId, Frame, Color32, Style, ImageButton, Rect, Vec2, Pos2, Sense}};
-use crate::input::hotbar::HotbarResource;
+use crate::{input::hotbar::HotbarResource, wasm::PointerLockEvent};
 use super::{UIState, hotbar::HotbarUIResource};
 
 
@@ -11,6 +11,7 @@ impl Plugin for CustomPlugin {
       .insert_resource(LocalResource::default())
       .add_startup_system(startup)
       .add_system(prepare_texture)
+      .add_system(toggle_show)
       .add_systems(
         (render, render_dragging.after(render))
           .in_set(OnUpdate(UIState::Inventory)))
@@ -45,6 +46,31 @@ fn prepare_texture(
   loading_texture.slot_id = ctx.add_image(loading_texture.slot.clone_weak());
   loading_texture.albedo_id = ctx.add_image(loading_texture.albedo.clone_weak());
 }
+
+fn toggle_show(
+  key_input: Res<Input<KeyCode>>,
+  mut next_state: ResMut<NextState<UIState>>,
+  ui_state: Res<State<UIState>>,
+
+  mut pointer_events: EventWriter<PointerLockEvent>,
+) {
+  if key_input.just_pressed(KeyCode::I) {
+
+    match ui_state.0 {
+      UIState::Default => {
+        next_state.set(UIState::Inventory);
+        pointer_events.send(PointerLockEvent(false));
+      },
+      UIState::Inventory => {
+        next_state.set(UIState::Default);
+        pointer_events.send(PointerLockEvent(true));
+      },
+      _ => ()
+    }
+  }
+}
+
+
 
 fn render(
   mut ctx: EguiContexts,
