@@ -92,6 +92,7 @@ fn enter(
   move_setting_res.sensitivity = 0.0;
 
   wasm_res.pointer_lock_enabled = false;
+  info!("enter");
 }
 
 fn exit(
@@ -102,6 +103,7 @@ fn exit(
   move_setting_res.sensitivity = 0.00012;
   wasm_res.pointer_lock_enabled = true;
   html_body().request_pointer_lock();
+  info!("exit");
 }
 
 fn render(

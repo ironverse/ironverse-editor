@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use bevy_egui::{egui::{self, Frame, Ui, Rect}, EguiPlugin};
 use bevy_flycam::{MovementSettings, WasmResource};
 
+use crate::wasm::{is_pointer_locked, PointerLockEvent};
+
 mod menu;
 mod hotbar;
 mod inventory;
@@ -27,8 +29,8 @@ fn startup(
   mut move_setting_res: ResMut<MovementSettings>,
   mut wasm_res: ResMut<WasmResource>,
 ) {
-  // move_setting_res.sensitivity = 0.0;
-  // wasm_res.pointer_lock_enabled = false;
+  move_setting_res.sensitivity = 0.0;
+  wasm_res.pointer_lock_enabled = false;
 }
 
 fn update(
@@ -36,7 +38,7 @@ fn update(
   state: Res<State<UIState>>,
   mut next_state: ResMut<NextState<UIState>>,
 ) {
-  if key_input.just_pressed(KeyCode::LAlt) {
+  if key_input.just_pressed(KeyCode::RAlt) {
     match state.0 {
       UIState::Default => { next_state.set(UIState::Menu); },
       UIState::Menu => { next_state.set(UIState::Default); },
@@ -49,9 +51,18 @@ fn update(
 fn update_wasm_mouse(
   mut move_setting_res: ResMut<MovementSettings>,
   mouse: Res<Input<MouseButton>>,
+  ui_state: Res<State<UIState>>,
+  mut pointer_lock: EventWriter<PointerLockEvent>,
 ) {
   if mouse.just_pressed(MouseButton::Left) {
     // move_setting_res.sensitivity = 0.00012;
+    if ui_state.0 != UIState::Menu && !is_pointer_locked() {
+      pointer_lock.send(PointerLockEvent(true));
+    }
+  }
+
+  if !is_pointer_locked() {
+    move_setting_res.sensitivity = 0.0;
   }
 }
 

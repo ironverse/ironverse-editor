@@ -22,10 +22,10 @@ impl Plugin for CustomPlugin {
 
 #[allow(dead_code)]
 fn startup(local_res: Res<LocalResource>,) {
-  let send_mouse_move = local_res.send_mouse_move.clone();
+  let send_mouse_click = local_res.send_mouse_click.clone();
   let cb = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
     // let _ = send_mouse_move.send((event.movement_x() as f32, event.movement_y() as f32));
-    let _ = send_mouse_move.send(event.button());
+    let _ = send_mouse_click.send(event.button());
     // info!("test");
   }) as Box<dyn FnMut(web_sys::MouseEvent)>);
 
@@ -46,8 +46,11 @@ fn mouse_move(
   local_res: Res<LocalResource>,
   mut wasm_events: EventWriter<WasmInputEvent>,
 ) {
-  for e in local_res.recv_mouse_move.drain() {
-    // info!("recv {}", e);
+  for e in local_res.recv_mouse_click.drain() {
+    if !is_pointer_locked() {
+      continue;
+    }
+    
     if e == 0 {
       wasm_events.send(WasmInputEvent { mouse: MouseButton::Left });
     }
@@ -56,7 +59,6 @@ fn mouse_move(
     }
   }
 }
-
 
 
 fn update_fullscreen(
@@ -76,9 +78,11 @@ fn update_pointer_events(
 
   for e in events.iter() {
     if e.0 {
+      info!("wasm pointer {}", e.0);
       html_body().request_pointer_lock();
       move_setting_res.sensitivity = 0.00012;
     } else {
+      info!("wasm pointer {}", e.0);
       let window = web_sys::window().expect("no global `window` exists");
       let document = window.document().expect("should have a document on window");
       document.exit_pointer_lock();
@@ -112,17 +116,17 @@ pub fn html_body() -> HtmlElement {
 #[allow(dead_code)]
 #[derive(Resource)]
 struct LocalResource {
-  send_mouse_move: Sender<i16>,
-  recv_mouse_move: Receiver<i16>,
+  send_mouse_click: Sender<i16>,
+  recv_mouse_click: Receiver<i16>,
 
 }
 
 impl Default for LocalResource {
   fn default() -> Self {
-    let (send_mouse_move, recv_mouse_move) = flume::bounded(10);
+    let (send_mouse_click, recv_mouse_click) = flume::bounded(10);
     Self {
-      send_mouse_move: send_mouse_move,
-      recv_mouse_move: recv_mouse_move,
+      send_mouse_click: send_mouse_click,
+      recv_mouse_click: recv_mouse_click,
     }
   }
 }
@@ -133,4 +137,14 @@ pub struct MouseMoveEvent(bool);
 
 pub struct WasmInputEvent {
   pub mouse: MouseButton,
+}
+
+
+pub fn is_pointer_locked() -> bool {
+  let window = web_sys::window().expect("no global `window` exists");
+  let document = window.document().expect("should have a document on window");
+  
+
+  let lock_op = document.pointer_lock_element();
+  lock_op.is_some()
 }
