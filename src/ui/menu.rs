@@ -5,7 +5,7 @@ use bevy_flycam::{MovementSettings, WasmResource};
 use flume::{Sender, Receiver};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
-use crate::wasm::html_body;
+use crate::wasm::{html_body, PointerLockEvent};
 
 use super::{UIResource, UIState};
 
@@ -85,13 +85,9 @@ fn enter(
   mut move_setting_res: ResMut<MovementSettings>,
   #[cfg(target_arch = "wasm32")]
   mut wasm_res: ResMut<WasmResource>,
+  mut pointer_lock: EventWriter<PointerLockEvent>,
 ) {
-  let window = web_sys::window().expect("no global `window` exists");
-  let document = window.document().expect("should have a document on window");
-  document.exit_pointer_lock();
-  move_setting_res.sensitivity = 0.0;
-
-  wasm_res.pointer_lock_enabled = false;
+  pointer_lock.send(PointerLockEvent(false));
   info!("enter");
 }
 
@@ -99,10 +95,9 @@ fn exit(
   mut move_setting_res: ResMut<MovementSettings>,
   #[cfg(target_arch = "wasm32")]
   mut wasm_res: ResMut<WasmResource>,
+  mut pointer_lock: EventWriter<PointerLockEvent>,
 ) {
-  move_setting_res.sensitivity = 0.00012;
-  wasm_res.pointer_lock_enabled = true;
-  html_body().request_pointer_lock();
+  pointer_lock.send(PointerLockEvent(true));
   info!("exit");
 }
 
