@@ -36,11 +36,12 @@ fn main() {
     .add_plugin(physics::CustomPlugin)
     .add_plugin(states::CustomPlugin)
     .add_plugin(data::CustomPlugin)
-    .add_plugin(components::CustomPlugin)
     .add_plugin(graphics::CustomPlugin)
     .add_plugin(ui::CustomPlugin)
     .add_plugin(input::CustomPlugin)
     .add_plugin(debugger::CustomPlugin)
+
+    .add_plugin(components::CustomPlugin)
     ;
   
   #[cfg(target_arch = "wasm32")]

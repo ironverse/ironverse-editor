@@ -27,57 +27,7 @@ impl Plugin for CustomPlugin {
   }
 }
 
-fn test_download_file() {
-  let body = html_body();
-  
-  let res = body.query_selector("#download");
-  
-  let a_ops = match res {
-    Ok(ops) => ops,
-    Err(e) => { 
-      info!("{:?}", e);
-      return ()
-    }
-  };
 
-
-  if a_ops.is_some() {
-    let data = Data {
-      player: Player {
-        position: [0.0, 1.0, 0.0],
-      },
-      terrains: Terrains { keys: vec![[0, 0, 0]], voxels: vec!["Test".to_string()] }
-    };
-
-    let config = config::standard();
-    // let encoded: Vec<u8> = bincode::encode_to_vec(&data, config).unwrap();
-    // let str = array_bytes::bytes2hex("", encoded);
-
-    // let str = toml::to_string_pretty(&data).unwrap();
-    let str = toml::to_string(&data).unwrap();
-    // let encoded: Vec<u8> = bincode::encode_to_vec(&data, config).unwrap();
-    // let str = array_bytes::bytes2hex("", encoded);
-    
-    info!("a: {:?}", str);
-    let a = a_ops.unwrap();
-    a.set_attribute("download", "save.toml");
-    a.set_attribute("href", format!("data:,{:?}", str).as_str());
-    // a.set_attribute("innerHTML", "download");
-
-    let a1: HtmlElement = a.dyn_into::<HtmlElement>().unwrap();
-    a1.click();
-
-  }
-
-
-
-
-  // let opt = body.child_nodes().get(0);
-  // if opt.is_some() {
-  //   let o = opt.unwrap();
-  //   o.
-  // }
-}
 
 
 

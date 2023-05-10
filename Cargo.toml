@@ -33,4 +33,8 @@ features = [
   "HtmlElement", 
   "ErrorEvent", 
   "Window",
+  "Url",
 ]
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+js-sys = "0.3"
