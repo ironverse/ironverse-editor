@@ -28,8 +28,8 @@ fn main() {
       }),
       ..default()
     }))
-    .configure_set(GameSet::PreUpdate.before(CoreSet::Update))
-    .configure_set(GameSet::PostUpdate.after(CoreSet::Update))
+    // .configure_set(GameSet::PreUpdate.before(CoreSet::Update))
+    // .configure_set(GameSet::PostUpdate.after(CoreSet::Update))
     // .add_plugin(PlayerPlugin)
     .add_plugin(NoCameraPlayerPlugin)
     .add_plugin(terrain::CustomPlugin)
@@ -39,7 +39,7 @@ fn main() {
     .add_plugin(graphics::CustomPlugin)
     .add_plugin(ui::CustomPlugin)
     .add_plugin(input::CustomPlugin)
-    .add_plugin(debugger::CustomPlugin)
+    // .add_plugin(debugger::CustomPlugin)
 
     .add_plugin(components::CustomPlugin)
     ;

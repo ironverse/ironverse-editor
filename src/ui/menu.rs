@@ -122,6 +122,8 @@ fn render(
           //   ui_res.load_file_path = path.to_str().unwrap().to_string();
           //   next_state.set(UIState::Save);
           // }
+
+          next_state.set(UIState::Save);
         }
 
         ui.add_space(20.0);

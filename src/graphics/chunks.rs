@@ -1,6 +1,6 @@
 use bevy::{prelude::*, render::{mesh::{MeshVertexAttribute, MeshVertexBufferLayout, Indices}, render_resource::{VertexFormat, AsBindGroup, ShaderRef, SpecializedMeshPipelineError, RenderPipelineDescriptor, PrimitiveTopology}}, reflect::TypeUuid, pbr::{MaterialPipeline, MaterialPipelineKey}, asset::LoadState};
 use voxels::{chunk::{adjacent_keys, chunk_manager::ChunkManager}, utils::{key_to_world_coord_f32, posf32_to_world_key}, data::voxel_octree::{VoxelMode, MeshData}};
-use crate::{data::GameResource, components::{player::Player, chunks::Chunks}};
+use crate::{data::GameResource, components::{player::Player, chunks::{Meshes}}};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -85,7 +85,7 @@ fn add(
   mut images: ResMut<Assets<Image>>,
   terrains: Query<(Entity, &TerrainGraphics)>,
 
-  chunk_query: Query<(Entity, &Chunks), Changed<Chunks>>,
+  chunk_query: Query<(Entity, &Meshes), Changed<Meshes>>,
 ) {
   for (_, chunks) in &chunk_query {
     for mesh in &chunks.data {

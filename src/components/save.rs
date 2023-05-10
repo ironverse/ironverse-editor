@@ -1,27 +1,42 @@
 use bevy::prelude::*;
+use bevy::utils::HashMap;
 use serde::{Deserialize, Serialize};
+use voxels::chunk::chunk_manager::Chunk;
+use voxels::chunk::chunk_manager::ChunkManager;
 use crate::{ui::UIState, wasm::html_body};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
 
+use super::chunks::Chunks;
+
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
+    app
+      .insert_resource(LocalResource::default());
     // app
     //   .add_system(download.in_schedule(OnEnter(UIState::Save)));
 
+    // app
+    //   .add_startup_system(download);
+
     app
-      .add_startup_system(download);
+      .add_system(track_modified_chunks)
+      .add_system(download.in_schedule(OnEnter(UIState::Save)));
   }
 }
 
+/*
+  Create an example file to be downloaded
 
-fn download() {
+ */
 
-  info!("download");
+fn download(
+  local_res: Res<LocalResource>,
+  mut next_state: ResMut<NextState<UIState>>,
+) {
   let body = html_body();
-  
   let res = body.query_selector("#download");
   
   let a_ops = match res {
@@ -31,42 +46,27 @@ fn download() {
       return ()
     }
   };
-  info!("download1");
 
   if a_ops.is_some() {
-    info!("download2");
-    // let data = Data {
-    //   player: Player {
-    //     position: [0.0, 1.0, 0.0],
-    //   },
-    //   terrains: Terrains { keys: vec![[0, 0, 0]], voxels: vec!["Test".to_string()] }
-    // };
-
-    // let config = config::standard();
-    // // let encoded: Vec<u8> = bincode::encode_to_vec(&data, config).unwrap();
-    // // let str = array_bytes::bytes2hex("", encoded);
-
-    // // let str = toml::to_string_pretty(&data).unwrap();
-    // let str = toml::to_string(&data).unwrap();
-    // // let encoded: Vec<u8> = bincode::encode_to_vec(&data, config).unwrap();
-    // // let str = array_bytes::bytes2hex("", encoded);
+    let chunk_manager = ChunkManager::default();
+    let chunk = chunk_manager.new_chunk3(&[0, -1, 0], 4);
     
-    // info!("a: {:?}", str);
-    // let a = a_ops.unwrap();
-    // a.set_attribute("download", "save.toml");
-    // a.set_attribute("href", format!("data:,{:?}", str).as_str());
-    // // a.set_attribute("innerHTML", "download");
+    let mut keys = vec![];
+    let mut voxels = vec![];
+    for (key, chunk) in local_res.chunks.iter() {
+      keys.push(key.clone());
+      voxels.push(array_bytes::bytes2hex("", &chunk.octree.data));
+    }
+    
 
-    // let a1: HtmlElement = a.dyn_into::<HtmlElement>().unwrap();
-    // a1.click();
-
-
+    // keys.push([0, 0, 0]);
+    // voxels.push(array_bytes::bytes2hex("", chunk.octree.data));
 
     let data = Data {
       player: Player {
         position: [0.0, 1.0, 0.0],
       },
-      terrains: Terrains { keys: vec![[0, 0, 0]], voxels: vec!["Test".to_string()] }
+      terrains: Terrains { keys: keys, voxels: voxels }
     };
 
     let str = toml::to_string_pretty(&data).unwrap();
@@ -76,19 +76,16 @@ fn download() {
       js_sys::Uint8Array::view(str.as_bytes())
           .into()
     });
-    info!("download3");
     let blob_res = web_sys::Blob::new_with_u8_array_sequence(&parts);
     if blob_res.is_err() {
       return;
     }
-    info!("download4");
     let blob = blob_res.unwrap();
 
     let url_res = web_sys::Url::create_object_url_with_blob(&blob);
     if url_res.is_err() {
       return;
     }
-    info!("download5");
 
     let a = a_ops.unwrap();
     a.set_attribute("download", "save.toml");
@@ -98,14 +95,23 @@ fn download() {
   }
 
 
-
-
-  // let opt = body.child_nodes().get(0);
-  // if opt.is_some() {
-  //   let o = opt.unwrap();
-  //   o.
-  // }
+  next_state.set(UIState::Default);
 }
+
+
+fn track_modified_chunks(
+  mut chunks_query: Query<&Chunks, Changed<Chunks>>,
+  mut local_res: ResMut<LocalResource>,
+) {
+  for c in &chunks_query {
+    for chunk in c.data.iter() {
+      local_res.chunks.insert(chunk.key.clone(), chunk.clone());
+
+    }
+    info!("chunks.len() {:?}", local_res.chunks.len());
+  }
+}
+
 
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -123,4 +129,18 @@ pub struct Player {
 pub struct Terrains {
   pub keys: Vec<[i64; 3]>,
   pub voxels: Vec<String>,
+}
+
+
+#[derive(Resource)]
+struct LocalResource {
+  chunks: HashMap<[i64; 3], Chunk>,
+}
+
+impl Default for LocalResource {
+  fn default() -> Self {
+    Self {
+      chunks: HashMap::default(),
+    }
+  }
 }
