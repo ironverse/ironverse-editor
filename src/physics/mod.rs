@@ -83,12 +83,12 @@ impl Physics {
   #[allow(dead_code)]
   pub fn spawn_character(&mut self, depth: f32, radius: f32, pos: Vec3) -> (RigidBodyHandle, ColliderHandle) {
     let collider = ColliderBuilder::capsule_y(depth * 0.5, radius)
-      // .collision_groups(InteractionGroups::new(Group::GROUP_2, Group::GROUP_1))
-      .collision_groups(InteractionGroups::new(Group::GROUP_2, Group::GROUP_3))
+      .collision_groups(InteractionGroups::new(Group::GROUP_2, Group::GROUP_1))
+      // .collision_groups(InteractionGroups::new(Group::GROUP_2, Group::GROUP_3))
       .build();
     let rigid_body = RigidBodyBuilder::dynamic()
       .translation(Vector3::from([pos.x, pos.y, pos.z]))
-      .lock_rotations()
+      // .lock_rotations()
       .gravity_scale(0.0)
       .linear_damping(5.0)
       .build();
@@ -109,6 +109,3 @@ impl Physics {
       .remove(handle, &mut self.island_manager, &mut self.rigid_body_set, true);
   }
 }
-
-
-
