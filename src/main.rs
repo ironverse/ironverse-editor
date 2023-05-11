@@ -28,25 +28,22 @@ fn main() {
       }),
       ..default()
     }))
-    // .configure_set(GameSet::PreUpdate.before(CoreSet::Update))
-    // .configure_set(GameSet::PostUpdate.after(CoreSet::Update))
-    // .add_plugin(PlayerPlugin)
-    .add_plugin(NoCameraPlayerPlugin)
-    .add_plugin(terrain::CustomPlugin)
-    .add_plugin(physics::CustomPlugin)
-    .add_plugin(states::CustomPlugin)
-    .add_plugin(data::CustomPlugin)
-    .add_plugin(graphics::CustomPlugin)
-    .add_plugin(ui::CustomPlugin)
-    .add_plugin(input::CustomPlugin)
-    // .add_plugin(debugger::CustomPlugin)
+    // .add_plugin(NoCameraPlayerPlugin)
+    // .add_plugin(terrain::CustomPlugin)
+    // .add_plugin(physics::CustomPlugin)
+    // .add_plugin(states::CustomPlugin)
+    // .add_plugin(data::CustomPlugin)
+    // .add_plugin(graphics::CustomPlugin)
+    // .add_plugin(ui::CustomPlugin)
+    // .add_plugin(input::CustomPlugin)
+    .add_plugin(debugger::CustomPlugin)
 
-    .add_plugin(components::CustomPlugin)
+    // .add_plugin(components::CustomPlugin)
     ;
   
-  #[cfg(target_arch = "wasm32")]
-  app
-    .add_plugin(wasm::CustomPlugin);
+  // #[cfg(target_arch = "wasm32")]
+  // app
+  //   .add_plugin(wasm::CustomPlugin);
 
   app.run();
 

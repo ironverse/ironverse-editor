@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_egui::{egui::{self, Frame, Ui, Rect}, EguiPlugin};
 use bevy_flycam::{MovementSettings, WasmResource};
-
 use crate::wasm::{is_pointer_locked, PointerLockEvent};
 
 pub mod menu;
@@ -12,8 +11,8 @@ pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .insert_resource(UIResource::default())
       .add_plugin(EguiPlugin)
+      .insert_resource(UIResource::default())
       .add_state::<UIState>()
       .add_plugin(hotbar::CustomPlugin)
       .add_plugin(menu::CustomPlugin)
