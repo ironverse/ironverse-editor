@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::{physics::Physics, data::{GameResource}, GameSet};
+use crate::{physics::Physics, data::{GameResource}, GameSet, components::save::Data};
 use super::{GameState, GameEvent, GameEventType};
 
 pub struct CustomPlugin;
@@ -22,5 +22,9 @@ fn enter(
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+
+  let data = Data::default();
+  game_res.data = data;
+
   next_state.set(GameState::Play);
 }

@@ -124,6 +124,15 @@ pub struct Data {
   pub terrains: Terrains,
 }
 
+impl Default for Data {
+  fn default() -> Self {
+    Self {
+      player: Player { position: [0.0, 5.0, 0.0] },
+      terrains: Terrains { keys: Vec::new(), voxels: Vec::new() }
+    }
+  }
+}
+
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Player {
   pub position: [f32; 3]

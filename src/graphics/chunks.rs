@@ -1,6 +1,6 @@
 use bevy::{prelude::*, render::{mesh::{MeshVertexAttribute, MeshVertexBufferLayout, Indices}, render_resource::{VertexFormat, AsBindGroup, ShaderRef, SpecializedMeshPipelineError, RenderPipelineDescriptor, PrimitiveTopology}}, reflect::TypeUuid, pbr::{MaterialPipeline, MaterialPipelineKey}, asset::LoadState};
 use voxels::{chunk::{adjacent_keys, chunk_manager::ChunkManager}, utils::{key_to_world_coord_f32, posf32_to_world_key}, data::voxel_octree::{VoxelMode, MeshData}};
-use crate::{data::GameResource, components::{player::Player, chunks::{Meshes}}};
+use crate::{data::GameResource, components::{player::Player, chunks::{Meshes}}, states::GameState};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -11,6 +11,7 @@ impl Plugin for CustomPlugin {
       .add_startup_system(startup)
       .add_system(init_textures)
       .add_system(add)
+      .add_system(exit_load.in_schedule(OnExit(GameState::Load)))
       ;
   }
 }
@@ -141,7 +142,14 @@ fn add(
 }
 
 
-
+fn exit_load(
+  mut commands: Commands,
+  terrains: Query<(Entity, &TerrainGraphics)>,
+) {
+  for (entity, _) in &terrains {
+    commands.entity(entity).despawn_recursive();
+  }
+}
 
 
 

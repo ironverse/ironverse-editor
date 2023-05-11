@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use voxels::{data::voxel_octree::VoxelOctree, chunk::chunk_manager::Chunk};
-use crate::{ui::menu::UIMenuResource, components::save::Data, data::GameResource};
+use crate::{ui::menu::UIMenuResource, components::{save::Data, player::Player}, data::GameResource, physics::Physics};
 
 use super::GameState;
 
@@ -15,10 +15,19 @@ impl Plugin for CustomPlugin {
   }
 }
 
+/* 
+  Clear everything in-game
+    Defer better way of doing it
+    For now just clear everything
 
-fn enter(mut game_res: ResMut<GameResource>,) {
-  /* Clear everything in-game */
-  game_res.chunk_manager.chunks.clear();
+  */
+fn enter(
+  mut commands: Commands,
+  mut game_res: ResMut<GameResource>,
+  player_query: Query<(Entity, &Player)>,
+  
+) {
+  
 }
 
 /*  
@@ -29,11 +38,21 @@ fn enter(mut game_res: ResMut<GameResource>,) {
     Separate physics manager?
 */
 fn update(
+  mut commands: Commands,
   ui_menu_res: Res<UIMenuResource>,
   mut game_res: ResMut<GameResource>,
   mut next_state: ResMut<NextState<GameState>>,
+
+  mut physics: ResMut<Physics>,
+  player_query: Query<(Entity, &Player)>,
 ) {
   for file in ui_menu_res.recv.drain() {
+    game_res.chunk_manager.chunks.clear();
+    *physics = Physics::default();
+    for (entity, _) in &player_query {
+      commands.entity(entity).despawn_recursive();
+    }
+
 
     info!("file");
     let s = match String::from_utf8(file) {
@@ -67,14 +86,18 @@ fn update(
         info!("load data key {:?}", key);
       }
     }
-
+    game_res.data = data;
     next_state.set(GameState::Play);
   }
 }
 
 
-fn exit() {
-
+fn exit(
+  mut commands: Commands,
+  mut game_res: ResMut<GameResource>,
+  player_query: Query<(Entity, &Player)>,
+) {
+  
 }
 
 /*

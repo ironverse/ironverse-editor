@@ -9,7 +9,7 @@ impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_system(
-        enter.in_schedule(OnEnter(GameState::Start))
+        enter.in_schedule(OnEnter(GameState::Play))
       )
       .add_system(
         update.in_set(OnUpdate(GameState::Play))
@@ -24,7 +24,7 @@ fn enter(
   mut game_res: ResMut<GameResource>,
 ) {
 
-  let pos = [0.0, 5.0, 0.0];
+  let pos = game_res.data.player.position;
   let (body, collider) = physics.spawn_character(1.0, 0.5, Vec3::new(pos[0], pos[1], pos[2]));
 
   let k = posf32_to_world_key(&pos, game_res.chunk_manager.config.seamless_size);
