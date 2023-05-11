@@ -4,7 +4,7 @@ use bevy_flycam::{MovementSettings, WasmResource};
 
 use crate::wasm::{is_pointer_locked, PointerLockEvent};
 
-mod menu;
+pub mod menu;
 mod hotbar;
 mod inventory;
 

@@ -7,8 +7,12 @@ use crate::{ui::UIState, wasm::html_body};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
-
 use super::chunks::Chunks;
+
+/*
+  Refactor: Have to remove from components module to states
+
+*/
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {

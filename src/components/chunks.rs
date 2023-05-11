@@ -10,22 +10,19 @@ impl Plugin for CustomPlugin {
     app
       .insert_resource(LocalResource::default())
       .add_system(
-        enter.in_schedule(OnEnter(GameState::Start))
-      )
-      .add_system(
         spawn_on_add_player.in_set(OnUpdate(GameState::Play))
       )
-      // .add_system(on_raycast)
-      .add_system(add_meshes)
-      .add_system(add_chunks.after(add_meshes));
+      .add_system(on_raycast)
+      .add_system(from_loaded_files)
+      .add_system(add_chunks.after(on_raycast))
+      .add_system(convert_chunks_to_collider);
   }
 }
 
-fn enter() {
-  // Test terrain
-  
-}
 
+/* 
+  Will have conflicts with Load system 
+*/
 fn spawn_on_add_player(
   mut commands: Commands,
   mut game_res: ResMut<GameResource>,
@@ -40,12 +37,18 @@ fn spawn_on_add_player(
     
     let keys = adjacent_keys(&player.key, 1, true);
     for key in keys.iter() {
-      let chunk = ChunkManager::new_chunk(
-        key, 
-        config.depth, 
-        config.lod, 
-        game_res.chunk_manager.noise,
-      );
+      let mut chunk = Chunk::default();
+      let chunk_op = game_res.chunk_manager.get_chunk(key);
+      if chunk_op.is_some() {
+        chunk = chunk_op.unwrap().clone();
+      } else {
+        chunk = ChunkManager::new_chunk(
+          key, 
+          config.depth, 
+          config.lod, 
+          game_res.chunk_manager.noise,
+        );
+      }
   
       let data = chunk.octree.compute_mesh2(
         VoxelMode::SurfaceNets, 
@@ -94,7 +97,8 @@ fn spawn_on_add_player(
   }
 }
 
-fn add_meshes(
+/* Refactor: This is related to raycast, have to simplify implementation later */
+fn on_raycast(
   mut commands: Commands,
   mut raycasts: Query<(Entity, &Raycast, &mut Meshes), Changed<Raycast>>,
   mut game_res: ResMut<GameResource>,
@@ -229,6 +233,23 @@ fn add_meshes(
 
 }
 
+
+fn from_loaded_files() {
+
+}
+
+/*
+  TODO: Universal system to load chunks when:
+    First time player spawn
+    Load from save file
+    Modifying terrain
+    When player is moving
+*/
+fn convert_chunks_to_collider() {
+
+}
+
+
 fn add_chunks(
   mut commands: Commands,
   mut local_res: ResMut<LocalResource>,
@@ -248,47 +269,6 @@ fn add_chunks(
   }
 
   local_res.res.clear();
-}
-
-
-
-fn on_raycast(
-  mut raycasts: Query<(&Transform, &mut Raycast), Changed<Raycast>>,
-  game_res: Res<GameResource>,
-
-  mouse: Res<Input<MouseButton>>, // Not working on wasm, because of pointer lock
-  mut wasm_events: EventReader<WasmInputEvent>,
-) {
-  for (trans, mut raycast) in &mut raycasts {
-    if raycast.point.x != f32::NAN {
-      
-      let nearest_op = nearest_voxel_point_0(
-        &game_res.chunk_manager, 
-        raycast.point, 
-        true
-      );
-
-      if nearest_op.is_some() {
-        for e in wasm_events.iter() {
-          if e.mouse == MouseButton::Left {
-            let nearest = nearest_op.unwrap();
-            info!("Raycast {:?}", nearest);
-          }
-          
-        }
-
-        // if mouse.just_pressed(MouseButton::Left) {
-        //   let nearest = nearest_op.unwrap();
-        //   // info!("Raycast {:?}: {:?}", raycast.point, nearest);
-        //   info!("Raycast {:?}", nearest);
-        // }
-
-        
-
-      }
-    }
-    
-  }
 }
 
 

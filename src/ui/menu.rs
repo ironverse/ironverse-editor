@@ -5,7 +5,7 @@ use bevy_flycam::{MovementSettings, WasmResource};
 use flume::{Sender, Receiver};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
-use crate::wasm::{html_body, PointerLockEvent};
+use crate::{wasm::{html_body, PointerLockEvent}, states::GameState};
 
 use super::{UIResource, UIState};
 
@@ -13,17 +13,11 @@ pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .insert_resource(LocalResource::default())
+      .insert_resource(UIMenuResource::default())
       .add_system(enter.in_schedule(OnEnter(UIState::Menu)))
       .add_system(exit.in_schedule(OnExit(UIState::Menu)))
       .add_system(render.in_set(OnUpdate(UIState::Menu)))
-      .add_system(recv_file.in_set(OnUpdate(UIState::Menu)))
       ;
-
-      // app
-      //   .add_system(test_download_file.in_schedule(OnEnter(UIState::Menu)));
-      // app
-      //   .add_startup_system(test_download_file);
   }
 }
 
@@ -58,7 +52,8 @@ fn render(
   mut ui_res: ResMut<UIResource>,
   state: Res<State<UIState>>,
   mut next_state: ResMut<NextState<UIState>>,
-  local_res: Res<LocalResource>,
+  mut next_game_state: ResMut<NextState<GameState>>,
+  local_res: Res<UIMenuResource>,
 ) {
   let res = windows.get_single();
   if res.is_err() {
@@ -112,6 +107,8 @@ fn render(
           // }
 
           load_file(local_res.send.clone());
+          // next_state.set(UIState::Load);
+          next_game_state.set(GameState::Load);
         }
 
         ui.add_space(20.0);
@@ -138,7 +135,7 @@ fn render(
 }
 
 
-fn recv_file(local_res: Res<LocalResource>,) {
+fn recv_file(local_res: Res<UIMenuResource>,) {
   for file in local_res.recv.drain() {
     let config = config::standard();
     
@@ -208,12 +205,12 @@ fn execute<F: Future<Output = ()> + 'static>(f: F) {
 
 
 #[derive(Resource)]
-struct LocalResource {
+pub struct UIMenuResource {
   send: Sender<Vec<u8>>,
-  recv: Receiver<Vec<u8>>,
+  pub recv: Receiver<Vec<u8>>,
 }
 
-impl Default for LocalResource {
+impl Default for UIMenuResource {
   fn default() -> Self {
     let (send, recv) = flume::bounded(1);
     Self {
