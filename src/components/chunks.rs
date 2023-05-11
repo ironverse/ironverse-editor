@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use rapier3d::{na::{Point, Isometry}, prelude::{ColliderBuilder, InteractionGroups, Group, ColliderHandle}};
-use voxels::{chunk::{adjacent_keys, chunk_manager::{ChunkManager, Chunk}}, utils::{key_to_world_coord_f32, posf32_to_world_key}, data::voxel_octree::{VoxelMode, MeshData}};
+use voxels::{chunk::{adjacent_keys, chunk_manager::{ChunkManager, Chunk}, adj_delta_keys}, utils::{key_to_world_coord_f32, posf32_to_world_key}, data::voxel_octree::{VoxelMode, MeshData}};
 use crate::{states::GameState, data::GameResource, physics::Physics, utils::{nearest_voxel_point_0, nearest_voxel_point}, wasm::WasmInputEvent, input::hotbar::HotbarResource};
 use super::{player::Player, raycast::Raycast};
 
@@ -13,8 +13,9 @@ impl Plugin for CustomPlugin {
         spawn_on_add_player.in_set(OnUpdate(GameState::Play))
       )
       .add_system(on_raycast)
-      .add_system(from_loaded_files)
-      .add_system(add_chunks.after(on_raycast))
+      .add_system(from_loaded_files.after(on_raycast))
+      .add_system(on_move.after(from_loaded_files))
+      .add_system(add_chunks.after(on_move))
       .add_system(convert_chunks_to_collider);
   }
 }
@@ -237,6 +238,94 @@ fn on_raycast(
 fn from_loaded_files() {
 
 }
+
+fn on_move(
+  mut commands: Commands,
+  mut players: Query<(Entity, &Player, &mut Meshes), Changed<Player>>,
+  mut game_res: ResMut<GameResource>,
+  mut wasm_events: EventReader<WasmInputEvent>,
+
+  mut physics: ResMut<Physics>,
+  hotbar_res: Res<HotbarResource>,
+  mut local_res: ResMut<LocalResource>,
+) {
+  for (entity, player, mut meshes) in &mut players {
+    info!("player key {:?}", player.key);
+
+    let config = game_res.chunk_manager.config.clone();
+    
+    let keys = adj_delta_keys(&player.prev_key, &player.key, 1);
+    for key in keys.iter() {
+
+      'inner: for i in 0..meshes.data.len() {
+        let m = &meshes.data[i];
+
+        if key == &m.key {
+          physics.remove_collider(m.handle);
+          meshes.data.swap_remove(i);
+          break 'inner;
+        }
+      }
+
+      let mut chunk = Chunk::default();
+      let chunk_op = game_res.chunk_manager.get_chunk(key);
+      if chunk_op.is_some() {
+        chunk = chunk_op.unwrap().clone();
+      } else {
+        chunk = ChunkManager::new_chunk(
+          key, 
+          config.depth, 
+          config.lod, 
+          game_res.chunk_manager.noise,
+        );
+      }
+
+
+      let data = chunk.octree.compute_mesh2(
+        VoxelMode::SurfaceNets, 
+        &mut game_res.chunk_manager.voxel_reuse
+      );
+
+      
+      if data.indices.len() > 0 { // Temporary, should be removed once the ChunkMode detection is working
+        
+        let pos_f32 = key_to_world_coord_f32(key, config.seamless_size);
+        let mut pos = Vec::new();
+        for d in data.positions.iter() {
+          pos.push(Point::from([d[0], d[1], d[2]]));
+        }
+    
+        let mut indices = Vec::new();
+        for ind in data.indices.chunks(3) {
+          // println!("i {:?}", ind);
+          indices.push([ind[0], ind[1], ind[2]]);
+        }
+    
+        let mut collider = ColliderBuilder::trimesh(pos, indices)
+          .collision_groups(InteractionGroups::new(Group::GROUP_1, Group::GROUP_2))
+          .build();
+        collider.set_position(Isometry::from(pos_f32));
+    
+        let handle = physics.collider_set.insert(collider);
+
+
+        meshes.data.push(Mesh {
+          key: key.clone(),
+          data: data.clone(),
+          handle: handle,
+        })
+      } else {
+        meshes.data.push(Mesh {
+          key: key.clone(),
+          data: data.clone(),
+          handle: ColliderHandle::default(),
+        })
+      }
+    }
+  }
+}
+
+
 
 /*
   TODO: Universal system to load chunks when:
