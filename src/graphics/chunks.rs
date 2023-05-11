@@ -12,7 +12,7 @@ impl Plugin for CustomPlugin {
       .add_system(init_textures)
       .add_system(add)
       .add_system(exit_load.in_schedule(OnExit(GameState::Load)))
-      ;
+      .add_system(remove);
   }
 }
 
@@ -152,6 +152,21 @@ fn exit_load(
 }
 
 
+
+fn remove(
+  mut commands: Commands,
+  mut players: Query<(&Player), Changed<Player>>,
+  terrains: Query<(Entity, &TerrainGraphics)>,
+) {
+  for (player) in &mut players {
+    let keys = adjacent_keys(&player.key, 1, true);
+    for (entity, terrain_graphics) in &terrains {
+      if !keys.contains(&terrain_graphics.key) {
+        commands.entity(entity).despawn_recursive();
+      }
+    }
+  }
+}
 
 
 #[derive(Resource)]

@@ -250,23 +250,16 @@ fn on_move(
   mut local_res: ResMut<LocalResource>,
 ) {
   for (entity, player, mut meshes) in &mut players {
-    info!("player key {:?}", player.key);
+    // info!("player key {:?}", player.key);
+
+    for data in meshes.data.iter() {
+      physics.remove_collider(data.handle);
+    }
+    meshes.data.clear();
 
     let config = game_res.chunk_manager.config.clone();
-    
-    let keys = adj_delta_keys(&player.prev_key, &player.key, 1);
+    let keys = adjacent_keys(&player.key, 1, true);
     for key in keys.iter() {
-
-      'inner: for i in 0..meshes.data.len() {
-        let m = &meshes.data[i];
-
-        if key == &m.key {
-          physics.remove_collider(m.handle);
-          meshes.data.swap_remove(i);
-          break 'inner;
-        }
-      }
-
       let mut chunk = Chunk::default();
       let chunk_op = game_res.chunk_manager.get_chunk(key);
       if chunk_op.is_some() {
@@ -373,6 +366,7 @@ pub struct Mesh {
   pub handle: ColliderHandle,
 }
 
+
 #[derive(Component, Debug, Clone)]
 pub struct Chunks {
   pub data: Vec<Chunk>,
@@ -392,3 +386,4 @@ impl Default for LocalResource {
     }
   }
 }
+
