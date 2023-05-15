@@ -100,6 +100,9 @@ fn init_textures(
     render_mesh.insert_attribute(VOXEL_WEIGHT, data.weights.clone());
     render_mesh.insert_attribute(VOXEL_TYPE_1, data.types_1.clone());
 
+
+    // info!("data.weights {:?}", data.weights);
+
     let mesh_handle = meshes.add(render_mesh);
     let material_handle = custom_materials.add(CustomMaterial {
       albedo: chunk_texture.albedo.clone(),
