@@ -49,15 +49,14 @@ fn add(
 
 fn update(
   mut raycast: Query<(&mut Transform, &Raycast)>,
-  mut cam_query: Query<&GlobalTransform, With<FlyCam>>,
+  mut cam_query: Query<(&GlobalTransform, &crate::components::raycast::Raycast), With<FlyCam>>,
 ) {
-  for cam_trans in &cam_query {
+  for (cam_trans, ray) in &cam_query {
     for (mut ray_trans, raycast) in &mut raycast {
       let trans = cam_trans.compute_transform();
       let look_at = trans.forward();
 
-      let adj = Vec3::new(0.0, 0.4, 0.0);
-      let pos = trans.translation + adj;
+      let pos = trans.translation + ray.adj;
       let t = Transform::from_xyz(pos.x, pos.y, pos.z).looking_to(look_at, Vec3::Y);
       
       *ray_trans = t;

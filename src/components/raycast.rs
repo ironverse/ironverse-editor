@@ -22,7 +22,10 @@ fn add(
   for (entity, player) in &player_query {
     commands
       .entity(entity)
-      .insert(Raycast { point: Vec3::new(f32::NAN, f32::NAN, f32::NAN) });
+      .insert(Raycast { 
+        point: Vec3::new(f32::NAN, f32::NAN, f32::NAN),
+        adj: Vec3::new(0.0, 0.2, 0.0),
+      });
   }
 }
 
@@ -36,10 +39,12 @@ fn update(
     let look_at = trans.forward();
     // info!("{:?}", look_at);
 
-    let adj = Vec3::new(0.0, 0.4, 0.0);
-    let start_pos = trans.translation + adj;
+    let start_pos = trans.translation + raycast.adj;
     let dir = look_at.clone();
-    let ray = Ray::new(Point3::new(start_pos.x, start_pos.y, start_pos.z), Vector::new(dir.x, dir.y, dir.z));
+    let ray = Ray::new(
+      Point3::new(start_pos.x, start_pos.y, start_pos.z), 
+      Vector::new(dir.x, dir.y, dir.z)
+    );
     let max_toi = f32::MAX;
     let solid = true;
     let filter = QueryFilter::only_fixed();
@@ -92,4 +97,5 @@ fn update(
 #[derive(Component)]
 pub struct Raycast {
   pub point: Vec3,
+  pub adj: Vec3,
 }
