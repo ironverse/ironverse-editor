@@ -28,9 +28,6 @@ fn enter(
 
   let k = posf32_to_world_key(&pos, game_res.chunk_manager.config.seamless_size);
   commands.spawn((Player::new(body, collider, k)));
-
-
-  info!("enter key {:?}", k);
 }
 
 fn update(
@@ -48,8 +45,6 @@ fn update(
     if player.key != k {
       player.prev_key = player.key.clone();
       player.key = k;
-
-      info!("move from {:?} to {:?}", player.prev_key, player.key);
     }
   }
 }

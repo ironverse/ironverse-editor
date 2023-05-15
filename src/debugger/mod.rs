@@ -1,9 +1,9 @@
 use bevy::{prelude::*, diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin}};
 
-// mod raycast;
+mod raycast;
 // mod camera;
 // mod text;
-mod chunks;
+// mod chunks;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -11,10 +11,10 @@ impl Plugin for CustomPlugin {
     app
       // .add_plugin(EguiPlugin) // FIXME: REMOVE LATER
       // .add_plugin(LogDiagnosticsPlugin::default())
-      // .add_plugin(raycast::CustomPlugin)
+      .add_plugin(raycast::CustomPlugin)
       // .add_plugin(camera::CustomPlugin)
       // .add_plugin(text::CustomPlugin)
-      .add_plugin(chunks::CustomPlugin)
+      // .add_plugin(chunks::CustomPlugin)
       ;
   }
 }

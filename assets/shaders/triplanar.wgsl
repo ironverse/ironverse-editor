@@ -11,9 +11,6 @@
 // #import bevy_pbr::pbr_functions
 #import bevy_pbr::pbr_ambient
 
-#ifdef TONEMAP_IN_SHADER
-#import bevy_core_pipeline::tonemapping
-#endif
 
 
 @group(1) @binding(0)
@@ -24,78 +21,6 @@ var albedo_sampler: sampler;
 var normal: texture_2d_array<f32>;
 @group(1) @binding(3)
 var normal_sampler: sampler;
-
-
-struct PbrInput {
-  material: StandardMaterial,
-  occlusion: f32,
-  frag_coord: vec4<f32>,
-  world_position: vec4<f32>,
-  // Normalized world normal used for shadow mapping as normal-mapping is not used for shadow
-  // mapping
-  world_normal: vec3<f32>,
-  // Normalized normal-mapped world normal used for lighting
-  N: vec3<f32>,
-  // Normalized view vector in world space, pointing from the fragment world position toward the
-  // view world position
-  V: vec3<f32>,
-  is_orthographic: bool,
-  flags: u32,
-};
-
-// Creates a PbrInput with default values
-fn pbr_input_new() -> PbrInput {
-  var pbr_input: PbrInput;
-
-  pbr_input.material = standard_material_new();
-  pbr_input.occlusion = 1.0;
-
-  pbr_input.frag_coord = vec4<f32>(0.0, 0.0, 0.0, 1.0);
-  pbr_input.world_position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
-  pbr_input.world_normal = vec3<f32>(0.0, 0.0, 1.0);
-
-  pbr_input.is_orthographic = false;
-
-  pbr_input.N = vec3<f32>(0.0, 0.0, 1.0);
-  pbr_input.V = vec3<f32>(1.0, 0.0, 0.0);
-
-  pbr_input.flags = 0u;
-
-  return pbr_input;
-}
-
-fn prepare_world_normal(
-    world_normal: vec3<f32>,
-    double_sided: bool,
-    is_front: bool,
-) -> vec3<f32> {
-  var output: vec3<f32> = world_normal;
-#ifndef VERTEX_TANGENTS
-#ifndef STANDARDMATERIAL_NORMAL_MAP
-  // NOTE: When NOT using normal-mapping, if looking at the back face of a double-sided
-  // material, the normal needs to be inverted. This is a branchless version of that.
-  output = (f32(!double_sided || is_front) * 2.0 - 1.0) * output;
-#endif
-#endif
-  return output;
-}
-
-// NOTE: Correctly calculates the view vector depending on whether
-// the projection is orthographic or perspective.
-fn calculate_view(
-    world_position: vec4<f32>,
-    is_orthographic: bool,
-) -> vec3<f32> {
-  var V: vec3<f32>;
-  if is_orthographic {
-    // Orthographic view vector
-    V = normalize(vec3<f32>(view.view_proj[0].z, view.view_proj[1].z, view.view_proj[2].z));
-  } else {
-    // Only valid for a perpective projection
-    V = normalize(view.world_position.xyz - world_position.xyz);
-  }
-  return V;
-}
 
 
 struct Vertex {
@@ -299,9 +224,7 @@ fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
   let b = vec3<f32>(dy_normal.x, dy_normal.y, dy_normal.z);
   let normal = normalize(cross(a, b));
 
-  // let normal = normalize(cross(dx_normal, dy_normal));
   // let normal = input.world_normal;
-
 
   let sharpness = 10.0;
   var weights = pow(abs(normal.xyz), vec3<f32>(sharpness, sharpness, sharpness));
@@ -309,7 +232,7 @@ fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
 
   var color = dx * weights.x + dy * weights.y + dz * weights.z;
   color = normalize(color);
-  return color;
+  // return color;
 
 
   // var pbr_input: PbrInput = pbr_input_new();
@@ -345,6 +268,9 @@ fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
 
   // return tone_mapping(pbr(pbr_input));
 
+
+
+  return color;
   // return vec4<f32>(0.0, 0.0, 0.0, 1.0);
 }
 
