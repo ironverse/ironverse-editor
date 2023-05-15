@@ -1,5 +1,5 @@
-use bevy::prelude::*;
-use bevy_egui::{egui::{self, Frame, Ui, Rect}, EguiPlugin};
+use bevy::{prelude::*, window::PrimaryWindow};
+use bevy_egui::{egui::{self, Frame, Ui, Rect, Color32}, EguiPlugin, EguiContexts};
 use bevy_flycam::{MovementSettings, WasmResource};
 use crate::wasm::{is_pointer_locked, PointerLockEvent};
 
@@ -20,7 +20,7 @@ impl Plugin for CustomPlugin {
       .add_startup_system(startup)
       .add_system(update)
       .add_system(update_wasm_mouse)
-      ;
+      .add_system(crosshair);
   }
 }
 
@@ -64,6 +64,49 @@ fn update_wasm_mouse(
     move_setting_res.sensitivity = 0.0;
   }
 }
+
+
+fn crosshair(
+  mut ctx: EguiContexts,
+  mut is_initialized: Local<bool>,
+  mut texture_id: Local<egui::TextureId>,
+  images: Local<Images>,
+
+  windows: Query<&Window, With<PrimaryWindow>>,
+) {
+  let res = windows.get_single();
+  if res.is_err() {
+    return;
+  }
+  let window = res.unwrap();
+
+  if !*is_initialized {
+    *is_initialized = true;
+    *texture_id = ctx.add_image(images.crosshair.clone_weak());
+  }
+
+  let frame = Frame {
+    fill: Color32::from_rgba_unmultiplied(0, 0, 0, 0),
+    ..Default::default()
+  };
+
+  let size = [50.0, 50.0];
+  let x = (window.width() * 0.5) - size[0] * 0.5;
+  let y = (window.height() * 0.5) - size[1] * 0.5;
+
+  egui::Window::new("crosshair")
+    .title_bar(false)
+    .frame(frame)
+    .fixed_rect(Rect {
+      min: [x, y].into(),
+      max: [x, y].into(),
+    })
+    .show(ctx.ctx_mut(), |ui| {
+      ui.image(*texture_id, size.clone());
+    });
+}
+
+
 
 #[derive(Resource)]
 pub struct UIResource {
@@ -114,6 +157,21 @@ impl UIUtils {
       .frame(frame)
       .fixed_rect(rect)
       .show(context, add_contents);
+  }
+}
+
+
+
+struct Images {
+  crosshair: Handle<Image>,
+}
+
+impl FromWorld for Images {
+  fn from_world(world: &mut World) -> Self {
+    let asset_server = world.get_resource_mut::<AssetServer>().unwrap();
+    Self {
+      crosshair: asset_server.load("crosshair.png"),
+    }
   }
 }
 
