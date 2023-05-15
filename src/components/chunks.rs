@@ -12,10 +12,9 @@ impl Plugin for CustomPlugin {
       .add_system(
         spawn_on_add_player.in_set(OnUpdate(GameState::Play))
       )
-      .add_system(on_raycast)
-      .add_system(from_loaded_files.after(on_raycast))
-      .add_system(on_move.after(from_loaded_files))
-      .add_system(add_chunks.after(on_move))
+      .add_system(on_move)
+      .add_system(on_raycast.after(on_move))
+      .add_system(add_chunks.after(on_raycast))
       .add_system(convert_chunks_to_collider);
   }
 }
@@ -124,8 +123,6 @@ fn on_raycast(
           voxel_op = Some(bar.voxel);
         }
       }
-      
-      
     }
   }
 
@@ -144,7 +141,7 @@ fn on_raycast(
     let mut res = Vec::new();
     let voxel = voxel_op.unwrap();
 
-    // Add new
+    // Delete
     if voxel == 0 {
       let nearest_op = nearest_voxel_point_0(
         &game_res.chunk_manager, 
@@ -155,10 +152,9 @@ fn on_raycast(
         continue;
       }
       res = game_res.chunk_manager.set_voxel2(&nearest_op.unwrap(), voxel);
-      local_res.res.push((entity, res.clone()));
     }
 
-    // Delete
+    // Add
     if voxel > 0 {
       let nearest_op = nearest_voxel_point(
         &game_res.chunk_manager, 
@@ -170,8 +166,9 @@ fn on_raycast(
       if nearest_op.is_none() {
         continue;
       }
+
+      
       res = game_res.chunk_manager.set_voxel2(&nearest_op.unwrap(), voxel);
-      local_res.res.push((entity, res.clone()));
     }
     
     for (key, chunk) in res.iter() {
@@ -219,12 +216,6 @@ fn on_raycast(
           data: data.clone(),
           handle: handle,
         })
-      } else {
-        meshes.data.push(Mesh {
-          key: key.clone(),
-          data: data.clone(),
-          handle: ColliderHandle::default(),
-        })
       }
 
 
@@ -234,10 +225,6 @@ fn on_raycast(
 
 }
 
-
-fn from_loaded_files() {
-
-}
 
 fn on_move(
   mut commands: Commands,
@@ -250,7 +237,9 @@ fn on_move(
   mut local_res: ResMut<LocalResource>,
 ) {
   for (entity, player, mut meshes) in &mut players {
-    // info!("player key {:?}", player.key);
+    if player.key == player.prev_key {
+      continue;
+    }
 
     for data in meshes.data.iter() {
       physics.remove_collider(data.handle);
@@ -306,12 +295,6 @@ fn on_move(
           key: key.clone(),
           data: data.clone(),
           handle: handle,
-        })
-      } else {
-        meshes.data.push(Mesh {
-          key: key.clone(),
-          data: data.clone(),
-          handle: ColliderHandle::default(),
         })
       }
     }

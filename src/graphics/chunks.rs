@@ -90,7 +90,6 @@ fn add(
 ) {
   for (_, chunks) in &chunk_query {
     for mesh in &chunks.data {
-
       'inner: for (entity, terrain) in &terrains {
         if mesh.key == terrain.key {
           commands.entity(entity).despawn_recursive();
@@ -99,7 +98,16 @@ fn add(
       }
 
       if mesh.data.positions.len() > 0 {
-        local_res.queued_chunks.push((mesh.key.clone(), mesh.data.clone()));
+        let mut queue = true;
+        for (key, _) in local_res.queued_chunks.iter() {
+          if key == &mesh.key {
+            queue = false;
+          }
+        }
+        
+        if queue {
+          local_res.queued_chunks.push((mesh.key.clone(), mesh.data.clone()));
+        }
       }
       
     }

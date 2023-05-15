@@ -48,6 +48,8 @@ fn update(
     if player.key != k {
       player.prev_key = player.key.clone();
       player.key = k;
+
+      info!("move from {:?} to {:?}", player.prev_key, player.key);
     }
   }
 }
