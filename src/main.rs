@@ -1,14 +1,16 @@
 use bevy_flycam::prelude::*;
 use bevy::{prelude::*, window::PresentMode};
-mod terrain;
-mod physics;
-mod graphics;
-mod utils;
-mod states;
-mod data;
-mod components;
-mod ui;
-mod input;
+use bevy_framepace::{FramepacePlugin, Limiter, FramepaceSettings};
+
+// mod terrain;
+// mod physics;
+// mod graphics;
+// mod utils;
+// mod states;
+// mod data;
+// mod components;
+// mod ui;
+// mod input;
 mod debugger;
 
 #[cfg(target_arch = "wasm32")]
@@ -28,6 +30,7 @@ fn main() {
       }),
       ..default()
     }))
+    // .add_plugin(FramepacePlugin)
     // .add_plugin(NoCameraPlayerPlugin)
     // .add_plugin(terrain::CustomPlugin)
     // .add_plugin(physics::CustomPlugin)
@@ -39,6 +42,7 @@ fn main() {
     .add_plugin(debugger::CustomPlugin)
 
     // .add_plugin(components::CustomPlugin)
+    // .add_startup_system(startup)
     ;
   
   // #[cfg(target_arch = "wasm32")]
@@ -47,6 +51,11 @@ fn main() {
 
   app.run();
 
+}
+
+fn startup(mut frame_settings: ResMut<FramepaceSettings>) {
+  // Not working on wasm?
+  frame_settings.limiter = Limiter::from_framerate(30.0);
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]

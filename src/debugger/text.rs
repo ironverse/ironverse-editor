@@ -1,10 +1,14 @@
-use bevy::{prelude::*, window::PrimaryWindow, diagnostic::Diagnostic};
+use bevy::{prelude::*, window::PrimaryWindow, diagnostic::{Diagnostic, FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin, Diagnostics}};
 use bevy_egui::{EguiContexts, egui::{self, TextureId, Frame, Color32, Style, ImageButton, Rect, Vec2, Pos2, RichText}};
+use bevy_framepace::FramepaceSettings;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
+      .insert_resource(LocalResource::default())
+      .add_plugin(FrameTimeDiagnosticsPlugin::default())
+      .add_plugin(LogDiagnosticsPlugin::default())
       .add_system(show_texts)
       ;
   }
@@ -21,12 +25,41 @@ impl Plugin for CustomPlugin {
 fn show_texts(
   mut ctx: EguiContexts,
   windows: Query<&Window, With<PrimaryWindow>>,
-  diagnostic: &Diagnostic
+  diagnostics: Res<Diagnostics>,
+
+  mut settings: ResMut<FramepaceSettings>,
+
+  time: Res<Time>,
+  mut local_res: ResMut<LocalResource>,
 ) {
   let res = windows.get_single();
   if res.is_err() {
     return;
   }
+
+  let fps = match diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
+    Some(diag) => {
+      let mut fps = 0.0;
+      if diag.average().is_some() {
+        fps = diag.average().unwrap()
+      }
+      fps
+    },
+    None => 0.0
+  };
+
+  local_res.fps += 1.0;
+  // info!("test {}", local_res.fps);
+  if local_res.timer.tick(time.delta()).finished() {
+
+    // info!("fps {}", local_res.fps);
+
+    local_res.fps = 0.0;
+  }
+  
+
+  // info!("fps {:?}: {:?}", fps, settings.limiter);
+
   let window = res.unwrap();
   let frame = Frame {
     fill: Color32::from_rgba_unmultiplied(0, 0, 0, 0),
@@ -56,4 +89,20 @@ fn show_texts(
         );
       });
     });
+}
+
+
+#[derive(Resource)]
+struct LocalResource {
+  timer: Timer,
+  fps: f32,
+}
+
+impl Default for LocalResource {
+  fn default() -> Self {
+    Self {
+      timer: Timer::from_seconds(1.0, TimerMode::Repeating),
+      fps: 0.0,
+    }
+  }
 }
