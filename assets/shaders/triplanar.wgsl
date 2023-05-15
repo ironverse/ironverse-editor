@@ -281,13 +281,15 @@ fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
   var vz = input.voxel_weight.z * index2;
   var vw = input.voxel_weight.w * index3;
 
-  let dx = dx0 * vx + dx1 * vy +
+  // Normalize the result
+
+  var dx = dx0 * vx + dx1 * vy +
     dx2 * vz + dx3 * vw;
 
-  let dy = dy0 * vx + dy1 * vy +
+  var dy = dy0 * vx + dy1 * vy +
     dy2 * vz + dy3 * vw;
 
-  let dz = dz0 * vx + dz1 * vy +
+  var dz = dz0 * vx + dz1 * vy +
     dz2 * vz + dz3 * vw;
 
   let dx_normal = dpdx(input.world_position);
@@ -302,6 +304,7 @@ fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
   weights = weights / (weights.x + weights.y + weights.z);
 
   var color = dx * weights.x + dy * weights.y + dz * weights.z;
+  color = normalize(color);
   return color;
 
 
