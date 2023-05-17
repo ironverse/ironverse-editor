@@ -1,26 +1,26 @@
 use bevy::prelude::*;
 use voxels::{data::voxel_octree::VoxelOctree, chunk::chunk_manager::Chunk};
-use crate::{ui::menu::UIMenuResource, components::{save::Data, player::Player}, data::GameResource, physics::Physics};
+use crate::{components::{save::Data, player::Player}, data::GameResource, physics::Physics};
 
 use super::GameState;
+
+#[cfg(target_arch = "wasm32")]
+use crate::ui::menu::UIMenuResource;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_system(enter.in_schedule(OnEnter(GameState::Load)))
-      .add_system(update.in_set(OnUpdate(GameState::Load)))
       .add_system(exit.in_schedule(OnExit(GameState::Load)))
       ;
+
+    #[cfg(target_arch = "wasm32")]
+    app
+      .add_system(update.in_set(OnUpdate(GameState::Load)));
   }
 }
 
-/* 
-  Clear everything in-game
-    Defer better way of doing it
-    For now just clear everything
-
-  */
 fn enter(
   mut commands: Commands,
   mut game_res: ResMut<GameResource>,
@@ -37,6 +37,7 @@ fn enter(
     Send the data to components chunks and graphics chunks?
     Separate physics manager?
 */
+#[cfg(target_arch = "wasm32")]
 fn update(
   mut commands: Commands,
   ui_menu_res: Res<UIMenuResource>,

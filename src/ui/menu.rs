@@ -1,31 +1,35 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_egui::{egui::{self, Color32, Frame, Vec2, Button}, EguiContexts};
 use bevy_egui::egui::Rect;
-use bevy_flycam::{MovementSettings, WasmResource};
+use bevy_flycam::MovementSettings;
 use flume::{Sender, Receiver};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
 use crate::{wasm::{html_body, PointerLockEvent}, states::GameState};
-
 use super::{UIResource, UIState};
+
+#[cfg(target_arch = "wasm32")]
+use bevy_flycam::WasmResource;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .insert_resource(UIMenuResource::default())
-      .add_system(enter.in_schedule(OnEnter(UIState::Menu)))
-      .add_system(exit.in_schedule(OnExit(UIState::Menu)))
-      .add_system(render.in_set(OnUpdate(UIState::Menu)))
-      ;
+      .insert_resource(UIMenuResource::default());
+
+    #[cfg(target_arch = "wasm32")]
+    app
+      .add_system(enter_wasm.in_schedule(OnEnter(UIState::Menu)))
+      .add_system(exit_wasm.in_schedule(OnExit(UIState::Menu)))
+      .add_system(render_wasm.in_set(OnUpdate(UIState::Menu)));
   }
 }
 
 
 
 
-
-fn enter(
+#[cfg(target_arch = "wasm32")]
+fn enter_wasm(
   mut move_setting_res: ResMut<MovementSettings>,
   #[cfg(target_arch = "wasm32")]
   mut wasm_res: ResMut<WasmResource>,
@@ -35,7 +39,8 @@ fn enter(
   info!("enter");
 }
 
-fn exit(
+#[cfg(target_arch = "wasm32")]
+fn exit_wasm(
   mut move_setting_res: ResMut<MovementSettings>,
   #[cfg(target_arch = "wasm32")]
   mut wasm_res: ResMut<WasmResource>,
@@ -45,7 +50,8 @@ fn exit(
   info!("exit");
 }
 
-fn render(
+#[cfg(target_arch = "wasm32")]
+fn render_wasm(
   mut commands: Commands,
   mut contexts: EguiContexts,
   windows: Query<(Entity, &Window), With<PrimaryWindow>>,
@@ -174,7 +180,7 @@ fn recv_file(local_res: Res<UIMenuResource>,) {
 
 
 
-
+#[cfg(target_arch = "wasm32")]
 fn load_file(send: Sender<Vec<u8>>) {
   let task = rfd::AsyncFileDialog::new().pick_file();
 

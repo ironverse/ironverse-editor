@@ -3,11 +3,14 @@ use bevy::utils::HashMap;
 use serde::{Deserialize, Serialize};
 use voxels::chunk::chunk_manager::Chunk;
 use voxels::chunk::chunk_manager::ChunkManager;
+
+use super::chunks::Chunks;
+
+#[cfg(target_arch = "wasm32")]
 use crate::{ui::UIState, wasm::html_body};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
-use super::chunks::Chunks;
 
 /*
   Refactor: Have to remove from components module to states
@@ -18,25 +21,32 @@ pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .insert_resource(LocalResource::default());
-    // app
-    //   .add_system(download.in_schedule(OnEnter(UIState::Save)));
+      .insert_resource(LocalResource::default())
+      .add_system(track_modified_chunks);
 
-    // app
-    //   .add_startup_system(download);
-
+    #[cfg(target_arch = "wasm32")]
     app
-      .add_system(track_modified_chunks)
-      .add_system(download.in_schedule(OnEnter(UIState::Save)));
+      .add_system(download_wasm.in_schedule(OnEnter(UIState::Save)));
   }
 }
 
-/*
-  Create an example file to be downloaded
+fn track_modified_chunks(
+  mut chunks_query: Query<&Chunks, Changed<Chunks>>,
+  mut local_res: ResMut<LocalResource>,
+) {
+  for c in &chunks_query {
+    for chunk in c.data.iter() {
+      local_res.chunks.insert(chunk.key.clone(), chunk.clone());
 
- */
+    }
+    info!("chunks.len() {:?}", local_res.chunks.len());
+  }
+}
 
-fn download(
+
+
+#[cfg(target_arch = "wasm32")]
+fn download_wasm(
   local_res: Res<LocalResource>,
   mut next_state: ResMut<NextState<UIState>>,
 ) {
@@ -100,20 +110,6 @@ fn download(
 
 
   next_state.set(UIState::Default);
-}
-
-
-fn track_modified_chunks(
-  mut chunks_query: Query<&Chunks, Changed<Chunks>>,
-  mut local_res: ResMut<LocalResource>,
-) {
-  for c in &chunks_query {
-    for chunk in c.data.iter() {
-      local_res.chunks.insert(chunk.key.clone(), chunk.clone());
-
-    }
-    info!("chunks.len() {:?}", local_res.chunks.len());
-  }
 }
 
 

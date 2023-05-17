@@ -1,8 +1,11 @@
 use bevy::prelude::*;
 use rapier3d::{na::{Point, Isometry}, prelude::{ColliderBuilder, InteractionGroups, Group, ColliderHandle}};
 use voxels::{chunk::{adjacent_keys, chunk_manager::{ChunkManager, Chunk}, adj_delta_keys}, utils::{key_to_world_coord_f32, posf32_to_world_key}, data::voxel_octree::{VoxelMode, MeshData}};
-use crate::{states::GameState, data::GameResource, physics::Physics, utils::{nearest_voxel_point_0, nearest_voxel_point}, wasm::WasmInputEvent, input::hotbar::HotbarResource};
+use crate::{states::GameState, data::GameResource, physics::Physics, utils::{nearest_voxel_point_0, nearest_voxel_point}};
 use super::{player::Player, raycast::Raycast};
+
+#[cfg(target_arch = "wasm32")]
+use crate::{wasm::WasmInputEvent, input::hotbar::HotbarResource};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -12,6 +15,15 @@ impl Plugin for CustomPlugin {
       .add_system(
         spawn_on_add_player.in_set(OnUpdate(GameState::Play))
       )
+      // .add_system(on_move)
+      // .add_system(on_raycast.after(on_move))
+      // .add_system(add_chunks.after(on_raycast))
+      // .add_system(convert_chunks_to_collider)
+      ;
+    
+
+    #[cfg(target_arch = "wasm32")]
+    app
       .add_system(on_move)
       .add_system(on_raycast.after(on_move))
       .add_system(add_chunks.after(on_raycast))
@@ -98,6 +110,7 @@ fn spawn_on_add_player(
 }
 
 /* Refactor: This is related to raycast, have to simplify implementation later */
+#[cfg(target_arch = "wasm32")]
 fn on_raycast(
   mut commands: Commands,
   mut raycasts: Query<(Entity, &Raycast, &mut Meshes), Changed<Raycast>>,
@@ -226,6 +239,8 @@ fn on_raycast(
 }
 
 
+
+#[cfg(target_arch = "wasm32")]
 fn on_move(
   mut commands: Commands,
   mut players: Query<(Entity, &Player, &mut Meshes), Changed<Player>>,
@@ -310,11 +325,12 @@ fn on_move(
     Modifying terrain
     When player is moving
 */
+#[cfg(target_arch = "wasm32")]
 fn convert_chunks_to_collider() {
 
 }
 
-
+#[cfg(target_arch = "wasm32")]
 fn add_chunks(
   mut commands: Commands,
   mut local_res: ResMut<LocalResource>,
