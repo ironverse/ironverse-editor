@@ -5,11 +5,14 @@ use bevy_framepace::{FramepacePlugin, Limiter, FramepaceSettings};
 mod physics;
 mod data;
 mod states;
-// mod graphics;
+mod components;
+mod graphics;
+
+
 // mod utils;
 
 // mod data;
-mod components;
+
 // mod ui;
 // mod input;
 // mod debugger;
@@ -32,13 +35,13 @@ fn main() {
       ..default()
     }))
     .add_plugin(FramepacePlugin)
-    .add_plugin(NoCameraPlayerPlugin)
+    // .add_plugin(NoCameraPlayerPlugin)
+    .add_plugin(PlayerPlugin)
     .add_plugin(physics::CustomPlugin)
     .add_plugin(data::CustomPlugin)
     .add_plugin(states::CustomPlugin)
     .add_plugin(components::CustomPlugin)
-    // .add_plugin(data::CustomPlugin)
-    // .add_plugin(graphics::CustomPlugin)
+    .add_plugin(graphics::CustomPlugin)
     // .add_plugin(ui::CustomPlugin)
     // .add_plugin(input::CustomPlugin)
     // 

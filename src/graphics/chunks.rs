@@ -1,6 +1,7 @@
 use bevy::{prelude::*, render::{mesh::{MeshVertexAttribute, MeshVertexBufferLayout, Indices}, render_resource::{VertexFormat, AsBindGroup, ShaderRef, SpecializedMeshPipelineError, RenderPipelineDescriptor, PrimitiveTopology}}, reflect::TypeUuid, pbr::{MaterialPipeline, MaterialPipelineKey}, asset::LoadState};
 use voxels::{chunk::{adjacent_keys, chunk_manager::ChunkManager}, utils::{key_to_world_coord_f32, posf32_to_world_key}, data::voxel_octree::{VoxelMode, MeshData}};
-use crate::{data::GameResource, components::{player::Player, chunks::{Meshes}}, states::GameState};
+
+use crate::{components::chunks::Chunks, data::GameResource};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -11,8 +12,9 @@ impl Plugin for CustomPlugin {
       .add_startup_system(startup)
       .add_system(init_textures)
       .add_system(add)
-      .add_system(exit_load.in_schedule(OnExit(GameState::Load)))
-      .add_system(remove);
+      // .add_system(exit_load.in_schedule(OnExit(GameState::Load)))
+      // .add_system(remove)
+      ;
   }
 }
 
@@ -86,7 +88,7 @@ fn add(
   mut images: ResMut<Assets<Image>>,
   terrains: Query<(Entity, &TerrainGraphics)>,
 
-  chunk_query: Query<(Entity, &Meshes), Changed<Meshes>>,
+  chunk_query: Query<(Entity, &Chunks), Changed<Chunks>>,
 ) {
   for (_, chunks) in &chunk_query {
     for mesh in &chunks.data {
@@ -149,7 +151,7 @@ fn add(
   local_res.queued_chunks.clear();
 }
 
-
+/* 
 fn exit_load(
   mut commands: Commands,
   terrains: Query<(Entity, &TerrainGraphics)>,
@@ -173,7 +175,7 @@ fn remove(
     }
   }
 }
-
+ */
 
 #[derive(Resource)]
 struct LocalResource {
@@ -246,6 +248,17 @@ pub struct TerrainGraphics {
   pub key: [i64; 3]
 }
 
+
+
+#[derive(Component)]
+pub struct ChunkGraphics {
+}
+
+impl Default for ChunkGraphics {
+  fn default() -> Self {
+    Self { }
+  }
+}
 
 
 
