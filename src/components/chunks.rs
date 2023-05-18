@@ -28,6 +28,22 @@ impl Plugin for CustomPlugin {
       .add_system(on_raycast.after(on_move))
       .add_system(add_chunks.after(on_raycast))
       .add_system(convert_chunks_to_collider);
+
+
+    /*
+      No state
+        State should be done on higher level than game components
+      Track the change state of other components?
+
+      event1
+      Player.update()
+      event2
+      Chunk.update()
+      
+      Player.update()
+      Chunk.update()
+      Resource()
+     */
   }
 }
 

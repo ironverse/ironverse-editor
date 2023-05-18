@@ -47,6 +47,9 @@ fn main() {
   app
     .add_plugin(wasm::CustomPlugin);
 
+  
+
+
   app.run();
 
 }
