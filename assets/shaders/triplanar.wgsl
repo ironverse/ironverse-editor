@@ -8,7 +8,7 @@
 #import bevy_pbr::lighting
 #import bevy_pbr::shadows
 #import bevy_pbr::fog
-// #import bevy_pbr::pbr_functions
+#import bevy_pbr::pbr_functions
 #import bevy_pbr::pbr_ambient
 
 
@@ -18,37 +18,37 @@ var albedo: texture_2d_array<f32>;
 @group(1) @binding(1)
 var albedo_sampler: sampler;
 @group(1) @binding(2)
-var normal: texture_2d_array<f32>;
+var normal_texture: texture_2d_array<f32>;
 @group(1) @binding(3)
 var normal_sampler: sampler;
 
 
-struct Vertex {
-  @location(0) position: vec3<f32>,
-  @location(1) normal: vec3<f32>,
-  @location(2) voxel_weight: vec4<f32>,
-  @location(3) voxel_type_1: vec4<u32>,
-};
+// struct Vertex {
+//   @location(0) position: vec3<f32>,
+//   @location(1) normal: vec3<f32>,
+//   @location(2) voxel_weight: vec4<f32>,
+//   @location(3) voxel_type_1: vec4<u32>,
+// };
 
-struct VertexOutput {
-  @builtin(position) clip_position: vec4<f32>,
-  @location(0) world_position: vec4<f32>,
-  @location(1) world_normal: vec3<f32>,
-  @location(2) voxel_weight: vec4<f32>,
-  @location(3) voxel_type_1: vec4<u32>,
-};
+// struct VertexOutput {
+//   @builtin(position) clip_position: vec4<f32>,
+//   @location(0) world_position: vec4<f32>,
+//   @location(1) world_normal: vec3<f32>,
+//   @location(2) voxel_weight: vec4<f32>,
+//   @location(3) voxel_type_1: vec4<u32>,
+// };
 
-@vertex
-fn vertex(vertex: Vertex) -> VertexOutput {
-  var out: VertexOutput;
-  out.world_position = mesh_position_local_to_world(mesh.model, vec4<f32>(vertex.position, 1.0));
-  out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(vertex.position, 1.0));
-  out.world_normal = vertex.normal;
+// @vertex
+// fn vertex(vertex: Vertex) -> VertexOutput {
+//   var out: VertexOutput;
+//   out.world_position = mesh_position_local_to_world(mesh.model, vec4<f32>(vertex.position, 1.0));
+//   out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(vertex.position, 1.0));
+//   out.world_normal = vertex.normal;
 
-  out.voxel_weight = vertex.voxel_weight;
-  out.voxel_type_1 = vertex.voxel_type_1;
-  return out;
-}
+//   out.voxel_weight = vertex.voxel_weight;
+//   out.voxel_type_1 = vertex.voxel_type_1;
+//   return out;
+// }
 
 struct FragmentInput {
   // @builtin(position) frag_coord: vec4<f32>,
@@ -74,7 +74,7 @@ struct Triplanar {
 fn sample_normal_map(uv: vec2<f32>, material_type: u32) -> vec3<f32> {
 
   
-  var normal = textureSample(normal, normal_sampler, uv, i32(material_type)).rgb;
+  var normal = textureSample(normal_texture, normal_sampler, uv, i32(material_type)).rgb;
   normal = normal * 2.0 - 1.0;
   return normalize(normal);
   // return vec3<f32>(0.0);
@@ -235,42 +235,42 @@ fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
   // return color;
 
 
-  // var pbr_input: PbrInput = pbr_input_new();
-  // pbr_input.material.base_color = pbr_input.material.base_color * color;
-  // pbr_input.frag_coord = input.frag_coord;
-  // pbr_input.world_position = input.world_position;
-  // pbr_input.world_normal = prepare_world_normal(
-  //   input.world_normal,
-  //   true,
-  //   false,
-  // );
+  var pbr_input: PbrInput = pbr_input_new();
+  pbr_input.material.base_color = pbr_input.material.base_color * color;
+  pbr_input.frag_coord = input.frag_coord;
+  pbr_input.world_position = input.world_position;
+  pbr_input.world_normal = prepare_world_normal(
+    input.world_normal,
+    true,
+    false,
+  );
 
-  // pbr_input.is_orthographic = view.projection[3].w == 1.0;
+  pbr_input.is_orthographic = view.projection[3].w == 1.0;
 
-  // let sharpness_1 = 8.0;
-  // var weights_1 = pow(abs(input.world_normal), vec3(sharpness_1));
-  // weights_1 = weights_1 / (weights_1.x + weights_1.y + weights_1.z);
+  let sharpness_1 = 8.0;
+  var weights_1 = pow(abs(input.world_normal), vec3(sharpness_1));
+  weights_1 = weights_1 / (weights_1.x + weights_1.y + weights_1.z);
 
-  // let scale = 1.0;
-  // let uv_x = input.world_position.yz * scale;
-  // let uv_y = input.world_position.zx * scale;
-  // let uv_z = input.world_position.xy * scale;
-  // var triplanar = Triplanar(weights_1, uv_x, uv_y, uv_z);
+  let scale = 1.0;
+  let uv_x = input.world_position.yz * scale;
+  let uv_y = input.world_position.zx * scale;
+  let uv_z = input.world_position.xy * scale;
+  var triplanar = Triplanar(weights_1, uv_x, uv_y, uv_z);
 
-  // pbr_input.N = triplanar_normal_to_world_splatted(
-  //   input.voxel_weight, 
-  //   input.world_normal, 
-  //   input.voxel_type_1, 
-  //   triplanar
-  // );
+  pbr_input.N = triplanar_normal_to_world_splatted(
+    input.voxel_weight, 
+    input.world_normal, 
+    input.voxel_type_1, 
+    triplanar
+  );
 
-  // pbr_input.V = calculate_view(input.world_position, pbr_input.is_orthographic);
+  pbr_input.V = calculate_view(input.world_position, pbr_input.is_orthographic);
 
-  // return tone_mapping(pbr(pbr_input));
+  return tone_mapping(pbr(pbr_input));
 
 
 
-  return color;
+  // return color;
   // return vec4<f32>(0.0, 0.0, 0.0, 1.0);
 }
 

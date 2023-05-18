@@ -218,7 +218,7 @@ struct CustomMaterial {
 
 impl Material for CustomMaterial {
   fn vertex_shader() -> ShaderRef {
-    "shaders/triplanar.wgsl".into()
+    "shaders/triplanar_vertices.wgsl".into()
   }
   fn fragment_shader() -> ShaderRef {
     "shaders/triplanar.wgsl".into()
