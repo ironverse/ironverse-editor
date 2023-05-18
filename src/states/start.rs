@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use voxels::utils::posf32_to_world_key;
-use crate::{physics::Physics, data::{GameResource, GameState, Player}, components::player_movement::PlayerMovement};
+use crate::{physics::Physics, data::{GameResource, GameState, Player}, components::{player_movement::PlayerMovement, chunks::Chunks}};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -32,5 +32,6 @@ fn enter(
   commands.spawn((
     Player::new(body, collider, k),
     PlayerMovement { },
+    Chunks::default(),
   ));
 }
