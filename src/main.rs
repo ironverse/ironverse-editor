@@ -3,10 +3,12 @@ use bevy::{prelude::*, window::PresentMode};
 use bevy_framepace::{FramepacePlugin, Limiter, FramepaceSettings};
 
 mod physics;
-mod graphics;
-mod utils;
-mod states;
 mod data;
+mod states;
+// mod graphics;
+// mod utils;
+
+// mod data;
 mod components;
 // mod ui;
 // mod input;
@@ -32,12 +34,14 @@ fn main() {
     .add_plugin(FramepacePlugin)
     .add_plugin(NoCameraPlayerPlugin)
     .add_plugin(physics::CustomPlugin)
-    .add_plugin(states::CustomPlugin)
     .add_plugin(data::CustomPlugin)
-    .add_plugin(graphics::CustomPlugin)
+    .add_plugin(states::CustomPlugin)
+    .add_plugin(components::CustomPlugin)
+    // .add_plugin(data::CustomPlugin)
+    // .add_plugin(graphics::CustomPlugin)
     // .add_plugin(ui::CustomPlugin)
     // .add_plugin(input::CustomPlugin)
-    // .add_plugin(components::CustomPlugin)
+    // 
 
     // .add_plugin(debugger::CustomPlugin)
     // .add_startup_system(startup)

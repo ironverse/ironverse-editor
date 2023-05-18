@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use crate::{physics::Physics, data::{GameResource}, GameSet, components::save::Data};
-use super::{GameState, GameEvent, GameEventType};
+use voxels::utils::posf32_to_world_key;
+use crate::{physics::Physics, data::{GameResource, GameState, Player}, components::player_movement::PlayerMovement};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -14,17 +14,23 @@ impl Plugin for CustomPlugin {
 }
 
 fn enter(
+  mut commands: Commands,
   mut physics: ResMut<Physics>,
   mut game_res: ResMut<GameResource>,
   mut next_state: ResMut<NextState<GameState>>,
-  
-  mut commands: Commands,
-  mut meshes: ResMut<Assets<Mesh>>,
-  mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
 
-  let data = Data::default();
-  game_res.data = data;
+  // let data = Data::default();
+  // game_res.data = data;
 
-  next_state.set(GameState::Play);
+  // next_state.set(GameState::Play);
+
+  let pos = [0.0, 5.0, 0.0];
+  let (body, collider) = physics.spawn_character(1.0, 0.5, Vec3::new(pos[0], pos[1], pos[2]));
+
+  let k = posf32_to_world_key(&pos, game_res.chunk_manager.config.seamless_size);
+  commands.spawn((
+    Player::new(body, collider, k),
+    PlayerMovement { },
+  ));
 }
