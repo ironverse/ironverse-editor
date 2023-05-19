@@ -1,7 +1,7 @@
 use bevy::{prelude::*, input::ButtonState};
 use rapier3d::prelude::{ColliderBuilder, InteractionGroups, Isometry, Point};
 use voxels::{data::voxel_octree::VoxelMode, utils::key_to_world_coord_f32};
-use crate::{physics::Physics, data::GameResource, utils::{nearest_voxel_point, nearest_voxel_point_0}, input::mouse_input::MouseInput};
+use crate::{physics::Physics, data::GameResource, utils::{nearest_voxel_point, nearest_voxel_point_0}, input::MouseInput};
 use super::{raycast::Raycast, chunks::{Chunks, Mesh}};
 use rapier3d::geometry::Group;
 

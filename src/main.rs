@@ -10,7 +10,7 @@ mod graphics;
 mod input;
 mod utils;
 mod debugger;
-
+mod native;
 
 #[cfg(target_arch = "wasm32")]
 mod wasm;
@@ -37,15 +37,15 @@ fn main() {
     .add_plugin(states::CustomPlugin)
     .add_plugin(components::CustomPlugin)
     .add_plugin(graphics::CustomPlugin)
+    .add_plugin(input::CustomPlugin)
     // .add_plugin(ui::CustomPlugin)
 
     .add_plugin(debugger::CustomPlugin)
     // .add_startup_system(startup)
     ;
   
-  #[cfg(not(target_arch = "wasm32"))]
   app
-    .add_plugin(input::CustomPlugin);
+    .add_plugin(native::CustomPlugin);
   
   #[cfg(target_arch = "wasm32")]
   app
