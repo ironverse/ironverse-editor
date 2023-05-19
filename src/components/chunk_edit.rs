@@ -1,7 +1,7 @@
 use bevy::{prelude::*, input::ButtonState};
 use rapier3d::prelude::{ColliderBuilder, InteractionGroups, Isometry, Point};
 use voxels::{data::voxel_octree::VoxelMode, utils::key_to_world_coord_f32};
-use crate::{physics::Physics, data::GameResource, utils::{nearest_voxel_point, nearest_voxel_point_0}, input::MouseInput};
+use crate::{physics::Physics, data::GameResource, utils::{nearest_voxel_point, nearest_voxel_point_0}, input::{MouseInput, hotbar::HotbarResource}};
 use super::{raycast::Raycast, chunks::{Chunks, Mesh}};
 use rapier3d::geometry::Group;
 
@@ -25,7 +25,7 @@ fn update(
   // mut wasm_events: EventReader<WasmInputEvent>,
 
   mut physics: ResMut<Physics>,
-  // hotbar_res: Res<HotbarResource>,
+  hotbar_res: Res<HotbarResource>,
   mut mouse_inputs: EventReader<MouseInput>,
 ) {
 
@@ -40,6 +40,12 @@ fn update(
       
       if event.mouse_button_input.button == MouseButton::Right {
         voxel_op = Some(1);
+        for i in 0..hotbar_res.bars.len() {
+          let bar = &hotbar_res.bars[i];
+          if  hotbar_res.selected_keycode ==  bar.key_code {
+            voxel_op = Some(bar.voxel);
+          }
+        }
       }
     }
   }

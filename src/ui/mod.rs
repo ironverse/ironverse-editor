@@ -1,14 +1,12 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_egui::{egui::{self, Frame, Ui, Rect, Color32}, EguiPlugin, EguiContexts};
 use bevy_flycam::MovementSettings;
-use crate::wasm::{is_pointer_locked, PointerLockEvent};
 
-#[cfg(target_arch = "wasm32")]
-use bevy_flycam::WasmResource;
 
-pub mod menu;
-// mod hotbar;
-// mod inventory;
+pub mod hotbar;
+pub mod inventory;
+// pub mod menu;
+
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -17,9 +15,9 @@ impl Plugin for CustomPlugin {
       .add_plugin(EguiPlugin)
       .insert_resource(UIResource::default())
       .add_state::<UIState>()
-      // .add_plugin(hotbar::CustomPlugin)
+      .add_plugin(hotbar::CustomPlugin)
+      .add_plugin(inventory::CustomPlugin)
       // .add_plugin(menu::CustomPlugin)
-      // .add_plugin(inventory::CustomPlugin)
       // .add_startup_system(startup)
       // .add_system(update)
       // .add_system(update_wasm_mouse)

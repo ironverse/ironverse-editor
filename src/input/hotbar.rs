@@ -5,13 +5,8 @@ impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
       .insert_resource(HotbarResource::default())
-      .add_startup_system(startup)
       .add_system(update);
   }
-}
-
-fn startup() {
-  
 }
 
 fn update(
