@@ -3,32 +3,14 @@ use bevy_flycam::FlyCam;
 use rapier3d::{prelude::{Vector, QueryFilter, Ray}, na::Point3};
 use crate::{utils::{Math, nearest_voxel_point_0}, physics::Physics, data::GameResource};
 
-use super::player::Player;
-
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system(add)
       .add_system(update)
       ;
   }
 }
-
-fn add(
-  mut commands: Commands,
-  player_query: Query<(Entity, &Player), Added<Player>>,
-) {
-  for (entity, player) in &player_query {
-    commands
-      .entity(entity)
-      .insert(Raycast { 
-        point: Vec3::new(f32::NAN, f32::NAN, f32::NAN),
-        adj: Vec3::new(0.0, 0.2, 0.0),
-      });
-  }
-}
-
 
 fn update(
   physics: Res<Physics>,
@@ -98,4 +80,13 @@ fn update(
 pub struct Raycast {
   pub point: Vec3,
   pub adj: Vec3,
+}
+
+impl Default for Raycast {
+  fn default() -> Self {
+    Self {
+      point: Vec3::new(f32::NAN, f32::NAN, f32::NAN),
+      adj: Vec3::new(0.0, 0.2, 0.0),
+    }
+  }
 }

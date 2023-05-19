@@ -8,14 +8,13 @@ mod states;
 mod components;
 mod graphics;
 
-
-// mod utils;
+mod utils;
 
 // mod data;
 
 // mod ui;
 // mod input;
-// mod debugger;
+mod debugger;
 
 #[cfg(target_arch = "wasm32")]
 mod wasm;
@@ -34,9 +33,9 @@ fn main() {
       }),
       ..default()
     }))
-    .add_plugin(FramepacePlugin)
-    // .add_plugin(NoCameraPlayerPlugin)
-    .add_plugin(PlayerPlugin)
+    // .add_plugin(FramepacePlugin)
+    // .add_plugin(PlayerPlugin)
+    .add_plugin(NoCameraPlayerPlugin)
     .add_plugin(physics::CustomPlugin)
     .add_plugin(data::CustomPlugin)
     .add_plugin(states::CustomPlugin)
@@ -46,7 +45,7 @@ fn main() {
     // .add_plugin(input::CustomPlugin)
     // 
 
-    // .add_plugin(debugger::CustomPlugin)
+    .add_plugin(debugger::CustomPlugin)
     // .add_startup_system(startup)
     ;
   

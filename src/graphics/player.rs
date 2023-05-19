@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rapier3d::na::Vector3;
 
-use crate::{components::player::Player, physics::Physics};
+use crate::{physics::Physics, data::Player};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -27,7 +27,7 @@ fn add(
         mesh: meshes.add(shape::Capsule { 
           ..default()
         }.into()),
-        material: materials.add(Color::rgba(0.3, 0.5, 0.3, 0.1).into()),
+        material: materials.add(Color::rgba(0.3, 0.5, 0.3, 0.3).into()),
         ..default()
       });
   }

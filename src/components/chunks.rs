@@ -35,8 +35,6 @@ fn spawn_on_add_player(
   mut player_query: Query<(Entity, &Player, &mut Chunks), Added<Chunks>>,
 ) {
   for (entity, player, mut chunks) in &mut player_query {
-    info!("Added chunks");
-
     let config = game_res.chunk_manager.config.clone();
     let keys = adjacent_keys(&player.key, 1, true);
     for key in keys.iter() {

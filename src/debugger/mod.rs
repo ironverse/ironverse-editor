@@ -1,6 +1,6 @@
 use bevy::{prelude::*, diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin}};
 
-mod raycast;
+pub mod raycast;
 // mod camera;
 // mod text;
 // mod chunks;
