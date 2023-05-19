@@ -3,6 +3,7 @@ use bevy::prelude::*;
 pub mod player_movement;
 pub mod chunks;
 pub mod raycast;
+pub mod chunk_edit;
 // pub mod save;
 
 pub struct CustomPlugin;
@@ -12,6 +13,7 @@ impl Plugin for CustomPlugin {
       .add_plugin(player_movement::CustomPlugin)
       .add_plugin(chunks::CustomPlugin)
       .add_plugin(raycast::CustomPlugin)
+      .add_plugin(chunk_edit::CustomPlugin)
       // .add_plugin(save::CustomPlugin)
       ;
   }

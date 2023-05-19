@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_flycam::FlyCam;
 use voxels::utils::posf32_to_world_key;
-use crate::{physics::Physics, data::{GameResource, GameState, Player}, components::{player_movement::PlayerMovement, chunks::Chunks, raycast::Raycast}, graphics::chunks::ChunkGraphics, debugger::raycast::RaycastDebugger};
+use crate::{physics::Physics, data::{GameResource, GameState, Player}, components::{player_movement::PlayerMovement, chunks::Chunks, raycast::Raycast, chunk_edit::ChunkEdit}, graphics::chunks::ChunkGraphics, debugger::raycast::RaycastDebugger};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -41,5 +41,6 @@ fn enter(
     },
     FlyCam {},
     RaycastDebugger::default(),
+    ChunkEdit::default(),
   ));
 }
