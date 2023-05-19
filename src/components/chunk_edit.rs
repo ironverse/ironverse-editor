@@ -50,22 +50,6 @@ fn update(
     }
   }
 
-  // for e in wasm_events.iter() {
-  //   if e.mouse == MouseButton::Left {
-  //     voxel_op = Some(0);
-  //   }
-
-  //   if e.mouse == MouseButton::Right {
-  //     // voxel_op = Some(1);
-  //     for i in 0..hotbar_res.bars.len() {
-  //       let bar = &hotbar_res.bars[i];
-  //       if  hotbar_res.selected_keycode ==  bar.key_code {
-  //         voxel_op = Some(bar.voxel);
-  //       }
-  //     }
-  //   }
-  // }
-
   if voxel_op.is_none() {
     return;
   }

@@ -10,7 +10,7 @@ impl Plugin for CustomPlugin {
     app
       .insert_resource(HotbarUIResource::default())
       .add_system(render)
-      .add_system(render_items)
+      .add_system(render_items.after(render))
       ;
   }
 }
@@ -26,14 +26,12 @@ fn render(
   hotbar_res: Res<HotbarResource>,
   mut hotbar_ui_res: ResMut<HotbarUIResource>,
   ui_res: Res<UIResource>,
-  inventory_texture: Res<InventoryTexture>,
 ) {
   let res = windows.get_single();
-  if res.is_err() || !inventory_texture.is_loaded {
+  if res.is_err() {
     return;
   }
   let window = res.unwrap();
-
 
   if !*is_initialized {
     *is_initialized = true;
@@ -73,10 +71,7 @@ fn render(
             img_button = img_button.tint(Color32::RED);
           }
 
-
           let res = ui.add(img_button);
-          
-
           let rect = res.rect.clone();
           hotbar_ui_res.pos_bars[index] = rect;
         }
@@ -106,12 +101,6 @@ fn render_items(
     return;
   }
   let window = res.unwrap();
-
-
-  if !*is_initialized {
-    *is_initialized = true;
-    *texture_id = ctx.add_image(images.block.clone_weak());
-  }
 
   let frame = Frame {
     fill: Color32::from_rgba_unmultiplied(0, 0, 0, 0),
@@ -162,22 +151,6 @@ fn render_items(
             }
           }
         }
-        // for _ in 0..blocks {
-        //   // let key_map = &key_mapping[index];
-        //   let mut img_button = ImageButton::new(*texture_id, size.clone()).frame(false);
-
-        //   // if play_res.selected_key_code == key_map.key_code {
-        //   //   img_button = img_button.tint(Color32::RED);
-        //   //   play_res.selected_voxel = key_map.voxel_type;
-        //   // }
-
-        //   let res = ui.add(img_button);
-        //   // if res.clicked() {
-        //   //   play_res.selected_voxel = key_map.voxel_type;
-        //   // }
-
-        //   // hotbar_res.pos_bars[index] = res.rect.clone();
-        // }
       });
     });
 }
