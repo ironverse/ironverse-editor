@@ -14,8 +14,13 @@ impl Plugin for CustomPlugin {
 fn update(
   mut mouse_events: EventReader<MouseButtonInput>,
   mut mouse_inputs: EventWriter<MouseInput>,
+  cursor_state: Res<State<CursorState>>,
 ) {
   for event in mouse_events.iter() {
+    if cursor_state.0 == CursorState::None {
+      return;
+    }
+
     mouse_inputs.send(MouseInput { mouse_button_input: event.clone() });
   }
 }
@@ -25,18 +30,18 @@ fn grab_mouse(
   mut windows: Query<&mut Window>,
   mouse: Res<Input<MouseButton>>,
   key: Res<Input<KeyCode>>,
-  mut cursor_state: ResMut<NextState<CursorState>>,
+  mut cursor_state_next: ResMut<NextState<CursorState>>,
 ) {
   let mut window = windows.single_mut();
   if mouse.just_pressed(MouseButton::Left) {
     window.cursor.visible = false;
     window.cursor.grab_mode = CursorGrabMode::Confined;
-    cursor_state.set(CursorState::Locked);
+    cursor_state_next.set(CursorState::Locked);
   }
 
   if key.just_pressed(KeyCode::Escape) {
     window.cursor.visible = true;
     window.cursor.grab_mode = CursorGrabMode::None;
-    cursor_state.set(CursorState::None);
+    cursor_state_next.set(CursorState::None);
   }
 }

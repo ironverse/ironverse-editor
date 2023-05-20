@@ -27,13 +27,8 @@ fn update(
   mut physics: ResMut<Physics>,
   hotbar_res: Res<HotbarResource>,
   mut mouse_inputs: EventReader<MouseInput>,
-  cursor_state: Res<State<CursorState>>,
+  
 ) {
-  if cursor_state.0 == CursorState::None {
-    return;
-  }
-
-
   let mut voxel_op = None;
   for event in mouse_inputs.iter() {
     if event.mouse_button_input.state == ButtonState::Pressed {
