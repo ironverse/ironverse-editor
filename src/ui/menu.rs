@@ -5,10 +5,9 @@ use bevy_flycam::MovementSettings;
 use flume::{Sender, Receiver};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
-use super::{UIResource, UIState};
+use crate::data::CursorState;
 
-#[cfg(target_arch = "wasm32")]
-use bevy_flycam::WasmResource;
+use super::{UIResource, UIState};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -16,14 +15,36 @@ impl Plugin for CustomPlugin {
     app
       .insert_resource(UIMenuResource::default());
 
-    // #[cfg(target_arch = "wasm32")]
     app
-      .add_system(render_wasm.in_set(OnUpdate(UIState::Menu)));
+      .add_system(toggle_show)
+      .add_system(render.in_set(OnUpdate(UIState::Menu)));
   }
 }
 
 
-fn render_wasm(
+fn toggle_show(
+  key_input: Res<Input<KeyCode>>,
+  state: Res<State<UIState>>,
+  mut next_state: ResMut<NextState<UIState>>,
+  cursor_state: Res<State<CursorState>>,
+) {
+  // if key_input.just_pressed(KeyCode::Escape) {
+  //   match state.0 {
+  //     UIState::Default => { next_state.set(UIState::Menu); },
+  //     UIState::Menu => { next_state.set(UIState::Default); },
+  //     _ => { next_state.set(UIState::Default); },
+  //   }
+  //   info!("Toggle show menu {:?}", state.0);
+  // }
+
+  match cursor_state.0 {
+    CursorState::None => { next_state.set(UIState::Menu); },
+    CursorState::Locked => { next_state.set(UIState::Default); },
+    _ => {}
+  };
+}
+
+fn render(
   mut commands: Commands,
   mut contexts: EguiContexts,
   windows: Query<(Entity, &Window), With<PrimaryWindow>>,
