@@ -1,87 +1,35 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_egui::{egui::{self, Color32, Frame, Vec2, Button}, EguiContexts};
 use bevy_egui::egui::Rect;
-use bevy_flycam::{MovementSettings, WasmResource};
+use bevy_flycam::MovementSettings;
 use flume::{Sender, Receiver};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
-use crate::wasm::{html_body, PointerLockEvent};
-
+use crate::{wasm::{html_body, PointerLockEvent}, states::GameState};
 use super::{UIResource, UIState};
+
+#[cfg(target_arch = "wasm32")]
+use bevy_flycam::WasmResource;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .insert_resource(LocalResource::default())
-      .add_system(enter.in_schedule(OnEnter(UIState::Menu)))
-      .add_system(exit.in_schedule(OnExit(UIState::Menu)))
-      .add_system(render.in_set(OnUpdate(UIState::Menu)))
-      .add_system(recv_file.in_set(OnUpdate(UIState::Menu)))
-      ;
+      .insert_resource(UIMenuResource::default());
 
-      // app
-      //   .add_system(test_download_file.in_schedule(OnEnter(UIState::Menu)));
-      // app
-      //   .add_startup_system(test_download_file);
+    #[cfg(target_arch = "wasm32")]
+    app
+      .add_system(enter_wasm.in_schedule(OnEnter(UIState::Menu)))
+      .add_system(exit_wasm.in_schedule(OnExit(UIState::Menu)))
+      .add_system(render_wasm.in_set(OnUpdate(UIState::Menu)));
   }
 }
 
-fn test_download_file() {
-  let body = html_body();
-  
-  let res = body.query_selector("#download");
-  
-  let a_ops = match res {
-    Ok(ops) => ops,
-    Err(e) => { 
-      info!("{:?}", e);
-      return ()
-    }
-  };
-
-
-  if a_ops.is_some() {
-    let data = Data {
-      player: Player {
-        position: [0.0, 1.0, 0.0],
-      },
-      terrains: Terrains { keys: vec![[0, 0, 0]], voxels: vec!["Test".to_string()] }
-    };
-
-    let config = config::standard();
-    // let encoded: Vec<u8> = bincode::encode_to_vec(&data, config).unwrap();
-    // let str = array_bytes::bytes2hex("", encoded);
-
-    // let str = toml::to_string_pretty(&data).unwrap();
-    let str = toml::to_string(&data).unwrap();
-    // let encoded: Vec<u8> = bincode::encode_to_vec(&data, config).unwrap();
-    // let str = array_bytes::bytes2hex("", encoded);
-    
-    info!("a: {:?}", str);
-    let a = a_ops.unwrap();
-    a.set_attribute("download", "save.toml");
-    a.set_attribute("href", format!("data:,{:?}", str).as_str());
-    // a.set_attribute("innerHTML", "download");
-
-    let a1: HtmlElement = a.dyn_into::<HtmlElement>().unwrap();
-    a1.click();
-
-  }
 
 
 
-
-  // let opt = body.child_nodes().get(0);
-  // if opt.is_some() {
-  //   let o = opt.unwrap();
-  //   o.
-  // }
-}
-
-
-
-fn enter(
+#[cfg(target_arch = "wasm32")]
+fn enter_wasm(
   mut move_setting_res: ResMut<MovementSettings>,
   #[cfg(target_arch = "wasm32")]
   mut wasm_res: ResMut<WasmResource>,
@@ -91,7 +39,8 @@ fn enter(
   info!("enter");
 }
 
-fn exit(
+#[cfg(target_arch = "wasm32")]
+fn exit_wasm(
   mut move_setting_res: ResMut<MovementSettings>,
   #[cfg(target_arch = "wasm32")]
   mut wasm_res: ResMut<WasmResource>,
@@ -101,14 +50,16 @@ fn exit(
   info!("exit");
 }
 
-fn render(
+#[cfg(target_arch = "wasm32")]
+fn render_wasm(
   mut commands: Commands,
   mut contexts: EguiContexts,
   windows: Query<(Entity, &Window), With<PrimaryWindow>>,
   mut ui_res: ResMut<UIResource>,
   state: Res<State<UIState>>,
   mut next_state: ResMut<NextState<UIState>>,
-  local_res: Res<LocalResource>,
+  mut next_game_state: ResMut<NextState<GameState>>,
+  local_res: Res<UIMenuResource>,
 ) {
   let res = windows.get_single();
   if res.is_err() {
@@ -162,6 +113,8 @@ fn render(
           // }
 
           load_file(local_res.send.clone());
+          // next_state.set(UIState::Load);
+          next_game_state.set(GameState::Load);
         }
 
         ui.add_space(20.0);
@@ -172,6 +125,8 @@ fn render(
           //   ui_res.load_file_path = path.to_str().unwrap().to_string();
           //   next_state.set(UIState::Save);
           // }
+
+          next_state.set(UIState::Save);
         }
 
         ui.add_space(20.0);
@@ -186,7 +141,7 @@ fn render(
 }
 
 
-fn recv_file(local_res: Res<LocalResource>,) {
+fn recv_file(local_res: Res<UIMenuResource>,) {
   for file in local_res.recv.drain() {
     let config = config::standard();
     
@@ -225,7 +180,7 @@ fn recv_file(local_res: Res<LocalResource>,) {
 
 
 
-
+#[cfg(target_arch = "wasm32")]
 fn load_file(send: Sender<Vec<u8>>) {
   let task = rfd::AsyncFileDialog::new().pick_file();
 
@@ -256,12 +211,12 @@ fn execute<F: Future<Output = ()> + 'static>(f: F) {
 
 
 #[derive(Resource)]
-struct LocalResource {
+pub struct UIMenuResource {
   send: Sender<Vec<u8>>,
-  recv: Receiver<Vec<u8>>,
+  pub recv: Receiver<Vec<u8>>,
 }
 
-impl Default for LocalResource {
+impl Default for UIMenuResource {
   fn default() -> Self {
     let (send, recv) = flume::bounded(1);
     Self {

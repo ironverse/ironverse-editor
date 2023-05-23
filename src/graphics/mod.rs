@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-mod chunks;
+pub mod chunks;
 mod player;
-mod camera;
+// mod camera;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -10,6 +10,7 @@ impl Plugin for CustomPlugin {
     app
       .add_plugin(chunks::CustomPlugin)
       .add_plugin(player::CustomPlugin)
-      .add_plugin(camera::CustomPlugin);
+      // .add_plugin(camera::CustomPlugin)
+      ;
   }
 }

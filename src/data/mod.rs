@@ -1,11 +1,12 @@
 use rapier3d::prelude::{RigidBodyHandle, ColliderHandle};
-use bevy::{prelude::*, utils::HashMap};
+use bevy::prelude::*;
 use voxels::chunk::chunk_manager::ChunkManager;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
+      .add_state::<GameState>()
       .insert_resource(GameResource::default());
   }
 }
@@ -23,4 +24,34 @@ impl Default for GameResource {
   }
 }
 
+#[derive(Component, Debug, Clone)]
+pub struct Player {
+  pub body: RigidBodyHandle,
+  pub collider: ColliderHandle,
+  pub prev_key: [i64; 3],
+  pub key: [i64; 3],
+}
+
+impl Player {
+  pub fn new(b: RigidBodyHandle, c: ColliderHandle, k: [i64; 3]) -> Self {
+    
+    Self {
+      body: b,
+      collider: c,
+      prev_key: k.clone(),
+      key: k
+    }
+  }
+}
+
+#[derive(States, PartialEq, Eq, Debug, Clone, Hash, Default)]
+pub enum GameState {
+  #[default]
+  Start,
+  New,
+  Load,
+  Play,
+  Pause,
+  End,
+}
 

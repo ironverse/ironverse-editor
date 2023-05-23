@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.10.1"
+bevy_framepace = "0.12.1"
 rapier3d = { version = "0.17.2", features = [ "simd-stable" ] }
 voxels = { git = "https://github.com/ironverse/voxels.git", branch="0.2" }
 bevy_flycam = { git = "https://github.com/Nickan/bevy_flycam.git", branch="MakeMouseMovementWorkOnWasm" }
@@ -21,9 +22,10 @@ toml = "0.7.3"
 array-bytes = "6.1.0"
 bincode = "2.0.0-rc.3"
 
+
 # [target.'cfg(target_arch = "wasm32")'.dependencies]
 flume = "0.10.14"
-wasm-bindgen = "0.2.84"
+wasm-bindgen = "0.2.85"
 wasm-bindgen-futures = "0.4.19"
 
 [dependencies.web-sys]
@@ -33,4 +35,8 @@ features = [
   "HtmlElement", 
   "ErrorEvent", 
   "Window",
+  "Url",
 ]
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+js-sys = "0.3"

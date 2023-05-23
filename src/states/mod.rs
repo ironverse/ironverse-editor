@@ -1,31 +1,19 @@
 use bevy::prelude::*;
 
 mod start;
-mod play;
+// mod play;
+// mod load;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_state::<GameState>()
-      .add_event::<GameEvent>()
       .add_plugin(start::CustomPlugin)
-      .add_plugin(play::CustomPlugin)
+      // .add_plugin(play::CustomPlugin)
+      // .add_plugin(load::CustomPlugin)
       ;
   }
 }
-
-
-
-#[derive(States, PartialEq, Eq, Debug, Clone, Hash, Default)]
-pub enum GameState {
-  #[default]
-  Start,
-  Play,
-  Pause,
-  End,
-}
-
 
 pub struct GameEvent {
   pub event_type: GameEventType,

@@ -1,13 +1,23 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin}};
 
-mod raycast;
-mod camera;
+pub mod raycast;
+// mod camera;
+// mod text;
+// mod chunks;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
+      // .add_plugin(EguiPlugin) // FIXME: REMOVE LATER
+      // .add_plugin(LogDiagnosticsPlugin::default())
       .add_plugin(raycast::CustomPlugin)
-      .add_plugin(camera::CustomPlugin);
+      // .add_plugin(camera::CustomPlugin)
+      // .add_plugin(text::CustomPlugin)
+      // .add_plugin(chunks::CustomPlugin)
+      ;
   }
 }
+
+
+use bevy_egui::EguiPlugin; // FIXME: REMOVE LATER

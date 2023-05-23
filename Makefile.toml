@@ -13,7 +13,7 @@ basic-http-server .
 '''
 
 [tasks.web-wasm-bindgen-cli]
-install_crate = {crate_name = "wasm-bindgen-cli", binary = "wasm-bindgen", test_arg="--help", version="0.2.84"}
+install_crate = {crate_name = "wasm-bindgen-cli", binary = "wasm-bindgen", test_arg="--help", version="0.2.85"}
 
 
 [tasks.clear]

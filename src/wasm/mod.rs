@@ -1,8 +1,10 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, input::{mouse::MouseButtonInput, ButtonState}};
 use bevy_flycam::MovementSettings;
 use web_sys::HtmlElement;
 use flume::*;
 use wasm_bindgen::prelude::*;
+
+use crate::input::MouseInput;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -16,7 +18,7 @@ impl Plugin for CustomPlugin {
 
     app
       .add_startup_system(startup)
-      .add_system(mouse_move);
+      .add_system(send_mouse_events);
   }
 }
 
@@ -42,21 +44,37 @@ fn startup(local_res: Res<LocalResource>,) {
   // window.set_onmousedown(Some(cb.as_ref().unchecked_ref()));
 }
 
-fn mouse_move(
+fn send_mouse_events(
   local_res: Res<LocalResource>,
-  mut wasm_events: EventWriter<WasmInputEvent>,
+  // mut wasm_events: EventWriter<WasmInputEvent>,
+  mut mouse_inputs: EventWriter<MouseInput>,
 ) {
   for e in local_res.recv_mouse_click.drain() {
     if !is_pointer_locked() {
       continue;
     }
-    
+
+    // Defer: Improve getting mouse events from WASM
     if e == 0 {
-      wasm_events.send(WasmInputEvent { mouse: MouseButton::Left });
+      mouse_inputs.send(MouseInput { mouse_button_input: MouseButtonInput {
+        button: MouseButton::Left,
+        state: ButtonState::Pressed,
+      }});
     }
     if e == 2 {
-      wasm_events.send(WasmInputEvent { mouse: MouseButton::Right });
+      mouse_inputs.send(MouseInput { mouse_button_input: MouseButtonInput {
+        button: MouseButton::Right,
+        state: ButtonState::Pressed,
+      }});
     }
+
+    
+    // if e == 0 {
+    //   wasm_events.send(WasmInputEvent { mouse: MouseButton::Left });
+    // }
+    // if e == 2 {
+    //   wasm_events.send(WasmInputEvent { mouse: MouseButton::Right });
+    // }
   }
 }
 
