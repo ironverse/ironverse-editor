@@ -4,7 +4,7 @@ use web_sys::HtmlElement;
 use flume::*;
 use wasm_bindgen::prelude::*;
 
-use crate::input::MouseInput;
+use crate::{input::MouseInput, data::CursorState};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -14,7 +14,7 @@ impl Plugin for CustomPlugin {
       .add_event::<PointerLockEvent>()
       .add_event::<MouseMoveEvent>()
       .add_event::<WasmInputEvent>()
-      .add_systems((update_fullscreen, update_pointer_events, update_mouse_events));
+      .add_systems((pointer_lock, update_fullscreen, update_cursor_state));
 
     app
       .add_startup_system(startup)
@@ -44,11 +44,25 @@ fn startup(local_res: Res<LocalResource>,) {
   // window.set_onmousedown(Some(cb.as_ref().unchecked_ref()));
 }
 
+fn pointer_lock(
+  mut mouse_events: EventReader<MouseButtonInput>,
+) {
+  // Won't trigger if the pointer is already locked, have to look out when bevy fix this
+  for event in mouse_events.iter() {
+    if event.state == ButtonState::Pressed {
+      if event.button == MouseButton::Left {
+        html_body().request_pointer_lock();
+      }
+    }
+  }
+}
+
 fn send_mouse_events(
   local_res: Res<LocalResource>,
   // mut wasm_events: EventWriter<WasmInputEvent>,
   mut mouse_inputs: EventWriter<MouseInput>,
 ) {
+  /* Only needed when pointer is locked */
   for e in local_res.recv_mouse_click.drain() {
     if !is_pointer_locked() {
       continue;
@@ -109,16 +123,21 @@ fn update_pointer_events(
   }
 }
 
-fn update_mouse_events(
-  mut events: EventReader<MouseMoveEvent>,
-  mut move_setting_res: ResMut<MovementSettings>,
+fn update_cursor_state(
+  mut cursor_state_next: ResMut<NextState<CursorState>>,
+  cursor_state: Res<State<CursorState>>,
 ) {
-  for e in events.iter() {
-    // if e.0 {
-    //   move_setting_res.sensitivity = 0.00012;
-    // } else {
-    //   move_setting_res.sensitivity = 0.0;
-    // }
+  match cursor_state.0 {
+    CursorState::None => {
+      if is_pointer_locked() {
+        cursor_state_next.set(CursorState::Locked);
+      }
+    },
+    CursorState::Locked => {
+      if !is_pointer_locked() {
+        cursor_state_next.set(CursorState::None);
+      }
+    } 
   }
 }
 

@@ -7,6 +7,7 @@ impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_state::<GameState>()
+      .add_state::<CursorState>()
       .insert_resource(GameResource::default());
   }
 }
@@ -55,3 +56,10 @@ pub enum GameState {
   End,
 }
 
+
+#[derive(States, PartialEq, Eq, Debug, Clone, Hash, Default)]
+pub enum CursorState {
+  #[default]
+  None,
+  Locked,
+}

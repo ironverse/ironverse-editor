@@ -10,10 +10,10 @@ bevy = "0.10.1"
 bevy_framepace = "0.12.1"
 rapier3d = { version = "0.17.2", features = [ "simd-stable" ] }
 voxels = { git = "https://github.com/ironverse/voxels.git", branch="0.2" }
-bevy_flycam = { git = "https://github.com/Nickan/bevy_flycam.git", branch="MakeMouseMovementWorkOnWasm" }
+# bevy_flycam = { git = "https://github.com/Nickan/bevy_flycam.git", branch="MakeMouseMovementWorkOnWasm" }
 
 # voxels = { path = "../voxels" }
-# bevy_flycam = { path = "../bevy_flycam" }
+bevy_flycam = { path = "../bevy_flycam" }
 
 bevy_egui = "0.20.3"
 rfd = "0.11"
