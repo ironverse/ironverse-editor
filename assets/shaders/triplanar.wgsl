@@ -2,6 +2,44 @@
 #import bevy_pbr::mesh_bindings
 #import bevy_pbr::mesh_functions
 
+
+@group(1) @binding(1)
+var albedo: texture_2d_array<f32>;
+@group(1) @binding(2)
+var albedo_sampler: sampler;
+@group(1) @binding(3)
+var normal_texture: texture_2d_array<f32>;
+@group(1) @binding(4)
+var normal_sampler: sampler;
+
+
+struct Vertex {
+  @location(0) position: vec3<f32>,
+  @location(1) normal: vec3<f32>,
+  @location(2) voxel_weight: vec4<f32>,
+  @location(3) voxel_type_1: vec4<u32>,
+};
+
+struct VertexOutput {
+  @builtin(position) clip_position: vec4<f32>,
+  @location(0) world_position: vec4<f32>,
+  @location(1) world_normal: vec3<f32>,
+  @location(2) voxel_weight: vec4<f32>,
+  @location(3) voxel_type_1: vec4<u32>,
+};
+
+@vertex
+fn vertex(vertex: Vertex) -> VertexOutput {
+  var out: VertexOutput;
+  out.world_position = mesh_position_local_to_world(mesh.model, vec4<f32>(vertex.position, 1.0));
+  out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(vertex.position, 1.0));
+  out.world_normal = vertex.normal;
+
+  out.voxel_weight = vertex.voxel_weight;
+  out.voxel_type_1 = vertex.voxel_type_1;
+  return out;
+}
+
 #import bevy_pbr::pbr_types
 #import bevy_pbr::utils
 #import bevy_pbr::clustered_forward
@@ -11,44 +49,6 @@
 #import bevy_pbr::pbr_functions
 #import bevy_pbr::pbr_ambient
 
-
-
-@group(1) @binding(0)
-var albedo: texture_2d_array<f32>;
-@group(1) @binding(1)
-var albedo_sampler: sampler;
-@group(1) @binding(2)
-var normal_texture: texture_2d_array<f32>;
-@group(1) @binding(3)
-var normal_sampler: sampler;
-
-
-// struct Vertex {
-//   @location(0) position: vec3<f32>,
-//   @location(1) normal: vec3<f32>,
-//   @location(2) voxel_weight: vec4<f32>,
-//   @location(3) voxel_type_1: vec4<u32>,
-// };
-
-// struct VertexOutput {
-//   @builtin(position) clip_position: vec4<f32>,
-//   @location(0) world_position: vec4<f32>,
-//   @location(1) world_normal: vec3<f32>,
-//   @location(2) voxel_weight: vec4<f32>,
-//   @location(3) voxel_type_1: vec4<u32>,
-// };
-
-// @vertex
-// fn vertex(vertex: Vertex) -> VertexOutput {
-//   var out: VertexOutput;
-//   out.world_position = mesh_position_local_to_world(mesh.model, vec4<f32>(vertex.position, 1.0));
-//   out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(vertex.position, 1.0));
-//   out.world_normal = vertex.normal;
-
-//   out.voxel_weight = vertex.voxel_weight;
-//   out.voxel_type_1 = vertex.voxel_type_1;
-//   return out;
-// }
 
 struct FragmentInput {
   // @builtin(position) frag_coord: vec4<f32>,
@@ -72,12 +72,9 @@ struct Triplanar {
 }
 
 fn sample_normal_map(uv: vec2<f32>, material_type: u32) -> vec3<f32> {
-
-  
   var normal = textureSample(normal_texture, normal_sampler, uv, i32(material_type)).rgb;
   normal = normal * 2.0 - 1.0;
   return normalize(normal);
-  // return vec3<f32>(0.0);
 }
 
 fn triplanar_normal_to_world(
@@ -128,37 +125,26 @@ fn triplanar_normal_to_world_splatted(
   return normalize(sum);
 }
 
-
-
-
-
-
+fn seamless_pos(world_pos: vec3<f32>) -> vec3<f32> {
+  var pos = world_pos % 1.0;
+  if pos.x < 0.0 {
+    pos.x += 1.0;
+  }
+  if pos.y < 0.0 {
+    pos.y += 1.0;
+  }
+  if pos.z < 0.0 {
+    pos.z += 1.0;
+  }
+  return pos;
+}
 
 @fragment
 fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
-  var zy = input.world_position.zy % 1.0;
-  if zy.x < 0.0 {
-    zy.x += 1.0;
-  }
-  if zy.y < 0.0 {
-    zy.y += 1.0;
-  }
-
-  var xz = input.world_position.xz % 1.0;
-  if xz.x < 0.0 {
-    xz.x += 1.0;
-  }
-  if xz.y < 0.0 {
-    xz.y += 1.0;
-  }
-
-  var xy = input.world_position.xy % 1.0;
-  if xy.x < 0.0 {
-    xy.x += 1.0;
-  }
-  if xy.y < 0.0 {
-    xy.y += 1.0;
-  }
+  let pos = seamless_pos(input.world_position.xyz);
+  let zy = pos.zy;
+  let xz = pos.xz;
+  let xy = pos.xy;
 
   var dx0 = textureSample(albedo, albedo_sampler, zy, i32(input.voxel_type_1.x));
   var dy0 = textureSample(albedo, albedo_sampler, xz, i32(input.voxel_type_1.x));
@@ -252,9 +238,9 @@ fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
   weights_1 = weights_1 / (weights_1.x + weights_1.y + weights_1.z);
 
   let scale = 1.0;
-  let uv_x = input.world_position.yz * scale;
-  let uv_y = input.world_position.zx * scale;
-  let uv_z = input.world_position.xy * scale;
+  let uv_x = zy * scale;
+  let uv_y = xz * scale;
+  let uv_z = xy * scale;
   var triplanar = Triplanar(weights_1, uv_x, uv_y, uv_z);
 
   pbr_input.N = triplanar_normal_to_world_splatted(

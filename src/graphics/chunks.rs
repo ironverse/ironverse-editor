@@ -1,8 +1,6 @@
-use bevy::{prelude::*, render::{mesh::{MeshVertexAttribute, MeshVertexBufferLayout, Indices}, render_resource::{VertexFormat, AsBindGroup, ShaderRef, SpecializedMeshPipelineError, RenderPipelineDescriptor, PrimitiveTopology}}, reflect::TypeUuid, pbr::{MaterialPipeline, MaterialPipelineKey}, asset::LoadState};
+use bevy::{prelude::*, render::{mesh::{MeshVertexAttribute, MeshVertexBufferLayout, Indices}, render_resource::{VertexFormat, AsBindGroup, ShaderRef, SpecializedMeshPipelineError, RenderPipelineDescriptor, PrimitiveTopology, ShaderType, AsBindGroupShaderType, TextureFormat}, render_asset::RenderAssets}, reflect::TypeUuid, pbr::{MaterialPipeline, MaterialPipelineKey, StandardMaterialFlags}, asset::LoadState};
 use voxels::{chunk::{adjacent_keys, chunk_manager::ChunkManager}, utils::{key_to_world_coord_f32, posf32_to_world_key}, data::voxel_octree::{VoxelMode, MeshData}};
-
 use crate::{components::chunks::Chunks, data::GameResource};
-
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
@@ -132,6 +130,7 @@ fn add(
 
     let mesh_handle = meshes.add(render_mesh);
     let material_handle = custom_materials.add(CustomMaterial {
+      base_color: Color::rgb(1.0, 1.0, 1.0),
       albedo: loading_texture.albedo.clone(),
       normal: loading_texture.normal.clone(),
     });
@@ -207,20 +206,24 @@ pub const VOXEL_TYPE_1: MeshVertexAttribute =
 
 
 
-#[derive(AsBindGroup, Debug, Clone, TypeUuid)]
-#[uuid = "5f2e1d29-b8ad-4680-8c96-f8b78a580718"]
+#[derive(AsBindGroup, Reflect, FromReflect, Debug, Clone, TypeUuid)]
+#[uuid = "2f3d7f74-4bf7-4f32-98cd-858edafa5ca2"]
+#[bind_group_data(TriplanarMaterialKey)]
+#[uniform(0, TriplanarMaterialUniform)]
 struct CustomMaterial {
-  #[texture(0, dimension = "2d_array")]
-  #[sampler(1)]
+  pub base_color: Color,
+
+  #[texture(1, dimension = "2d_array")]
+  #[sampler(2)]
   albedo: Handle<Image>,
-  #[texture(2, dimension = "2d_array")]
-  #[sampler(3)]
+  #[texture(3, dimension = "2d_array")]
+  #[sampler(4)]
   normal: Handle<Image>,
 }
 
 impl Material for CustomMaterial {
   fn vertex_shader() -> ShaderRef {
-    "shaders/triplanar_vertices.wgsl".into()
+    "shaders/triplanar.wgsl".into()
   }
   fn fragment_shader() -> ShaderRef {
     "shaders/triplanar.wgsl".into()
@@ -242,6 +245,53 @@ impl Material for CustomMaterial {
     Ok(())
   }
 }
+
+/// The GPU representation of the uniform data of a [`TriplanarMaterial`].
+#[derive(Clone, Default, ShaderType)]
+pub struct TriplanarMaterialUniform {
+  pub base_color: Vec4,
+  pub flags: u32,
+}
+
+impl AsBindGroupShaderType<TriplanarMaterialUniform> for CustomMaterial {
+  fn as_bind_group_shader_type(&self, images: &RenderAssets<Image>) -> TriplanarMaterialUniform {
+    let mut flags = StandardMaterialFlags::NONE;
+    flags |= StandardMaterialFlags::BASE_COLOR_TEXTURE;
+
+    if let Some(texture) = images.get(&self.normal) {
+      match texture.texture_format {
+        // All 2-component unorm formats
+        TextureFormat::Rg8Unorm
+        | TextureFormat::Rg16Unorm
+        | TextureFormat::Bc5RgUnorm
+        | TextureFormat::EacRg11Unorm => {
+            flags |= StandardMaterialFlags::TWO_COMPONENT_NORMAL_MAP;
+        }
+        _ => {}
+      }
+    }
+    TriplanarMaterialUniform {
+      base_color: self.base_color.as_linear_rgba_f32().into(),
+      flags: flags.bits(),
+    }
+  }
+}
+
+
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct TriplanarMaterialKey {
+  normal_map: bool,
+}
+
+impl From<&CustomMaterial> for TriplanarMaterialKey {
+  fn from(material: &CustomMaterial) -> Self {
+    TriplanarMaterialKey {
+      normal_map: true,
+    }
+  }
+}
+
+
 
 #[derive(Component)]
 pub struct TerrainGraphics {
