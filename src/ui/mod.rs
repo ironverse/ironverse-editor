@@ -5,7 +5,7 @@ use bevy_flycam::MovementSettings;
 
 pub mod hotbar;
 pub mod inventory;
-// pub mod menu;
+pub mod menu;
 
 
 pub struct CustomPlugin;
@@ -17,7 +17,7 @@ impl Plugin for CustomPlugin {
       .add_state::<UIState>()
       .add_plugin(hotbar::CustomPlugin)
       .add_plugin(inventory::CustomPlugin)
-      // .add_plugin(menu::CustomPlugin)
+      .add_plugin(menu::CustomPlugin)
       // .add_startup_system(startup)
       // .add_system(update)
       // .add_system(update_wasm_mouse)

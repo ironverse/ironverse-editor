@@ -3,9 +3,9 @@ use bevy_flycam::MovementSettings;
 use web_sys::HtmlElement;
 use flume::*;
 use wasm_bindgen::prelude::*;
-
 use crate::input::MouseInput;
 
+mod load_file;
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
@@ -14,6 +14,7 @@ impl Plugin for CustomPlugin {
       .add_event::<PointerLockEvent>()
       .add_event::<MouseMoveEvent>()
       .add_event::<WasmInputEvent>()
+      .add_plugin(load_file::CustomPlugin)
       .add_systems((update_fullscreen, update_pointer_events, update_mouse_events));
 
     app

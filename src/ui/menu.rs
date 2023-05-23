@@ -5,7 +5,6 @@ use bevy_flycam::MovementSettings;
 use flume::{Sender, Receiver};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
-use crate::{wasm::{html_body, PointerLockEvent}, states::GameState};
 use super::{UIResource, UIState};
 
 #[cfg(target_arch = "wasm32")]
@@ -17,40 +16,13 @@ impl Plugin for CustomPlugin {
     app
       .insert_resource(UIMenuResource::default());
 
-    #[cfg(target_arch = "wasm32")]
+    // #[cfg(target_arch = "wasm32")]
     app
-      .add_system(enter_wasm.in_schedule(OnEnter(UIState::Menu)))
-      .add_system(exit_wasm.in_schedule(OnExit(UIState::Menu)))
       .add_system(render_wasm.in_set(OnUpdate(UIState::Menu)));
   }
 }
 
 
-
-
-#[cfg(target_arch = "wasm32")]
-fn enter_wasm(
-  mut move_setting_res: ResMut<MovementSettings>,
-  #[cfg(target_arch = "wasm32")]
-  mut wasm_res: ResMut<WasmResource>,
-  mut pointer_lock: EventWriter<PointerLockEvent>,
-) {
-  pointer_lock.send(PointerLockEvent(false));
-  info!("enter");
-}
-
-#[cfg(target_arch = "wasm32")]
-fn exit_wasm(
-  mut move_setting_res: ResMut<MovementSettings>,
-  #[cfg(target_arch = "wasm32")]
-  mut wasm_res: ResMut<WasmResource>,
-  mut pointer_lock: EventWriter<PointerLockEvent>,
-) {
-  pointer_lock.send(PointerLockEvent(true));
-  info!("exit");
-}
-
-#[cfg(target_arch = "wasm32")]
 fn render_wasm(
   mut commands: Commands,
   mut contexts: EguiContexts,
@@ -58,7 +30,7 @@ fn render_wasm(
   mut ui_res: ResMut<UIResource>,
   state: Res<State<UIState>>,
   mut next_state: ResMut<NextState<UIState>>,
-  mut next_game_state: ResMut<NextState<GameState>>,
+  // mut next_game_state: ResMut<NextState<GameState>>,
   local_res: Res<UIMenuResource>,
 ) {
   let res = windows.get_single();
@@ -112,9 +84,9 @@ fn render_wasm(
           //   next_state.set(UIState::Load);
           // }
 
-          load_file(local_res.send.clone());
+          // load_file(local_res.send.clone());
           // next_state.set(UIState::Load);
-          next_game_state.set(GameState::Load);
+          // next_game_state.set(GameState::Load);
         }
 
         ui.add_space(20.0);
