@@ -2,7 +2,14 @@
 #import bevy_pbr::mesh_bindings
 #import bevy_pbr::mesh_functions
 
+struct CustomMaterial {
+  base_color: vec4<f32>,
+  flags: u32,
+  uv_scale: f32,
+}
 
+@group(1) @binding(0)
+var<uniform> material: CustomMaterial;
 @group(1) @binding(1)
 var albedo: texture_2d_array<f32>;
 @group(1) @binding(2)
@@ -71,21 +78,34 @@ struct Triplanar {
   uv_z: vec2<f32>,
 }
 
-fn sample_normal_map(uv: vec2<f32>, material_type: u32) -> vec3<f32> {
-  var normal = textureSample(normal_texture, normal_sampler, uv, i32(material_type)).rgb;
-  normal = normal * 2.0 - 1.0;
-  return normalize(normal);
+fn sample_normal_map(
+  flags: u32,
+  uv: vec2<f32>, 
+  material_type: i32
+  ) -> vec3<f32> {
+  var Nt = textureSample(normal_texture, normal_sampler, uv, material_type).rgb;
+  if ((flags & STANDARD_MATERIAL_FLAGS_TWO_COMPONENT_NORMAL_MAP) != 0u) {
+    Nt = vec3<f32>(Nt.rg * 2.0 - 1.0, 0.0);
+    Nt.z = sqrt(1.0 - Nt.x * Nt.x - Nt.y * Nt.y);
+  } else {
+    Nt = Nt * 2.0 - 1.0;
+  }
+  if ((flags & STANDARD_MATERIAL_FLAGS_FLIP_NORMAL_MAP_Y) != 0u) {
+    Nt.y = -Nt.y;
+  }
+  return normalize(Nt);
 }
 
 fn triplanar_normal_to_world(
-  material_type: u32, 
+  flags: u32,
+  material_type: i32, 
   world_normal: vec3<f32>, 
   triplanar: Triplanar,
 ) -> vec3<f32> {
 
-  var normal_x = sample_normal_map(triplanar.uv_x, material_type);
-  var normal_y = sample_normal_map(triplanar.uv_y, material_type);
-  var normal_z = sample_normal_map(triplanar.uv_z, material_type);
+  var normal_x = sample_normal_map(flags, triplanar.uv_x, material_type);
+  var normal_y = sample_normal_map(flags, triplanar.uv_y, material_type);
+  var normal_z = sample_normal_map(flags, triplanar.uv_z, material_type);
 
   normal_x = vec3(normal_x.xy + world_normal.yz, abs(normal_x.z) * world_normal.x);
   normal_y = vec3(normal_y.xy + world_normal.zx, abs(normal_y.z) * world_normal.y);
@@ -101,6 +121,7 @@ fn triplanar_normal_to_world(
 }
 
 fn triplanar_normal_to_world_splatted(
+  flags: u32,
   material_weights: vec4<f32>,
   world_normal: vec3<f32>,
   material_types: vec4<u32>,
@@ -109,16 +130,16 @@ fn triplanar_normal_to_world_splatted(
 
   var sum = vec3(0.0);
   if material_weights.x > 0.0 {
-    sum += material_weights.x * triplanar_normal_to_world(material_types.x, world_normal, triplanar);
+    sum += material_weights.x * triplanar_normal_to_world(flags, i32(material_types.x), world_normal, triplanar);
   }
   if material_weights.y > 0.0 {
-    sum += material_weights.x * triplanar_normal_to_world(material_types.y, world_normal, triplanar);
+    sum += material_weights.x * triplanar_normal_to_world(flags, i32(material_types.y), world_normal, triplanar);
   }
   if material_weights.z > 0.0 {
-    sum += material_weights.x * triplanar_normal_to_world(material_types.z, world_normal, triplanar);
+    sum += material_weights.x * triplanar_normal_to_world(flags, i32(material_types.z), world_normal, triplanar);
   }
   if material_weights.w > 0.0 {
-    sum += material_weights.x * triplanar_normal_to_world(material_types.w, world_normal, triplanar);
+    sum += material_weights.x * triplanar_normal_to_world(flags, i32(material_types.w), world_normal, triplanar);
   }
 
   // return vec3<f32>(0.0);
@@ -139,12 +160,10 @@ fn seamless_pos(world_pos: vec3<f32>) -> vec3<f32> {
   return pos;
 }
 
-@fragment
-fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
-  let pos = seamless_pos(input.world_position.xyz);
-  let zy = pos.zy;
-  let xz = pos.xz;
-  let xy = pos.xy;
+fn triplanar_color(world_pos: vec3<f32>, input: FragmentInput) -> vec4<f32> {
+  let zy = world_pos.zy;
+  let xz = world_pos.xz;
+  let xy = world_pos.xy;
 
   var dx0 = textureSample(albedo, albedo_sampler, zy, i32(input.voxel_type_1.x));
   var dy0 = textureSample(albedo, albedo_sampler, xz, i32(input.voxel_type_1.x));
@@ -217,9 +236,14 @@ fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
   weights = weights / (weights.x + weights.y + weights.z);
 
   var color = dx * weights.x + dy * weights.y + dz * weights.z;
-  color = normalize(color);
-  // return color;
+  return color;
+}
 
+@fragment
+fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
+  let pos = seamless_pos(input.world_position.xyz);
+  var color = triplanar_color(pos, input);
+  color = normalize(color);
 
   var pbr_input: PbrInput = pbr_input_new();
   pbr_input.material.base_color = pbr_input.material.base_color * color;
@@ -238,12 +262,13 @@ fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
   weights_1 = weights_1 / (weights_1.x + weights_1.y + weights_1.z);
 
   let scale = 1.0;
-  let uv_x = zy * scale;
-  let uv_y = xz * scale;
-  let uv_z = xy * scale;
+  let uv_x = pos.zy * scale;
+  let uv_y = pos.xz * scale;
+  let uv_z = pos.xy * scale;
   var triplanar = Triplanar(weights_1, uv_x, uv_y, uv_z);
 
   pbr_input.N = triplanar_normal_to_world_splatted(
+    material.flags,
     input.voxel_weight, 
     input.world_normal, 
     input.voxel_type_1, 
