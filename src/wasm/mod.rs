@@ -3,7 +3,7 @@ use bevy_flycam::MovementSettings;
 use web_sys::HtmlElement;
 use flume::*;
 use wasm_bindgen::prelude::*;
-use crate::input::MouseInput;
+use crate::{input::MouseInput, data::CursorState};
 
 mod load_file;
 pub struct CustomPlugin;
@@ -15,7 +15,7 @@ impl Plugin for CustomPlugin {
       .add_event::<MouseMoveEvent>()
       .add_event::<WasmInputEvent>()
       .add_plugin(load_file::CustomPlugin)
-      .add_systems((update_fullscreen, update_pointer_events, update_mouse_events));
+      .add_systems((update_fullscreen, update_pointer_events, update_cursor_state));
 
     app
       .add_startup_system(startup)
@@ -110,16 +110,21 @@ fn update_pointer_events(
   }
 }
 
-fn update_mouse_events(
-  mut events: EventReader<MouseMoveEvent>,
-  mut move_setting_res: ResMut<MovementSettings>,
+fn update_cursor_state(
+  mut cursor_state_next: ResMut<NextState<CursorState>>,
+  cursor_state: Res<State<CursorState>>,
 ) {
-  for e in events.iter() {
-    // if e.0 {
-    //   move_setting_res.sensitivity = 0.00012;
-    // } else {
-    //   move_setting_res.sensitivity = 0.0;
-    // }
+  match cursor_state.0 {
+    CursorState::None => {
+      if is_pointer_locked() {
+        cursor_state_next.set(CursorState::Locked);
+      }
+    },
+    CursorState::Locked => {
+      if !is_pointer_locked() {
+        cursor_state_next.set(CursorState::None);
+      }
+    } 
   }
 }
 

@@ -2,6 +2,16 @@
 #import bevy_pbr::mesh_bindings
 #import bevy_pbr::mesh_functions
 
+
+#import bevy_pbr::pbr_types
+#import bevy_pbr::utils
+#import bevy_pbr::clustered_forward
+#import bevy_pbr::lighting
+#import bevy_pbr::shadows
+#import bevy_pbr::fog
+#import bevy_pbr::pbr_functions
+#import bevy_pbr::pbr_ambient
+
 struct CustomMaterial {
   base_color: vec4<f32>,
   flags: u32,
@@ -18,44 +28,6 @@ var albedo_sampler: sampler;
 var normal_texture: texture_2d_array<f32>;
 @group(1) @binding(4)
 var normal_sampler: sampler;
-
-
-struct Vertex {
-  @location(0) position: vec3<f32>,
-  @location(1) normal: vec3<f32>,
-  @location(2) voxel_weight: vec4<f32>,
-  @location(3) voxel_type_1: vec4<u32>,
-};
-
-struct VertexOutput {
-  @builtin(position) clip_position: vec4<f32>,
-  @location(0) world_position: vec4<f32>,
-  @location(1) world_normal: vec3<f32>,
-  @location(2) voxel_weight: vec4<f32>,
-  @location(3) voxel_type_1: vec4<u32>,
-};
-
-@vertex
-fn vertex(vertex: Vertex) -> VertexOutput {
-  var out: VertexOutput;
-  out.world_position = mesh_position_local_to_world(mesh.model, vec4<f32>(vertex.position, 1.0));
-  out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(vertex.position, 1.0));
-  out.world_normal = vertex.normal;
-
-  out.voxel_weight = vertex.voxel_weight;
-  out.voxel_type_1 = vertex.voxel_type_1;
-  return out;
-}
-
-#import bevy_pbr::pbr_types
-#import bevy_pbr::utils
-#import bevy_pbr::clustered_forward
-#import bevy_pbr::lighting
-#import bevy_pbr::shadows
-#import bevy_pbr::fog
-#import bevy_pbr::pbr_functions
-#import bevy_pbr::pbr_ambient
-
 
 struct FragmentInput {
   // @builtin(position) frag_coord: vec4<f32>,
