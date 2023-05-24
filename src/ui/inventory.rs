@@ -26,7 +26,7 @@ fn startup(
   commands.insert_resource(InventoryTexture {
     is_loaded: false,
     slot: asset_server.load("slot.png"),
-    albedo: asset_server.load("textures/terrains_albedo_items.png"),
+    albedo: asset_server.load("textures/textures_items.png"),
     slot_id: TextureId::default(),
     albedo_id: TextureId::default(),
   });

@@ -114,6 +114,8 @@ fn update_cursor_state(
   mut cursor_state_next: ResMut<NextState<CursorState>>,
   cursor_state: Res<State<CursorState>>,
 ) {
+
+  // Update just once
   match cursor_state.0 {
     CursorState::None => {
       if is_pointer_locked() {

@@ -24,8 +24,8 @@ fn startup(
   commands.insert_resource(ChunkTexture {
     is_loaded: false,
     // albedo: asset_server.load("textures/array_texture.png"),
-    albedo: asset_server.load("textures/terrains_albedo.png"),
-    normal: asset_server.load("textures/terrains_normal.png"),
+    albedo: asset_server.load("textures/textures.png"),
+    normal: asset_server.load("textures/textures_normals.png"),
   });
 
   commands.spawn(PointLightBundle {
