@@ -23,10 +23,12 @@ impl Plugin for CustomPlugin {
 
 fn on_cursor_none(mut move_setting_res: ResMut<MovementSettings>,) {
   move_setting_res.sensitivity = 0.0;
+  move_setting_res.speed = 0.0;
 }
 
 fn on_cursor_locked(mut move_setting_res: ResMut<MovementSettings>,) {
   move_setting_res.sensitivity = 0.00012;
+  move_setting_res.speed = 6.0;
 }
 
 

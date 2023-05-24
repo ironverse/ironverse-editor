@@ -28,14 +28,14 @@ fn startup(
     normal: asset_server.load("textures/textures_normals.png"),
   });
 
-  commands.spawn(PointLightBundle {
-    point_light: PointLight {
-      intensity: 3000.0,
-      ..Default::default()
-    },
-    transform: Transform::from_xyz(-3.0, 2.0, -1.0),
-    ..Default::default()
-  });
+  // commands.spawn(PointLightBundle {
+  //   point_light: PointLight {
+  //     intensity: 3000.0,
+  //     ..Default::default()
+  //   },
+  //   transform: Transform::from_xyz(-3.0, 2.0, -1.0),
+  //   ..Default::default()
+  // });
   commands.spawn(PointLightBundle {
     point_light: PointLight {
       intensity: 3000.0,

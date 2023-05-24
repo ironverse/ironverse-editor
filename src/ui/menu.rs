@@ -1,7 +1,6 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_egui::{egui::{self, Color32, Frame, Vec2, Button}, EguiContexts};
 use bevy_egui::egui::Rect;
-use bevy_flycam::MovementSettings;
 use flume::{Sender, Receiver};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
