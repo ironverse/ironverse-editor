@@ -15,7 +15,7 @@ impl Plugin for CustomPlugin {
       .add_event::<MouseMoveEvent>()
       .add_event::<WasmInputEvent>()
       .add_plugin(load_file::CustomPlugin)
-      .add_systems((update_fullscreen, update_pointer_events))
+      .add_system(update_fullscreen)
       .add_system(grab_mouse);
 
     app
@@ -27,14 +27,20 @@ impl Plugin for CustomPlugin {
 fn startup(local_res: Res<LocalResource>,) {
   let send_mouse_click = local_res.send_mouse_click.clone();
   let cb = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
-    // let _ = send_mouse_move.send((event.movement_x() as f32, event.movement_y() as f32));
     let _ = send_mouse_click.send(event.button());
-    // info!("test");
   }) as Box<dyn FnMut(web_sys::MouseEvent)>);
 
   let window = web_sys::window().expect("no global `window` exists");
   window.set_onmousedown(Some(cb.as_ref().unchecked_ref()));
   cb.forget();
+
+  let send_error = local_res.send_error.clone();
+  let cb1 = Closure::wrap(Box::new(move |event: web_sys::ErrorEvent| {
+    // event.message()
+    send_error.send(event.message());
+  }) as Box<dyn FnMut(web_sys::ErrorEvent)>);
+  window.set_onerror(Some(cb1.as_ref().unchecked_ref()));
+  cb1.forget();
 
   // let send_key = local_res.send_key.clone();
   // let cb = Closure::wrap(Box::new(move |event: web_sys::KeyboardEvent| {
@@ -109,32 +115,54 @@ fn grab_mouse(
   mouse: Res<Input<MouseButton>>,
   key: Res<Input<KeyCode>>,
   mut cursor_state_next: ResMut<NextState<CursorState>>,
-) {
-  let mut window = windows.single_mut();
 
-  if is_pointer_locked() {
-    window.cursor.visible = false;
-    window.cursor.grab_mode = CursorGrabMode::Locked;
-  } else {
-    window.cursor.visible = true;
-    window.cursor.grab_mode = CursorGrabMode::None;
+  mut local_res: ResMut<LocalResource>,
+) {
+  for error in local_res.recv_error.drain() {
+    info!("error {:?}", error);
   }
 
-  
+
+  let mut window = windows.single_mut();
+  if local_res.pending_to_lock {
+    if !is_pointer_locked() {
+      window.cursor.visible = true;
+      window.cursor.grab_mode = CursorGrabMode::None;
+      local_res.pending_to_lock = false;
+    }
+
+    local_res.pending_to_lock = false;
+  }
+
+
+  if local_res.prev_pointer_locked_val != is_pointer_locked() {
+    if is_pointer_locked() {
+      window.cursor.visible = false;
+      window.cursor.grab_mode = CursorGrabMode::Locked;
+      cursor_state_next.set(CursorState::Locked);
+    } else {
+      window.cursor.visible = true;
+      window.cursor.grab_mode = CursorGrabMode::None;
+      cursor_state_next.set(CursorState::None);
+    }
+    local_res.prev_pointer_locked_val = is_pointer_locked();
+  }
+
   if mouse.just_pressed(MouseButton::Left) {
-    window.cursor.visible = false;
-    window.cursor.grab_mode = CursorGrabMode::Locked;
-    cursor_state_next.set(CursorState::Locked);
+    if !is_pointer_locked() {
+      window.cursor.visible = false;
+      window.cursor.grab_mode = CursorGrabMode::Locked;
+      local_res.pending_to_lock = true;
+    }
   }
 
   if key.just_pressed(KeyCode::Escape) {
     window.cursor.visible = true;
     window.cursor.grab_mode = CursorGrabMode::None;
-    cursor_state_next.set(CursorState::None);
   }
 
 
-
+  
 }
 
 
@@ -152,19 +180,23 @@ pub fn html_body() -> HtmlElement {
 struct LocalResource {
   send_mouse_click: Sender<i16>,
   recv_mouse_click: Receiver<i16>,
-  send_key: Sender<u32>,
-  recv_key: Receiver<u32>,
+  send_error: Sender<String>,
+  recv_error: Receiver<String>,
+  prev_pointer_locked_val: bool,
+  pending_to_lock: bool,
 }
 
 impl Default for LocalResource {
   fn default() -> Self {
     let (send_mouse_click, recv_mouse_click) = flume::bounded(10);
-    let (send_key, recv_key) = flume::bounded(10);
+    let (send_error, recv_error) = flume::bounded(10);
     Self {
       send_mouse_click: send_mouse_click,
       recv_mouse_click: recv_mouse_click,
-      send_key: send_key,
-      recv_key: recv_key,
+      send_error: send_error,
+      recv_error: recv_error,
+      prev_pointer_locked_val: false,
+      pending_to_lock: false,
     }
   }
 }

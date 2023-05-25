@@ -32,9 +32,6 @@ fn main() {
       }),
       ..default()
     }))
-    // .add_plugin(FramepacePlugin)
-    // .add_plugin(PlayerPlugin)
-    // .add_plugin(NoCameraPlayerPlugin)
     .add_plugin(NoCameraAndGrabPlugin)
     .add_plugin(physics::CustomPlugin)
     .add_plugin(data::CustomPlugin)
