@@ -1,7 +1,6 @@
 use bevy::{prelude::*, window::PrimaryWindow, asset::LoadState};
 use bevy_egui::{EguiContexts, egui::{self, TextureId, Frame, Color32, Style, ImageButton, Rect, Vec2, Pos2, Sense}};
-// use crate::{input::hotbar::HotbarResource, wasm::PointerLockEvent};
-use crate::input::hotbar::HotbarResource;
+use crate::{input::hotbar::HotbarResource, data::CursorState};
 use super::{UIState, hotbar::HotbarUIResource};
 
 
@@ -52,23 +51,20 @@ fn toggle_show(
   key_input: Res<Input<KeyCode>>,
   mut next_state: ResMut<NextState<UIState>>,
   ui_state: Res<State<UIState>>,
-
-  // mut pointer_events: EventWriter<PointerLockEvent>,
 ) {
-  // if key_input.just_pressed(KeyCode::I) {
+  if key_input.just_pressed(KeyCode::I) {
+    match ui_state.0 {
+      UIState::Default => {
+        next_state.set(UIState::Inventory);
+      },
+      UIState::Inventory => {
+        next_state.set(UIState::Default);
+      },
+      _ => ()
+    }
 
-  //   match ui_state.0 {
-  //     UIState::Default => {
-  //       next_state.set(UIState::Inventory);
-  //       pointer_events.send(PointerLockEvent(false));
-  //     },
-  //     UIState::Inventory => {
-  //       next_state.set(UIState::Default);
-  //       pointer_events.send(PointerLockEvent(true));
-  //     },
-  //     _ => ()
-  //   }
-  // }
+    info!("ui_state.0 {:?}", ui_state.0);
+  }
 }
 
 

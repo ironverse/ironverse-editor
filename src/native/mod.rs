@@ -37,11 +37,15 @@ fn grab_mouse(
     window.cursor.visible = false;
     window.cursor.grab_mode = CursorGrabMode::Confined;
     cursor_state_next.set(CursorState::Locked);
+
+    info!("native locked");
   }
 
   if key.just_pressed(KeyCode::Escape) {
     window.cursor.visible = true;
     window.cursor.grab_mode = CursorGrabMode::None;
     cursor_state_next.set(CursorState::None);
+
+    info!("native locked 1");
   }
 }

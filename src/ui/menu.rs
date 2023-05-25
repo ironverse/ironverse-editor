@@ -36,11 +36,11 @@ fn toggle_show(
   //   info!("Toggle show menu {:?}", state.0);
   // }
 
-  match cursor_state.0 {
-    CursorState::None => { next_state.set(UIState::Menu); },
-    CursorState::Locked => { next_state.set(UIState::Default); },
-    _ => {}
-  };
+  // match cursor_state.0 {
+  //   CursorState::None => { next_state.set(UIState::Menu); },
+  //   CursorState::Locked => { next_state.set(UIState::Default); },
+  //   _ => {}
+  // };
 }
 
 fn render(

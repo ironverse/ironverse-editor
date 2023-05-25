@@ -11,6 +11,8 @@ mod input;
 mod utils;
 mod debugger;
 mod ui;
+
+// #[cfg(not(target_arch = "wasm32"))] // rust-analyzer won't work
 mod native;
 
 #[cfg(target_arch = "wasm32")]
@@ -46,6 +48,7 @@ fn main() {
     // .add_startup_system(startup)
     ;
   
+  #[cfg(not(target_arch = "wasm32"))]
   app
     .add_plugin(native::CustomPlugin);
   
