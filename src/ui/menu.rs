@@ -22,25 +22,30 @@ impl Plugin for CustomPlugin {
 
 
 fn toggle_show(
-  key_input: Res<Input<KeyCode>>,
-  state: Res<State<UIState>>,
-  mut next_state: ResMut<NextState<UIState>>,
+  key: Res<Input<KeyCode>>,
+  mut cursor_state_next: ResMut<NextState<CursorState>>,
   cursor_state: Res<State<CursorState>>,
+  mut ui_state_next: ResMut<NextState<UIState>>,
+  ui_state: Res<State<UIState>>,
 ) {
-  // if key_input.just_pressed(KeyCode::Escape) {
-  //   match state.0 {
-  //     UIState::Default => { next_state.set(UIState::Menu); },
-  //     UIState::Menu => { next_state.set(UIState::Default); },
-  //     _ => { next_state.set(UIState::Default); },
-  //   }
-  //   info!("Toggle show menu {:?}", state.0);
-  // }
+  if key.just_pressed(KeyCode::LControl) {
+    match cursor_state.0 {
+      CursorState::None => {
+        cursor_state_next.set(CursorState::Locked);
 
-  // match cursor_state.0 {
-  //   CursorState::None => { next_state.set(UIState::Menu); },
-  //   CursorState::Locked => { next_state.set(UIState::Default); },
-  //   _ => {}
-  // };
+        if ui_state.0 != UIState::Default {
+          ui_state_next.set(UIState::Default);
+        }
+      },
+      CursorState::Locked => {
+        cursor_state_next.set(CursorState::None);
+
+        ui_state_next.set(UIState::Menu);
+      },
+      _ => {}
+    };
+    
+  }
 }
 
 fn render(

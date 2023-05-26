@@ -45,23 +45,6 @@ fn grab_mouse(
     };
     
   }
-
-  if key.just_pressed(KeyCode::LControl) {
-    match cursor_state.0 {
-      CursorState::None => {
-        cursor_state_next.set(CursorState::Locked);
-
-        if ui_state.0 != UIState::Default {
-          ui_state_next.set(UIState::Default);
-        }
-      },
-      CursorState::Locked => {
-        cursor_state_next.set(CursorState::None);
-      },
-      _ => {}
-    };
-    
-  }
 }
 
 fn cursor_free(
