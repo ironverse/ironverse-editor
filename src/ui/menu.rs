@@ -4,8 +4,7 @@ use bevy_egui::egui::Rect;
 use flume::{Sender, Receiver};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
-use crate::data::CursorState;
-
+use crate::data::{CursorState, GameState};
 use super::{UIResource, UIState};
 
 pub struct CustomPlugin;
@@ -52,7 +51,7 @@ fn render(
   mut ui_res: ResMut<UIResource>,
   state: Res<State<UIState>>,
   mut next_state: ResMut<NextState<UIState>>,
-  // mut next_game_state: ResMut<NextState<GameState>>,
+  mut next_game_state: ResMut<NextState<GameState>>,
   local_res: Res<UIMenuResource>,
 ) {
   let res = windows.get_single();
@@ -108,7 +107,7 @@ fn render(
 
           // load_file(local_res.send.clone());
           // next_state.set(UIState::Load);
-          // next_game_state.set(GameState::Load);
+          next_game_state.set(GameState::LoadFile);
         }
 
         ui.add_space(20.0);

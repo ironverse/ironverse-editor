@@ -22,6 +22,8 @@ fn enter(
   mut next_state: ResMut<NextState<GameState>>,
 ) {
 
+  info!("Enter GameState::Start");
+
   // let data = Data::default();
   // game_res.data = data;
 

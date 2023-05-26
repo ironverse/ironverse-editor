@@ -1,16 +1,16 @@
 use bevy::prelude::*;
 
 mod start;
+mod load;
 // mod play;
-// mod load;
+
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_plugin(start::CustomPlugin)
-      // .add_plugin(play::CustomPlugin)
-      // .add_plugin(load::CustomPlugin)
+      .add_plugin(load::CustomPlugin)
       ;
   }
 }
