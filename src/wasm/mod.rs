@@ -3,7 +3,7 @@ use bevy_flycam::MovementSettings;
 use web_sys::HtmlElement;
 use flume::*;
 use wasm_bindgen::prelude::*;
-use crate::{input::MouseInput, data::CursorState};
+use crate::{input::MouseInput, data::CursorState, ui::UIState};
 
 mod load_file;
 pub struct CustomPlugin;
@@ -16,7 +16,10 @@ impl Plugin for CustomPlugin {
       .add_event::<WasmInputEvent>()
       .add_plugin(load_file::CustomPlugin)
       .add_system(update_fullscreen)
-      .add_system(grab_mouse);
+      .add_system(grab_mouse)
+      .add_system(cursor_free.in_schedule(OnEnter(CursorState::None)))
+      .add_system(cursor_locked.in_schedule(OnEnter(CursorState::Locked)))
+      ;
 
     app
       .add_startup_system(startup)
@@ -110,62 +113,66 @@ fn update_pointer_events(
     }
   }
 }
+
+
 fn grab_mouse(
-  mut windows: Query<&mut Window>,
   mouse: Res<Input<MouseButton>>,
   key: Res<Input<KeyCode>>,
   mut cursor_state_next: ResMut<NextState<CursorState>>,
-
-  mut local_res: ResMut<LocalResource>,
+  cursor_state: Res<State<CursorState>>,
+  mut ui_state_next: ResMut<NextState<UIState>>,
+  ui_state: Res<State<UIState>>,
 ) {
-  for error in local_res.recv_error.drain() {
-    info!("error {:?}", error);
-  }
-
-
-  let mut window = windows.single_mut();
-  if local_res.pending_to_lock {
-    if !is_pointer_locked() {
-      window.cursor.visible = true;
-      window.cursor.grab_mode = CursorGrabMode::None;
-      local_res.pending_to_lock = false;
-    }
-
-    local_res.pending_to_lock = false;
-  }
-
-
-  if local_res.prev_pointer_locked_val != is_pointer_locked() {
-    if is_pointer_locked() {
-      window.cursor.visible = false;
-      window.cursor.grab_mode = CursorGrabMode::Locked;
-      cursor_state_next.set(CursorState::Locked);
-    } else {
-      window.cursor.visible = true;
-      window.cursor.grab_mode = CursorGrabMode::None;
-      cursor_state_next.set(CursorState::None);
-    }
-    local_res.prev_pointer_locked_val = is_pointer_locked();
-  }
-
   if mouse.just_pressed(MouseButton::Left) {
-    if !is_pointer_locked() {
-      window.cursor.visible = false;
-      window.cursor.grab_mode = CursorGrabMode::Locked;
-      local_res.pending_to_lock = true;
-    }
+    match ui_state.0 {
+      UIState::Inventory => { },
+      UIState::Default => { cursor_state_next.set(CursorState::Locked); },
+      _ => {  }
+    };
+    
   }
 
-  if key.just_pressed(KeyCode::Escape) {
-    window.cursor.visible = true;
-    window.cursor.grab_mode = CursorGrabMode::None;
+  if key.just_pressed(KeyCode::LControl) {
+    match cursor_state.0 {
+      CursorState::None => {
+        cursor_state_next.set(CursorState::Locked);
+
+        if ui_state.0 != UIState::Default {
+          ui_state_next.set(UIState::Default);
+        }
+      },
+      CursorState::Locked => {
+        cursor_state_next.set(CursorState::None);
+      },
+      _ => {}
+    };
+    
   }
-
-
-  
 }
 
+fn cursor_free(
+  mut windows: Query<&mut Window>,
+  mut move_setting_res: ResMut<MovementSettings>,
+) {
+  let mut window = windows.single_mut();
+  window.cursor.visible = true;
+  window.cursor.grab_mode = CursorGrabMode::None;
 
+  move_setting_res.sensitivity = 0.0;
+  move_setting_res.speed = 0.0;
+}
+
+fn cursor_locked(
+  mut windows: Query<&mut Window>,
+  mut move_setting_res: ResMut<MovementSettings>,
+) {
+  let mut window = windows.single_mut();
+  window.cursor.visible = false;
+  window.cursor.grab_mode = CursorGrabMode::Confined;
+
+  move_setting_res.sensitivity = 0.00012;
+  move_setting_res.speed = 6.0;
+}
 
 
 pub fn html_body() -> HtmlElement {
@@ -218,3 +225,65 @@ pub fn is_pointer_locked() -> bool {
   let lock_op = document.pointer_lock_element();
   lock_op.is_some()
 }
+/* 
+fn grab_mouse(
+  mut windows: Query<&mut Window>,
+  mouse: Res<Input<MouseButton>>,
+  key: Res<Input<KeyCode>>,
+  mut cursor_state_next: ResMut<NextState<CursorState>>,
+  ui_state: Res<State<UIState>>,
+
+  mut local_res: ResMut<LocalResource>,
+) {
+  for error in local_res.recv_error.drain() {
+    info!("error {:?}", error);
+  }
+
+
+  let mut window = windows.single_mut();
+  if local_res.pending_to_lock {
+    if !is_pointer_locked() {
+      window.cursor.visible = true;
+      window.cursor.grab_mode = CursorGrabMode::None;
+      local_res.pending_to_lock = false;
+    }
+
+    local_res.pending_to_lock = false;
+  }
+
+
+  if local_res.prev_pointer_locked_val != is_pointer_locked() {
+    if is_pointer_locked() {
+      window.cursor.visible = false;
+      window.cursor.grab_mode = CursorGrabMode::Locked;
+      cursor_state_next.set(CursorState::Locked);
+    } else {
+      window.cursor.visible = true;
+      window.cursor.grab_mode = CursorGrabMode::None;
+      cursor_state_next.set(CursorState::None);
+    }
+    local_res.prev_pointer_locked_val = is_pointer_locked();
+  }
+
+  if mouse.just_pressed(MouseButton::Left) {
+    if !is_pointer_locked() {
+      window.cursor.visible = false;
+      window.cursor.grab_mode = CursorGrabMode::Locked;
+      local_res.pending_to_lock = true;
+    }
+  }
+
+
+
+  if mouse.just_pressed(MouseButton::Left) {
+    if !is_pointer_locked() {
+      cursor_state_next.set(CursorState::Locked);
+    }
+  }
+
+  if key.just_pressed(KeyCode::Escape) {
+    cursor_state_next.set(CursorState::None);
+  }
+}
+
+ */
