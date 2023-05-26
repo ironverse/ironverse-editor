@@ -41,15 +41,35 @@ fn enter(
     commands.entity(entity).despawn_recursive();
   }
   
-
-
   for entity in &terrain_graphics {
-    commands.entity(entity).despawn_descendants();
+    commands.entity(entity).despawn_recursive();
   }
 
-  ui_state_next.set(UIState::Default);
 
-  // game_state_next.set(GameState::Start);
+  let data = game_res.data.clone();
+  for i in 0..data.terrains.keys.len() {
+    let key = &data.terrains.keys[i];
+    let voxels_str = &data.terrains.voxels[i];
+    let voxels_res = array_bytes::hex2bytes(voxels_str);
+    if voxels_res.is_ok() {
+      let data = voxels_res.unwrap();
+      let octree = VoxelOctree::new_from_bytes(data);
+      let chunk = Chunk {
+        key: key.clone(),
+        octree: octree,
+        is_default: false,
+        ..Default::default()
+      };
+      game_res.chunk_manager.set_chunk(key, &chunk);
+
+      info!("load data key {:?}", key);
+    }
+  }
+
+
+
+  ui_state_next.set(UIState::Default);
+  game_state_next.set(GameState::Start);
   info!("Enter GameState::Load");
 }
 

@@ -70,7 +70,7 @@ pub enum CursorState {
 
 
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Data {
   pub status: Status,
   pub terrains: Terrains,
@@ -85,12 +85,12 @@ impl Default for Data {
   }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Status {
   pub position: [f32; 3]
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Terrains {
   pub keys: Vec<[i64; 3]>,
   pub voxels: Vec<String>,
