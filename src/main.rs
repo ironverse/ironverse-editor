@@ -12,7 +12,8 @@ mod utils;
 mod debugger;
 mod ui;
 
-// #[cfg(not(target_arch = "wasm32"))] // rust-analyzer won't work
+// Comment out to make rust-analyzer work when compiling on linux/native
+#[cfg(not(target_arch = "wasm32"))] 
 mod native;
 
 #[cfg(target_arch = "wasm32")]
