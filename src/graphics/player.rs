@@ -19,8 +19,6 @@ fn add(
   mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
   for (entity, player) in &query {
-    info!("{:?} changed: {:?}", entity, player,);
-
     commands
       .entity(entity)
       .insert(PbrBundle {

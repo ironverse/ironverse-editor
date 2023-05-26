@@ -5,7 +5,7 @@ use bevy_flycam::MovementSettings;
 
 pub mod hotbar;
 pub mod inventory;
-// pub mod menu;
+pub mod menu;
 
 
 pub struct CustomPlugin;
@@ -17,11 +17,11 @@ impl Plugin for CustomPlugin {
       .add_state::<UIState>()
       .add_plugin(hotbar::CustomPlugin)
       .add_plugin(inventory::CustomPlugin)
-      // .add_plugin(menu::CustomPlugin)
+      .add_plugin(menu::CustomPlugin)
       // .add_startup_system(startup)
       // .add_system(update)
       // .add_system(update_wasm_mouse)
-      // .add_system(crosshair)
+      .add_system(crosshair)
       ;
   }
 }
@@ -68,45 +68,45 @@ impl Plugin for CustomPlugin {
 // }
 
 
-// fn crosshair(
-//   mut ctx: EguiContexts,
-//   mut is_initialized: Local<bool>,
-//   mut texture_id: Local<egui::TextureId>,
-//   images: Local<Images>,
+fn crosshair(
+  mut ctx: EguiContexts,
+  mut is_initialized: Local<bool>,
+  mut texture_id: Local<egui::TextureId>,
+  images: Local<Images>,
 
-//   windows: Query<&Window, With<PrimaryWindow>>,
-// ) {
-//   let res = windows.get_single();
-//   if res.is_err() {
-//     return;
-//   }
-//   let window = res.unwrap();
+  windows: Query<&Window, With<PrimaryWindow>>,
+) {
+  let res = windows.get_single();
+  if res.is_err() {
+    return;
+  }
+  let window = res.unwrap();
 
-//   if !*is_initialized {
-//     *is_initialized = true;
-//     *texture_id = ctx.add_image(images.crosshair.clone_weak());
-//   }
+  if !*is_initialized {
+    *is_initialized = true;
+    *texture_id = ctx.add_image(images.crosshair.clone_weak());
+  }
 
-//   let frame = Frame {
-//     fill: Color32::from_rgba_unmultiplied(0, 0, 0, 0),
-//     ..Default::default()
-//   };
+  let frame = Frame {
+    fill: Color32::from_rgba_unmultiplied(0, 0, 0, 0),
+    ..Default::default()
+  };
 
-//   let size = [50.0, 50.0];
-//   let x = (window.width() * 0.5) - size[0] * 0.5;
-//   let y = (window.height() * 0.5) - size[1] * 0.5;
+  let size = [50.0, 50.0];
+  let x = (window.width() * 0.5) - size[0] * 0.5;
+  let y = (window.height() * 0.5) - size[1] * 0.5;
 
-//   egui::Window::new("crosshair")
-//     .title_bar(false)
-//     .frame(frame)
-//     .fixed_rect(Rect {
-//       min: [x, y].into(),
-//       max: [x, y].into(),
-//     })
-//     .show(ctx.ctx_mut(), |ui| {
-//       ui.image(*texture_id, size.clone());
-//     });
-// }
+  egui::Window::new("crosshair")
+    .title_bar(false)
+    .frame(frame)
+    .fixed_rect(Rect {
+      min: [x, y].into(),
+      max: [x, y].into(),
+    })
+    .show(ctx.ctx_mut(), |ui| {
+      ui.image(*texture_id, size.clone());
+    });
+}
 
 
 

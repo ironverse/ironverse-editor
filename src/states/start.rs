@@ -10,6 +10,7 @@ impl Plugin for CustomPlugin {
       .add_system(
         enter.in_schedule(OnEnter(GameState::Start))
       )
+      .add_system(update)
       ;
   }
 }
@@ -20,6 +21,8 @@ fn enter(
   mut game_res: ResMut<GameResource>,
   mut next_state: ResMut<NextState<GameState>>,
 ) {
+
+  // info!("Enter GameState::Start");
 
   // let data = Data::default();
   // game_res.data = data;
@@ -44,3 +47,14 @@ fn enter(
     ChunkEdit::default(),
   ));
 }
+
+fn update(
+  mut light_query: Query<&mut Transform, With<PointLight>>,
+  time: Res<Time>,
+) {
+  let t = time.elapsed_seconds();
+  for mut tfm in light_query.iter_mut() {
+    tfm.translation = 5.0 * Vec3::new(t.cos(), 1.0, t.sin());
+  }
+}
+

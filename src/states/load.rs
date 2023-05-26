@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 use voxels::{data::voxel_octree::VoxelOctree, chunk::chunk_manager::Chunk};
-use crate::{components::{save::Data, player::Player}, data::GameResource, physics::Physics};
+use crate::{data::{GameResource, GameState, Player}, physics::Physics, graphics::chunks::TerrainGraphics, ui::UIState};
 
-use super::GameState;
 
 #[cfg(target_arch = "wasm32")]
 use crate::ui::menu::UIMenuResource;
@@ -15,21 +14,67 @@ impl Plugin for CustomPlugin {
       .add_system(exit.in_schedule(OnExit(GameState::Load)))
       ;
 
-    #[cfg(target_arch = "wasm32")]
-    app
-      .add_system(update.in_set(OnUpdate(GameState::Load)));
+    // #[cfg(target_arch = "wasm32")]
+    // app
+    //   .add_system(update.in_set(OnUpdate(GameState::Load)));
   }
 }
 
 fn enter(
   mut commands: Commands,
   mut game_res: ResMut<GameResource>,
+  mut physics: ResMut<Physics>,
   player_query: Query<(Entity, &Player)>,
-  
+  mut game_state_next: ResMut<NextState<GameState>>,
+  mut ui_state_next: ResMut<NextState<UIState>>,
+
+
+  terrain_graphics: Query<Entity, With<TerrainGraphics>>,
 ) {
+  // Clear the game
+  // Start new game
+
+  game_res.chunk_manager.chunks.clear();
+  *physics = Physics::default();
   
+  for (entity, _) in &player_query {
+    commands.entity(entity).despawn_recursive();
+  }
+  
+  for entity in &terrain_graphics {
+    commands.entity(entity).despawn_recursive();
+  }
+
+
+  let data = game_res.data.clone();
+  for i in 0..data.terrains.keys.len() {
+    let key = &data.terrains.keys[i];
+    let voxels_str = &data.terrains.voxels[i];
+    let voxels_res = array_bytes::hex2bytes(voxels_str);
+    if voxels_res.is_ok() {
+      let data = voxels_res.unwrap();
+      let octree = VoxelOctree::new_from_bytes(data);
+      let chunk = Chunk {
+        key: key.clone(),
+        octree: octree,
+        is_default: false,
+        ..Default::default()
+      };
+      game_res.chunk_manager.set_chunk(key, &chunk);
+
+      // info!("load data key {:?}", key);
+    }
+  }
+
+
+
+  ui_state_next.set(UIState::Default);
+  game_state_next.set(GameState::Start);
+  info!("Enter GameState::Load");
 }
 
+
+/* 
 /*  
   Have to find a way not to use UIMenuResource later
 
@@ -91,12 +136,12 @@ fn update(
     next_state.set(GameState::Play);
   }
 }
-
+ */
 
 fn exit(
-  mut commands: Commands,
-  mut game_res: ResMut<GameResource>,
-  player_query: Query<(Entity, &Player)>,
+  // mut commands: Commands,
+  // mut game_res: ResMut<GameResource>,
+  // player_query: Query<(Entity, &Player)>,
 ) {
   
 }

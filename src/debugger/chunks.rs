@@ -8,7 +8,7 @@ impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_plugin(MaterialPlugin::<CustomMaterial>::default())
-      .add_plugin(PlayerPlugin)
+      // .add_plugin(PlayerPlugin)
       .add_startup_system(startup)
       .add_system(init_textures)
       ;

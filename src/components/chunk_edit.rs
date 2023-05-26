@@ -1,7 +1,7 @@
 use bevy::{prelude::*, input::ButtonState};
 use rapier3d::prelude::{ColliderBuilder, InteractionGroups, Isometry, Point};
 use voxels::{data::voxel_octree::VoxelMode, utils::key_to_world_coord_f32};
-use crate::{physics::Physics, data::GameResource, utils::{nearest_voxel_point, nearest_voxel_point_0}, input::{MouseInput, hotbar::HotbarResource}};
+use crate::{physics::Physics, data::{GameResource, CursorState}, utils::{nearest_voxel_point, nearest_voxel_point_0}, input::{MouseInput, hotbar::HotbarResource}};
 use super::{raycast::Raycast, chunks::{Chunks, Mesh}};
 use rapier3d::geometry::Group;
 
@@ -27,8 +27,8 @@ fn update(
   mut physics: ResMut<Physics>,
   hotbar_res: Res<HotbarResource>,
   mut mouse_inputs: EventReader<MouseInput>,
+  
 ) {
-
   let mut voxel_op = None;
   for event in mouse_inputs.iter() {
     if event.mouse_button_input.state == ButtonState::Pressed {
@@ -135,8 +135,11 @@ fn update(
         let handle = physics.collider_set.insert(collider);
 
 
+        let mut c = chunk.clone();
+        c.is_default = false;
         chunks.data.push(Mesh {
           key: key.clone(),
+          chunk: c,
           data: data.clone(),
           handle: handle,
         })

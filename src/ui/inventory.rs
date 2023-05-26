@@ -1,7 +1,6 @@
 use bevy::{prelude::*, window::PrimaryWindow, asset::LoadState};
 use bevy_egui::{EguiContexts, egui::{self, TextureId, Frame, Color32, Style, ImageButton, Rect, Vec2, Pos2, Sense}};
-// use crate::{input::hotbar::HotbarResource, wasm::PointerLockEvent};
-use crate::input::hotbar::HotbarResource;
+use crate::{input::hotbar::HotbarResource, data::CursorState};
 use super::{UIState, hotbar::HotbarUIResource};
 
 
@@ -26,7 +25,7 @@ fn startup(
   commands.insert_resource(InventoryTexture {
     is_loaded: false,
     slot: asset_server.load("slot.png"),
-    albedo: asset_server.load("textures/terrains_albedo_items.png"),
+    albedo: asset_server.load("textures/textures_items.png"),
     slot_id: TextureId::default(),
     albedo_id: TextureId::default(),
   });
@@ -52,23 +51,24 @@ fn toggle_show(
   key_input: Res<Input<KeyCode>>,
   mut next_state: ResMut<NextState<UIState>>,
   ui_state: Res<State<UIState>>,
-
-  // mut pointer_events: EventWriter<PointerLockEvent>,
+  mut cursor_state_next: ResMut<NextState<CursorState>>,
 ) {
-  // if key_input.just_pressed(KeyCode::I) {
+  if key_input.just_pressed(KeyCode::I) {
+    match ui_state.0 {
+      UIState::Default => {
+        next_state.set(UIState::Inventory);
+        cursor_state_next.set(CursorState::None);
+      },
+      UIState::Inventory |
+      UIState::Menu => {
+        next_state.set(UIState::Default);
+        cursor_state_next.set(CursorState::Locked);
+      },
+      _ => ()
+    }
 
-  //   match ui_state.0 {
-  //     UIState::Default => {
-  //       next_state.set(UIState::Inventory);
-  //       pointer_events.send(PointerLockEvent(false));
-  //     },
-  //     UIState::Inventory => {
-  //       next_state.set(UIState::Default);
-  //       pointer_events.send(PointerLockEvent(true));
-  //     },
-  //     _ => ()
-  //   }
-  // }
+    info!("ui_state.0 {:?}", ui_state.0);
+  }
 }
 
 
@@ -92,7 +92,7 @@ fn render(
     ..Default::default()
   };
 
-  let size = [400.0, 200.0];
+  let size = [400.0, 400.0];
   let x = (window.width() * 0.5) - size[0] * 0.5;
   let y = window.height() * 0.1;
 
@@ -108,6 +108,8 @@ fn render(
     .show(ctx.ctx_mut(), |ui| {
       ui.set_min_size(size.into());
       ui.set_max_size(size.into());
+
+      let row_total = 5;
 
       egui::Grid::new("inventory_grid").show(ui, |ui| {
         let total_items = 16.0;
@@ -130,6 +132,10 @@ fn render(
           let pos = slot.pos + adj;
           let rect = Rect::from_min_size(pos, item_size.into());
           let _item_res = ui.put(rect, item);
+
+          if i % row_total == 0 {
+            ui.end_row();
+          }
         }
 
 
@@ -245,27 +251,21 @@ struct LocalResource {
 
 impl Default for LocalResource {
   fn default() -> Self {
-    Self {
-      slots: vec![
+
+    let total = 16;
+    let mut slots = vec![];
+    for i in 0..total {
+      slots.push(
         Slot { 
           pos: Pos2::new(0.0, 0.0), 
           anchor_pos: Vec2::new(0.0, 0.0),
           is_dragged: false,
-          item_id: 1, 
-        },
-        Slot { 
-          pos: Pos2::new(0.0, 0.0), 
-          anchor_pos: Vec2::new(0.0, 0.0),
-          is_dragged: false,
-          item_id: 2, 
-        },
-        Slot { 
-          pos: Pos2::new(0.0, 0.0), 
-          anchor_pos: Vec2::new(0.0, 0.0),
-          is_dragged: false,
-          item_id: 3, 
+          item_id: i + 1, 
         }
-      ],
+      );
+    }
+    Self {
+      slots: slots,
     }
   }
 }

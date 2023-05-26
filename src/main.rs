@@ -11,6 +11,9 @@ mod input;
 mod utils;
 mod debugger;
 mod ui;
+
+// Comment out to make rust-analyzer work when compiling on linux/native
+#[cfg(not(target_arch = "wasm32"))] 
 mod native;
 
 #[cfg(target_arch = "wasm32")]
@@ -30,9 +33,7 @@ fn main() {
       }),
       ..default()
     }))
-    // .add_plugin(FramepacePlugin)
-    // .add_plugin(PlayerPlugin)
-    .add_plugin(NoCameraPlayerPlugin)
+    .add_plugin(NoCameraAndGrabPlugin)
     .add_plugin(physics::CustomPlugin)
     .add_plugin(data::CustomPlugin)
     .add_plugin(states::CustomPlugin)
@@ -45,6 +46,7 @@ fn main() {
     // .add_startup_system(startup)
     ;
   
+  #[cfg(not(target_arch = "wasm32"))]
   app
     .add_plugin(native::CustomPlugin);
   

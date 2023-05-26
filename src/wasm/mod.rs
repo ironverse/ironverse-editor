@@ -1,10 +1,12 @@
-use bevy::{prelude::*, input::{mouse::MouseButtonInput, ButtonState}};
+use bevy::{prelude::*, input::{mouse::MouseButtonInput, ButtonState}, window::CursorGrabMode};
 use bevy_flycam::MovementSettings;
 use web_sys::HtmlElement;
 use flume::*;
 use wasm_bindgen::prelude::*;
+use crate::{input::MouseInput, data::CursorState, ui::UIState};
 
-use crate::input::MouseInput;
+mod load_data;
+mod save_data;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -14,7 +16,13 @@ impl Plugin for CustomPlugin {
       .add_event::<PointerLockEvent>()
       .add_event::<MouseMoveEvent>()
       .add_event::<WasmInputEvent>()
-      .add_systems((update_fullscreen, update_pointer_events, update_mouse_events));
+      .add_plugin(save_data::CustomPlugin)
+      .add_plugin(load_data::CustomPlugin)
+      .add_system(update_fullscreen)
+      .add_system(grab_mouse)
+      .add_system(cursor_free.in_schedule(OnEnter(CursorState::None)))
+      .add_system(cursor_locked.in_schedule(OnEnter(CursorState::Locked)))
+      ;
 
     app
       .add_startup_system(startup)
@@ -22,26 +30,31 @@ impl Plugin for CustomPlugin {
   }
 }
 
-#[allow(dead_code)]
 fn startup(local_res: Res<LocalResource>,) {
   let send_mouse_click = local_res.send_mouse_click.clone();
   let cb = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
-    // let _ = send_mouse_move.send((event.movement_x() as f32, event.movement_y() as f32));
     let _ = send_mouse_click.send(event.button());
-    // info!("test");
   }) as Box<dyn FnMut(web_sys::MouseEvent)>);
 
   let window = web_sys::window().expect("no global `window` exists");
   window.set_onmousedown(Some(cb.as_ref().unchecked_ref()));
   cb.forget();
 
+  let send_error = local_res.send_error.clone();
+  let cb1 = Closure::wrap(Box::new(move |event: web_sys::ErrorEvent| {
+    // event.message()
+    send_error.send(event.message());
+  }) as Box<dyn FnMut(web_sys::ErrorEvent)>);
+  window.set_onerror(Some(cb1.as_ref().unchecked_ref()));
+  cb1.forget();
 
-  // let cb = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
-  //   // let _ = send_mouse_move.send((event.movement_x() as f32, event.movement_y() as f32));
-  //   event.bubbles()
-  // }) as Box<dyn FnMut(web_sys::MouseEvent)>);
+  // let send_key = local_res.send_key.clone();
+  // let cb = Closure::wrap(Box::new(move |event: web_sys::KeyboardEvent| {
+  //   let _ = send_key.send(event.char_code());
+  // }) as Box<dyn FnMut(web_sys::KeyboardEvent)>);
 
-  // window.set_onmousedown(Some(cb.as_ref().unchecked_ref()));
+  // window.set_onkeydown(Some(cb.as_ref().unchecked_ref()));
+  // cb.forget();
 }
 
 fn send_mouse_events(
@@ -50,10 +63,11 @@ fn send_mouse_events(
   mut mouse_inputs: EventWriter<MouseInput>,
 ) {
   for e in local_res.recv_mouse_click.drain() {
+    // info!("clicked {}", is_pointer_locked());
     if !is_pointer_locked() {
       continue;
     }
-
+    
     // Defer: Improve getting mouse events from WASM
     if e == 0 {
       mouse_inputs.send(MouseInput { mouse_button_input: MouseButtonInput {
@@ -67,14 +81,6 @@ fn send_mouse_events(
         state: ButtonState::Pressed,
       }});
     }
-
-    
-    // if e == 0 {
-    //   wasm_events.send(WasmInputEvent { mouse: MouseButton::Left });
-    // }
-    // if e == 2 {
-    //   wasm_events.send(WasmInputEvent { mouse: MouseButton::Right });
-    // }
   }
 }
 
@@ -92,6 +98,8 @@ fn update_pointer_events(
   mut events: EventReader<PointerLockEvent>,
   mut move_setting_res: ResMut<MovementSettings>,
 ) {
+
+  return;
   // TODO: Need to confirm if truly locked the pointer or exit later on
 
   for e in events.iter() {
@@ -109,19 +117,49 @@ fn update_pointer_events(
   }
 }
 
-fn update_mouse_events(
-  mut events: EventReader<MouseMoveEvent>,
-  mut move_setting_res: ResMut<MovementSettings>,
+
+fn grab_mouse(
+  mouse: Res<Input<MouseButton>>,
+  key: Res<Input<KeyCode>>,
+  mut cursor_state_next: ResMut<NextState<CursorState>>,
+  cursor_state: Res<State<CursorState>>,
+  mut ui_state_next: ResMut<NextState<UIState>>,
+  ui_state: Res<State<UIState>>,
 ) {
-  for e in events.iter() {
-    // if e.0 {
-    //   move_setting_res.sensitivity = 0.00012;
-    // } else {
-    //   move_setting_res.sensitivity = 0.0;
-    // }
+  if mouse.just_pressed(MouseButton::Left) {
+    match ui_state.0 {
+      UIState::Inventory => { },
+      UIState::Default => { cursor_state_next.set(CursorState::Locked); },
+      _ => {  }
+    };
+    
   }
+
 }
 
+fn cursor_free(
+  mut windows: Query<&mut Window>,
+  mut move_setting_res: ResMut<MovementSettings>,
+) {
+  let mut window = windows.single_mut();
+  window.cursor.visible = true;
+  window.cursor.grab_mode = CursorGrabMode::None;
+
+  move_setting_res.sensitivity = 0.0;
+  move_setting_res.speed = 0.0;
+}
+
+fn cursor_locked(
+  mut windows: Query<&mut Window>,
+  mut move_setting_res: ResMut<MovementSettings>,
+) {
+  let mut window = windows.single_mut();
+  window.cursor.visible = false;
+  window.cursor.grab_mode = CursorGrabMode::Confined;
+
+  move_setting_res.sensitivity = 0.00012;
+  move_setting_res.speed = 6.0;
+}
 
 
 pub fn html_body() -> HtmlElement {
@@ -136,15 +174,23 @@ pub fn html_body() -> HtmlElement {
 struct LocalResource {
   send_mouse_click: Sender<i16>,
   recv_mouse_click: Receiver<i16>,
-
+  send_error: Sender<String>,
+  recv_error: Receiver<String>,
+  prev_pointer_locked_val: bool,
+  pending_to_lock: bool,
 }
 
 impl Default for LocalResource {
   fn default() -> Self {
     let (send_mouse_click, recv_mouse_click) = flume::bounded(10);
+    let (send_error, recv_error) = flume::bounded(10);
     Self {
       send_mouse_click: send_mouse_click,
       recv_mouse_click: recv_mouse_click,
+      send_error: send_error,
+      recv_error: recv_error,
+      prev_pointer_locked_val: false,
+      pending_to_lock: false,
     }
   }
 }
@@ -166,3 +212,65 @@ pub fn is_pointer_locked() -> bool {
   let lock_op = document.pointer_lock_element();
   lock_op.is_some()
 }
+/* 
+fn grab_mouse(
+  mut windows: Query<&mut Window>,
+  mouse: Res<Input<MouseButton>>,
+  key: Res<Input<KeyCode>>,
+  mut cursor_state_next: ResMut<NextState<CursorState>>,
+  ui_state: Res<State<UIState>>,
+
+  mut local_res: ResMut<LocalResource>,
+) {
+  for error in local_res.recv_error.drain() {
+    info!("error {:?}", error);
+  }
+
+
+  let mut window = windows.single_mut();
+  if local_res.pending_to_lock {
+    if !is_pointer_locked() {
+      window.cursor.visible = true;
+      window.cursor.grab_mode = CursorGrabMode::None;
+      local_res.pending_to_lock = false;
+    }
+
+    local_res.pending_to_lock = false;
+  }
+
+
+  if local_res.prev_pointer_locked_val != is_pointer_locked() {
+    if is_pointer_locked() {
+      window.cursor.visible = false;
+      window.cursor.grab_mode = CursorGrabMode::Locked;
+      cursor_state_next.set(CursorState::Locked);
+    } else {
+      window.cursor.visible = true;
+      window.cursor.grab_mode = CursorGrabMode::None;
+      cursor_state_next.set(CursorState::None);
+    }
+    local_res.prev_pointer_locked_val = is_pointer_locked();
+  }
+
+  if mouse.just_pressed(MouseButton::Left) {
+    if !is_pointer_locked() {
+      window.cursor.visible = false;
+      window.cursor.grab_mode = CursorGrabMode::Locked;
+      local_res.pending_to_lock = true;
+    }
+  }
+
+
+
+  if mouse.just_pressed(MouseButton::Left) {
+    if !is_pointer_locked() {
+      cursor_state_next.set(CursorState::Locked);
+    }
+  }
+
+  if key.just_pressed(KeyCode::Escape) {
+    cursor_state_next.set(CursorState::None);
+  }
+}
+
+ */
