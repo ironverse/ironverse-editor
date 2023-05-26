@@ -1,5 +1,5 @@
 use bevy::{prelude::*, input::mouse::MouseButtonInput, window::CursorGrabMode};
-use crate::{input::MouseInput, data::CursorState};
+use crate::{input::MouseInput, data::CursorState, ui::UIState};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -32,9 +32,15 @@ fn grab_mouse(
   mouse: Res<Input<MouseButton>>,
   key: Res<Input<KeyCode>>,
   mut cursor_state_next: ResMut<NextState<CursorState>>,
+  ui_state: Res<State<UIState>>,
 ) {
   if mouse.just_pressed(MouseButton::Left) {
-    cursor_state_next.set(CursorState::Locked);
+    match ui_state.0 {
+      UIState::Inventory => { },
+      UIState::Default => { cursor_state_next.set(CursorState::Locked); },
+      _ => {  }
+    };
+    
   }
 
   if key.just_pressed(KeyCode::Escape) {
