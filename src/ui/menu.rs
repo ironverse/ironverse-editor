@@ -29,21 +29,18 @@ fn toggle_show(
   ui_state: Res<State<UIState>>,
 ) {
   if key.just_pressed(KeyCode::LControl) {
-    match cursor_state.0 {
-      CursorState::None => {
-        cursor_state_next.set(CursorState::Locked);
-
-        if ui_state.0 != UIState::Default {
-          ui_state_next.set(UIState::Default);
-        }
-      },
-      CursorState::Locked => {
-        cursor_state_next.set(CursorState::None);
-
+    match ui_state.0 {
+      UIState::Default => {
         ui_state_next.set(UIState::Menu);
+        cursor_state_next.set(CursorState::None);
       },
-      _ => {}
-    };
+      UIState::Inventory |
+      UIState::Menu => {
+        ui_state_next.set(UIState::Default);
+        cursor_state_next.set(CursorState::Locked);
+      },
+      _ => ()
+    }
     
   }
 }

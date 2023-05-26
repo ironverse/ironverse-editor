@@ -59,7 +59,8 @@ fn toggle_show(
         next_state.set(UIState::Inventory);
         cursor_state_next.set(CursorState::None);
       },
-      UIState::Inventory => {
+      UIState::Inventory |
+      UIState::Menu => {
         next_state.set(UIState::Default);
         cursor_state_next.set(CursorState::Locked);
       },
