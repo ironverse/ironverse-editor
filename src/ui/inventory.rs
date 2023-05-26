@@ -92,7 +92,7 @@ fn render(
     ..Default::default()
   };
 
-  let size = [400.0, 200.0];
+  let size = [400.0, 400.0];
   let x = (window.width() * 0.5) - size[0] * 0.5;
   let y = window.height() * 0.1;
 
@@ -108,6 +108,8 @@ fn render(
     .show(ctx.ctx_mut(), |ui| {
       ui.set_min_size(size.into());
       ui.set_max_size(size.into());
+
+      let row_total = 5;
 
       egui::Grid::new("inventory_grid").show(ui, |ui| {
         let total_items = 16.0;
@@ -130,6 +132,10 @@ fn render(
           let pos = slot.pos + adj;
           let rect = Rect::from_min_size(pos, item_size.into());
           let _item_res = ui.put(rect, item);
+
+          if i % row_total == 0 {
+            ui.end_row();
+          }
         }
 
 
@@ -245,27 +251,21 @@ struct LocalResource {
 
 impl Default for LocalResource {
   fn default() -> Self {
-    Self {
-      slots: vec![
+
+    let total = 16;
+    let mut slots = vec![];
+    for i in 0..total {
+      slots.push(
         Slot { 
           pos: Pos2::new(0.0, 0.0), 
           anchor_pos: Vec2::new(0.0, 0.0),
           is_dragged: false,
-          item_id: 1, 
-        },
-        Slot { 
-          pos: Pos2::new(0.0, 0.0), 
-          anchor_pos: Vec2::new(0.0, 0.0),
-          is_dragged: false,
-          item_id: 2, 
-        },
-        Slot { 
-          pos: Pos2::new(0.0, 0.0), 
-          anchor_pos: Vec2::new(0.0, 0.0),
-          is_dragged: false,
-          item_id: 3, 
+          item_id: i + 1, 
         }
-      ],
+      );
+    }
+    Self {
+      slots: slots,
     }
   }
 }
