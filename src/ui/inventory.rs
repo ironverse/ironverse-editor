@@ -51,14 +51,17 @@ fn toggle_show(
   key_input: Res<Input<KeyCode>>,
   mut next_state: ResMut<NextState<UIState>>,
   ui_state: Res<State<UIState>>,
+  mut cursor_state_next: ResMut<NextState<CursorState>>,
 ) {
   if key_input.just_pressed(KeyCode::I) {
     match ui_state.0 {
       UIState::Default => {
         next_state.set(UIState::Inventory);
+        cursor_state_next.set(CursorState::None);
       },
       UIState::Inventory => {
         next_state.set(UIState::Default);
+        cursor_state_next.set(CursorState::Locked);
       },
       _ => ()
     }

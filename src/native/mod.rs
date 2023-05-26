@@ -7,6 +7,8 @@ impl Plugin for CustomPlugin {
     app
       .add_system(update)
       .add_system(grab_mouse)
+      .add_system(cursor_free.in_schedule(OnEnter(CursorState::None)))
+      .add_system(cursor_locked.in_schedule(OnEnter(CursorState::Locked)))
       ;
   }
 }
@@ -27,25 +29,29 @@ fn update(
 
 
 fn grab_mouse(
-  mut windows: Query<&mut Window>,
   mouse: Res<Input<MouseButton>>,
   key: Res<Input<KeyCode>>,
   mut cursor_state_next: ResMut<NextState<CursorState>>,
 ) {
-  let mut window = windows.single_mut();
   if mouse.just_pressed(MouseButton::Left) {
-    window.cursor.visible = false;
-    window.cursor.grab_mode = CursorGrabMode::Confined;
     cursor_state_next.set(CursorState::Locked);
-
-    info!("native locked");
   }
 
   if key.just_pressed(KeyCode::Escape) {
-    window.cursor.visible = true;
-    window.cursor.grab_mode = CursorGrabMode::None;
     cursor_state_next.set(CursorState::None);
-
-    info!("native locked 1");
   }
+}
+
+fn cursor_free(
+  mut windows: Query<&mut Window>,
+) {
+  let mut window = windows.single_mut();
+  window.cursor.visible = true;
+  window.cursor.grab_mode = CursorGrabMode::None;
+}
+
+fn cursor_locked(mut windows: Query<&mut Window>,) {
+  let mut window = windows.single_mut();
+  window.cursor.visible = false;
+  window.cursor.grab_mode = CursorGrabMode::Locked;
 }
