@@ -107,7 +107,7 @@ fn render(
 
           // load_file(local_res.send.clone());
           // next_state.set(UIState::Load);
-          next_game_state.set(GameState::LoadFile);
+          next_game_state.set(GameState::LoadGame);
         }
 
         ui.add_space(20.0);
@@ -119,7 +119,7 @@ fn render(
           //   next_state.set(UIState::Save);
           // }
 
-          next_state.set(UIState::Save);
+          next_game_state.set(GameState::SaveGame);
         }
 
         ui.add_space(20.0);

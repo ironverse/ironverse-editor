@@ -53,7 +53,8 @@ pub enum GameState {
   #[default]
   Start,
   New,
-  LoadFile,
+  LoadGame,
+  SaveGame,
   Load,
   Play,
   Pause,

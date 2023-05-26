@@ -135,8 +135,11 @@ fn update(
         let handle = physics.collider_set.insert(collider);
 
 
+        let mut c = chunk.clone();
+        c.is_default = false;
         chunks.data.push(Mesh {
           key: key.clone(),
+          chunk: c,
           data: data.clone(),
           handle: handle,
         })

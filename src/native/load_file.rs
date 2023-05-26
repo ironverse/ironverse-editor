@@ -6,9 +6,9 @@ pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system(enter.in_schedule(OnEnter(GameState::LoadFile)))
-      .add_system(update.in_set(OnUpdate(GameState::LoadFile)))
-      .add_system(exit.in_schedule(OnExit(GameState::LoadFile)))
+      .add_system(enter.in_schedule(OnEnter(GameState::LoadGame)))
+      .add_system(update.in_set(OnUpdate(GameState::LoadGame)))
+      .add_system(exit.in_schedule(OnExit(GameState::LoadGame)))
       ;
   }
 }
@@ -18,8 +18,6 @@ fn enter(
   mut game_state_next: ResMut<NextState<GameState>>,
 ) {
   if let Some(path) = rfd::FileDialog::new().pick_file() {
-    // info!("path {:?}", path);
-
     let contents = match fs::read_to_string(path.clone()) {
       Ok(c) => c,
       Err(_) => {
@@ -32,8 +30,6 @@ fn enter(
       Ok(d) => d,
       Err(_) => Data::default()
     };
-
-    info!("{:?}", data);
     game_res.data = data;
     game_state_next.set(GameState::Load);
   }

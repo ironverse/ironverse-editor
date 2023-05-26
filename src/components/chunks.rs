@@ -83,6 +83,7 @@ fn spawn_on_add_player(
       chunks.data.push(Mesh {
         key: key.clone(),
         data: data.clone(),
+        chunk: chunk.clone(),
         handle: handle,
       });
     }
@@ -99,6 +100,7 @@ pub struct Chunks {
 #[derive(Component, Debug, Clone)]
 pub struct Mesh {
   pub key: [i64; 3],
+  pub chunk: Chunk,
   pub data: MeshData,
   pub handle: ColliderHandle,
 }
