@@ -85,7 +85,7 @@ fn track_modified_chunks(
 
 
 
-
+/* 
 #[cfg(target_arch = "wasm32")]
 fn download_wasm(
   local_res: Res<LocalResource>,
@@ -152,7 +152,7 @@ fn download_wasm(
 
   next_state.set(UIState::Default);
 }
-
+ */
 
 /* 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
