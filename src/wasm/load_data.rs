@@ -42,7 +42,7 @@ fn update(
 }
 
 fn exit() {
-  info!("exit");
+  // info!("exit");
 }
 
 

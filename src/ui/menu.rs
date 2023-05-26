@@ -4,7 +4,7 @@ use bevy_egui::egui::Rect;
 use flume::{Sender, Receiver};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
-use crate::data::{CursorState, GameState};
+use crate::data::{CursorState, GameState, GameResource, Data};
 use super::{UIResource, UIState};
 
 pub struct CustomPlugin;
@@ -53,6 +53,8 @@ fn render(
   mut next_state: ResMut<NextState<UIState>>,
   mut next_game_state: ResMut<NextState<GameState>>,
   local_res: Res<UIMenuResource>,
+
+  mut game_res: ResMut<GameResource>,
 ) {
   let res = windows.get_single();
   if res.is_err() {
@@ -92,21 +94,15 @@ fn render(
         let new = Button::new("New")
           .min_size(button_size);
         if ui.add(new).clicked() {
-          next_state.set(UIState::New);
+          // next_state.set(UIState::New);
+          game_res.data = Data::default();
+          next_game_state.set(GameState::Load);
         }
 
         ui.add_space(20.0);
         let load = Button::new("Load")
           .min_size(button_size);
         if ui.add(load).clicked() {
-          // if let Some(path) = rfd::FileDialog::new().pick_file() {
-          //   ui_res.load_file_path = path.to_str().unwrap().to_string();
-          //   ui_res.load_file_init = false;
-          //   next_state.set(UIState::Load);
-          // }
-
-          // load_file(local_res.send.clone());
-          // next_state.set(UIState::Load);
           next_game_state.set(GameState::LoadGame);
         }
 
@@ -114,11 +110,6 @@ fn render(
         let save = Button::new("Save")
           .min_size(button_size);
         if ui.add(save).clicked() {
-          // if let Some(path) = rfd::FileDialog::new().save_file() {
-          //   ui_res.load_file_path = path.to_str().unwrap().to_string();
-          //   next_state.set(UIState::Save);
-          // }
-
           next_game_state.set(GameState::SaveGame);
         }
 
@@ -132,76 +123,6 @@ fn render(
     });
 
 }
-
-
-fn recv_file(local_res: Res<UIMenuResource>,) {
-  for file in local_res.recv.drain() {
-    let config = config::standard();
-    
-    
-    // let res = bincode::decode_from_slice::<Data, Configuration>(&file[..], config);
-    // match res {
-    //   Ok(r) => { info!("ok"); },
-    //   Err(e) => info!("{:?}", e),
-    // }
-
-    // let en1 = array_bytes::hex2bytes(str).unwrap();
-    // let (data, len): (Data, usize) = bincode::decode_from_slice(&en1[..], config).unwrap();
-
-    // info!("data {:?}", data);
-    let mut str = String::from_utf8(file).unwrap();
-    str = str.replace('"', "");
-    info!("str {:?}", str);
-    let vec = array_bytes::hex2bytes(str).unwrap();
-
-    let res = bincode::decode_from_slice::<Data, Configuration>(&vec[..], config);
-    let (data, usize) = match res {
-      Ok(r) => { 
-        info!("ok");
-        r
-      },
-      Err(e) => {
-        info!("{:?}", e);
-        return;
-      }
-    };
-
-    info!("data {:?}", data);
-  }
-}
-
-
-
-
-#[cfg(target_arch = "wasm32")]
-fn load_file(send: Sender<Vec<u8>>) {
-  let task = rfd::AsyncFileDialog::new().pick_file();
-
-  let send = send.clone();
-  // Await somewhere else
-  execute(async move {
-    let file = task.await;
-
-    if let Some(file) = file {
-      // If you are on native platform you can just get the path
-      #[cfg(not(target_arch = "wasm32"))]
-      println!("{:?}", file.path());
-
-      // If you care about wasm support you just read() the file
-      let res = file.read().await;
-      info!("Send {}", res.len());
-      send.send(res);
-    }
-  });
-}
-
-use std::future::Future;
-
-#[cfg(target_arch = "wasm32")]
-fn execute<F: Future<Output = ()> + 'static>(f: F) {
-  wasm_bindgen_futures::spawn_local(f);
-}
-
 
 #[derive(Resource)]
 pub struct UIMenuResource {
@@ -217,26 +138,4 @@ impl Default for UIMenuResource {
       recv: recv,
     }
   }
-}
-
-
-use serde::{Deserialize, Serialize};
-use bincode::{config::{self, Configuration}, Decode, Encode};
-
-
-#[derive(Serialize, Deserialize, Encode, Decode, PartialEq, Debug)]
-pub struct Data {
-  pub player: Player,
-  pub terrains: Terrains,
-}
-
-#[derive(Serialize, Deserialize, Encode, Decode, PartialEq, Debug)]
-pub struct Player {
-  pub position: [f32; 3]
-}
-
-#[derive(Serialize, Deserialize, Encode, Decode, PartialEq, Debug)]
-pub struct Terrains {
-  pub keys: Vec<[i64; 3]>,
-  pub voxels: Vec<String>,
 }

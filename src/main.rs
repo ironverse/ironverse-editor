@@ -12,7 +12,7 @@ mod utils;
 mod debugger;
 mod ui;
 
-#[cfg(not(target_arch = "wasm32"))] // rust-analyzer won't work
+// #[cfg(not(target_arch = "wasm32"))] // rust-analyzer won't work
 mod native;
 
 #[cfg(target_arch = "wasm32")]

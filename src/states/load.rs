@@ -62,7 +62,7 @@ fn enter(
       };
       game_res.chunk_manager.set_chunk(key, &chunk);
 
-      info!("load data key {:?}", key);
+      // info!("load data key {:?}", key);
     }
   }
 
