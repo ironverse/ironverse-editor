@@ -55,23 +55,23 @@ fn init_textures(
   terrains: Query<(Entity, &TerrainGraphics)>,
   asset_server: Res<AssetServer>,
 
-  mut loading_texture: ResMut<ChunkTexture>,
+  mut chunk_texture: ResMut<ChunkTexture>,
   local_res: Res<LocalResource>,
   mut images: ResMut<Assets<Image>>,
 ) {
-  if loading_texture.is_loaded
-    || asset_server.get_load_state(loading_texture.albedo.clone()) != LoadState::Loaded
-    || asset_server.get_load_state(loading_texture.normal.clone()) != LoadState::Loaded
+  if chunk_texture.is_loaded
+    || asset_server.get_load_state(chunk_texture.albedo.clone()) != LoadState::Loaded
+    || asset_server.get_load_state(chunk_texture.normal.clone()) != LoadState::Loaded
   {
     return;
   }
-  loading_texture.is_loaded = true;
+  chunk_texture.is_loaded = true;
 
   let array_layers = 16;
-  let image = images.get_mut(&loading_texture.albedo).unwrap();
+  let image = images.get_mut(&chunk_texture.albedo).unwrap();
   image.reinterpret_stacked_2d_as_array(array_layers);
 
-  let normal = images.get_mut(&loading_texture.normal).unwrap();
+  let normal = images.get_mut(&chunk_texture.normal).unwrap();
   normal.reinterpret_stacked_2d_as_array(array_layers);
 }
 
@@ -83,7 +83,7 @@ fn add(
   mut meshes: ResMut<Assets<Mesh>>,
   mut custom_materials: ResMut<Assets<CustomMaterial>>,
   mut _materials: ResMut<Assets<StandardMaterial>>,
-  mut loading_texture: ResMut<ChunkTexture>,
+  mut chunk_texture: ResMut<ChunkTexture>,
   mut images: ResMut<Assets<Image>>,
   terrains: Query<(Entity, &TerrainGraphics)>,
 
@@ -115,7 +115,7 @@ fn add(
     
   }
 
-  if !loading_texture.is_loaded {
+  if !chunk_texture.is_loaded {
     return;
   }
 
@@ -132,8 +132,8 @@ fn add(
     let mesh_handle = meshes.add(render_mesh);
     let material_handle = custom_materials.add(CustomMaterial {
       base_color: Color::rgb(1.0, 1.0, 1.0),
-      albedo: loading_texture.albedo.clone(),
-      normal: loading_texture.normal.clone(),
+      albedo: chunk_texture.albedo.clone(),
+      normal: chunk_texture.normal.clone(),
     });
 
     let coord_f32 = key_to_world_coord_f32(key, config.seamless_size);
@@ -192,10 +192,10 @@ impl Default for LocalResource {
 
 
 #[derive(Resource)]
-struct ChunkTexture {
-  is_loaded: bool,
-  albedo: Handle<Image>,
-  normal: Handle<Image>,
+pub struct ChunkTexture {
+  pub is_loaded: bool,
+  pub albedo: Handle<Image>,
+  pub normal: Handle<Image>,
 }
 
 
@@ -211,15 +211,15 @@ pub const VOXEL_TYPE_1: MeshVertexAttribute =
 #[uuid = "2f3d7f74-4bf7-4f32-98cd-858edafa5ca2"]
 #[bind_group_data(TriplanarMaterialKey)]
 #[uniform(0, TriplanarMaterialUniform)]
-struct CustomMaterial {
+pub struct CustomMaterial {
   pub base_color: Color,
 
   #[texture(1, dimension = "2d_array")]
   #[sampler(2)]
-  albedo: Handle<Image>,
+  pub albedo: Handle<Image>,
   #[texture(3, dimension = "2d_array")]
   #[sampler(4)]
-  normal: Handle<Image>,
+  pub normal: Handle<Image>,
 }
 
 impl Material for CustomMaterial {

@@ -29,6 +29,8 @@ fn on_add(
       continue;
     }
 
+    game_res.preview_chunk_manager.chunks = game_res.chunk_manager.chunks.clone();
+
     let nearest_op = nearest_voxel_point_0(
       &game_res.chunk_manager, 
       raycast.point, 
