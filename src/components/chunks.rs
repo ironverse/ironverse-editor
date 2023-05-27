@@ -13,16 +13,7 @@ pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system(spawn_on_add_player)
-      ;
-    
-
-    // #[cfg(target_arch = "wasm32")]
-    // app
-    //   .add_system(on_move)
-    //   .add_system(on_raycast.after(on_move))
-    //   .add_system(add_chunks.after(on_raycast))
-    //   .add_system(convert_chunks_to_collider);
+      .add_system(spawn_on_add_player);
   }
 }
 

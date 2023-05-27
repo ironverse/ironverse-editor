@@ -17,6 +17,8 @@ impl Plugin for CustomPlugin {
 pub struct GameResource {
   pub chunk_manager: ChunkManager,
   pub data: Data,
+
+  pub preview_chunk_manager: ChunkManager,
 }
 
 impl Default for GameResource {
@@ -24,6 +26,7 @@ impl Default for GameResource {
     Self {
       chunk_manager: ChunkManager::default(),
       data: Data::default(),
+      preview_chunk_manager: ChunkManager::default(),
     }
   }
 }

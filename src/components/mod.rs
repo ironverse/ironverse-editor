@@ -4,7 +4,7 @@ pub mod player_movement;
 pub mod chunks;
 pub mod raycast;
 pub mod chunk_edit;
-// pub mod save;
+pub mod chunk_preview;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -14,6 +14,7 @@ impl Plugin for CustomPlugin {
       .add_plugin(chunks::CustomPlugin)
       .add_plugin(raycast::CustomPlugin)
       .add_plugin(chunk_edit::CustomPlugin)
+      .add_plugin(chunk_preview::CustomPlugin)
       // .add_plugin(save::CustomPlugin)
       ;
   }

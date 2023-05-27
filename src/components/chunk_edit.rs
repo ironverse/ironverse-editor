@@ -17,7 +17,6 @@ impl Plugin for CustomPlugin {
 /*
   Adapter for Mouse event for wasm and native
  */
-
 fn update(
   mut commands: Commands,
   mut raycasts: Query<(Entity, &Raycast, &mut Chunks), Changed<Raycast>>,

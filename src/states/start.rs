@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_flycam::FlyCam;
 use voxels::utils::posf32_to_world_key;
-use crate::{physics::Physics, data::{GameResource, GameState, Player}, components::{player_movement::PlayerMovement, chunks::Chunks, raycast::Raycast, chunk_edit::ChunkEdit}, graphics::chunks::ChunkGraphics, debugger::raycast::RaycastDebugger};
+use crate::{physics::Physics, data::{GameResource, GameState, Player}, components::{player_movement::PlayerMovement, chunks::Chunks, raycast::Raycast, chunk_edit::ChunkEdit, chunk_preview::ChunkPreview}, graphics::{chunks::ChunkGraphics, chunk_preview::ChunkPreviewRender}, debugger::raycast::RaycastDebugger};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -21,14 +21,6 @@ fn enter(
   mut game_res: ResMut<GameResource>,
   mut next_state: ResMut<NextState<GameState>>,
 ) {
-
-  // info!("Enter GameState::Start");
-
-  // let data = Data::default();
-  // game_res.data = data;
-
-  // next_state.set(GameState::Play);
-
   let pos = [0.0, 5.0, 0.0];
   let (body, collider) = physics.spawn_character(1.0, 0.5, Vec3::new(pos[0], pos[1], pos[2]));
 
@@ -45,6 +37,8 @@ fn enter(
     FlyCam {},
     RaycastDebugger::default(),
     ChunkEdit::default(),
+    ChunkPreview::default(),
+    ChunkPreviewRender::default(),
   ));
 }
 
