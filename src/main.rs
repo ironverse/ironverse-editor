@@ -42,7 +42,7 @@ fn main() {
     .add_plugin(input::CustomPlugin)
     .add_plugin(ui::CustomPlugin)
 
-    // .add_plugin(debugger::CustomPlugin)
+    .add_plugin(debugger::CustomPlugin)
     // .add_startup_system(startup)
     ;
   

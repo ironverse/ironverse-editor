@@ -12,9 +12,11 @@ impl Plugin for CustomPlugin {
 }
 
 /*
-  Detect for change of target voxel
-  Then create the data for the preview chunk
-  Only do it once every change of target voxel
+  Have to toggle it on/off
+  Create a single chunk just for previewing
+  Able to move it, translate the position to world position
+    Relative to the original chunk
+    
  */
 
 fn on_add(
@@ -24,6 +26,49 @@ fn on_add(
   (Entity, &Raycast, &mut ChunkPreview), Changed<Raycast>
   >,
 ) {
+
+
+  for (entity, raycast, mut chunk_preview) in &mut raycasts {
+    if raycast.point.x == f32::NAN {
+      continue;
+    }
+
+    game_res.preview_chunk_manager.chunks = game_res.chunk_manager.chunks.clone();
+
+    let nearest_op = nearest_voxel_point_0(
+      &game_res.chunk_manager, 
+      raycast.point, 
+      true
+    );
+    if nearest_op.is_none() { continue; }
+
+    let nearest = nearest_op.unwrap();
+    if chunk_preview.coord != nearest {
+      chunk_preview.coord = nearest;
+
+      let nearest_new_op = nearest_voxel_point(
+        &game_res.chunk_manager, 
+        raycast.point, 
+        true,
+        0
+      );
+
+      if nearest_new_op.is_none() { continue; }
+      let nearest_new = nearest_new_op.unwrap();
+
+      let mut chunk = Chunk::default();
+      let pos = chunk.octree.get_size() / 2;
+
+      chunk.octree.set_voxel(pos, pos, pos, 1);
+      chunk_preview.chunks.clear();
+      chunk_preview.chunks.push((chunk.key, chunk));
+
+      // Get the data 1 voxel away from the target voxel
+      // Put it in the center of the preview chunk
+    }
+  }
+
+/*   
   for (entity, raycast, mut chunk_preview) in &mut raycasts {
     if raycast.point.x == f32::NAN {
       continue;
@@ -56,6 +101,7 @@ fn on_add(
       chunk_preview.chunks = res;
     }
   }
+ */
 }
 
 

@@ -42,7 +42,7 @@ fn startup(
       intensity: 3000.0,
       ..Default::default()
     },
-    transform: Transform::from_xyz(3.0, 2.0, 1.0),
+    transform: Transform::from_xyz(0.0, 5.0, 0.0),
     ..Default::default()
   });
 }
@@ -245,6 +245,10 @@ impl Material for CustomMaterial {
 
     Ok(())
   }
+
+  // fn alpha_mode(&self) -> AlphaMode {
+  //   AlphaMode::Blend
+  // }
 }
 
 /// The GPU representation of the uniform data of a [`TriplanarMaterial`].

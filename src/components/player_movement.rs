@@ -22,7 +22,6 @@ fn update(
     rigid_body.set_position(Vector3::new(p.x, p.y, p.z).into(), false);
 
     let k = posf32_to_world_key(&[p.x, p.y, p.z], game_res.chunk_manager.config.seamless_size);
-
     if player.key != k {
       player.prev_key = player.key.clone();
       player.key = k;

@@ -1,6 +1,7 @@
 use bevy::{prelude::*, window::PrimaryWindow, diagnostic::{Diagnostic, FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin, Diagnostics}};
 use bevy_egui::{EguiContexts, egui::{self, TextureId, Frame, Color32, Style, ImageButton, Rect, Vec2, Pos2, RichText}};
-use bevy_framepace::FramepaceSettings;
+
+use crate::data::Player;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -8,7 +9,7 @@ impl Plugin for CustomPlugin {
     app
       .insert_resource(LocalResource::default())
       .add_plugin(FrameTimeDiagnosticsPlugin::default())
-      .add_plugin(LogDiagnosticsPlugin::default())
+      // .add_plugin(LogDiagnosticsPlugin::default())
       .add_system(show_texts)
       ;
   }
@@ -27,10 +28,10 @@ fn show_texts(
   windows: Query<&Window, With<PrimaryWindow>>,
   diagnostics: Res<Diagnostics>,
 
-  mut settings: ResMut<FramepaceSettings>,
-
   time: Res<Time>,
   mut local_res: ResMut<LocalResource>,
+
+  players: Query<&Transform, With<Player>>,
 ) {
   let res = windows.get_single();
   if res.is_err() {
@@ -69,7 +70,12 @@ fn show_texts(
   let x = 0.0;
   let y = 0.0;
 
-  egui::Window::new("block_ui")
+  let mut player_pos = Vec3::ZERO;
+  for trans in &players {
+    player_pos = trans.translation.clone();
+  }
+
+  egui::Window::new("DebuggerTexts")
     .title_bar(false)
     .frame(frame)
     .fixed_rect(Rect::from_min_max(
@@ -84,6 +90,13 @@ fn show_texts(
 
         ui.label(
           RichText::new("FPS:")
+            .color(Color32::WHITE)
+            .size(20.0)
+        );
+
+        
+        ui.label(
+          RichText::new(format!("Pos: {:?}", player_pos))
             .color(Color32::WHITE)
             .size(20.0)
         );

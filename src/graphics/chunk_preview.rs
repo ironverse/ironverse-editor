@@ -30,15 +30,15 @@ fn update(
   let config = game_res.chunk_manager.config.clone();
 
   for (entity, chunk_preview, mut render) in &mut chunk_previews {
-    info!("Test");
-
-
+    // info!("Test");
     for e in render.entities.iter() {
       commands.entity(*e).despawn_recursive();
     }
     render.entities.clear();
 
     for (key, chunk) in chunk_preview.chunks.iter() {
+      info!("chunk_preview");
+      
       let data = chunk.octree.compute_mesh2(
         VoxelMode::SurfaceNets, 
         &mut game_res.chunk_manager.voxel_reuse
@@ -55,17 +55,21 @@ fn update(
     
         let mesh_handle = meshes.add(render_mesh);
         let material_handle = custom_materials.add(CustomMaterial {
-          base_color: Color::rgb(1.0, 1.0, 1.0),
+          base_color: Color::rgb(0.0, 0.0, 1.0),
           albedo: chunk_texture.albedo.clone(),
           normal: chunk_texture.normal.clone(),
         });
+
+        let chunk_size = (chunk.octree.get_size() / 2) as f32;
+        let coord_f32 = [-chunk_size, -chunk_size, -chunk_size];
     
-        let coord_f32 = key_to_world_coord_f32(key, config.seamless_size);
+        // let coord_f32 = key_to_world_coord_f32(key, config.seamless_size);
         let entity = commands
           .spawn(MaterialMeshBundle {
             mesh: mesh_handle,
             material: material_handle,
             transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
+              // .with_scale(Vec3::new(0.99, 0.999, 0.99 )),
             ..default()
           })
           .id();
