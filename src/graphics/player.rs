@@ -21,12 +21,15 @@ fn add(
   for (entity, player) in &query {
     commands
       .entity(entity)
-      .insert(PbrBundle {
-        mesh: meshes.add(shape::Capsule { 
+      .with_children(|parent| {
+
+        parent.spawn(PbrBundle {
+          mesh: meshes.add(shape::Capsule { 
+            ..default()
+          }.into()),
+          material: materials.add(Color::rgba(0.3, 0.5, 0.3, 0.3).into()),
           ..default()
-        }.into()),
-        material: materials.add(Color::rgba(0.3, 0.5, 0.3, 0.3).into()),
-        ..default()
+        });
       });
   }
 }

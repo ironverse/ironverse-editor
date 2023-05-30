@@ -10,7 +10,7 @@ impl Plugin for CustomPlugin {
       .add_system(
         enter.in_schedule(OnEnter(GameState::Start))
       )
-      .add_system(update)
+      // .add_system(update)
       ;
   }
 }
@@ -21,9 +21,11 @@ fn enter(
   mut game_res: ResMut<GameResource>,
   mut next_state: ResMut<NextState<GameState>>,
 ) {
-  let pos = [0.0, 5.0, 0.0];
-  let (body, collider) = physics.spawn_character(1.0, 0.5, Vec3::new(pos[0], pos[1], pos[2]));
+  let pos = [0.0, 5.0, -10.0];
 
+  info!("enter");
+
+  let (body, collider) = physics.spawn_character(1.0, 0.5, Vec3::new(pos[0], pos[1], pos[2]));
   let k = posf32_to_world_key(&pos, game_res.chunk_manager.config.seamless_size);
   commands.spawn((
     Player::new(body, collider, k),
@@ -31,10 +33,12 @@ fn enter(
     Chunks::default(),
     ChunkGraphics::default(),
     Raycast::default(),
+    FlyCam {},
     Camera3dBundle {
+      transform: Transform::from_xyz(pos[0], pos[1], pos[2])
+        .looking_at(Vec3::ZERO, Vec3::Y),
       ..Default::default()
     },
-    FlyCam {},
     RaycastDebugger::default(),
     ChunkEdit::default(),
     ChunkPreview::default(),
