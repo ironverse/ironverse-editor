@@ -214,7 +214,7 @@ fn triplanar_color(world_pos: vec3<f32>, input: FragmentInput) -> vec4<f32> {
 @fragment
 fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
   let pos = seamless_pos(input.world_position.xyz);
-  var color = triplanar_color(pos, input);
+  var color = triplanar_color(pos, input) * material.base_color;
   color = normalize(color);
 
   var pbr_input: PbrInput = pbr_input_new();

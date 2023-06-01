@@ -2,8 +2,6 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_egui::{egui::{self, Color32, Frame, Vec2, Button}, EguiContexts};
 use bevy_egui::egui::Rect;
 use flume::{Sender, Receiver};
-use wasm_bindgen::JsCast;
-use web_sys::HtmlElement;
 use crate::data::{CursorState, GameState, GameResource, Data};
 use super::{UIResource, UIState};
 

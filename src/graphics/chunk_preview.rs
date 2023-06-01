@@ -61,7 +61,8 @@ fn update(
         });
 
         let chunk_size = (chunk.octree.get_size() / 2) as f32;
-        let coord_f32 = [-chunk_size, -chunk_size, -chunk_size];
+        let adj = [0.0, 2.0, 0.0];
+        let coord_f32 = [-chunk_size + adj[0], -chunk_size + adj[1], -chunk_size + adj[2]];
     
         // let coord_f32 = key_to_world_coord_f32(key, config.seamless_size);
         let entity = commands
