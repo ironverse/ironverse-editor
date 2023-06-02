@@ -1,6 +1,6 @@
 use bevy::{prelude::*, render::{mesh::{MeshVertexAttribute, MeshVertexBufferLayout, Indices}, render_resource::{VertexFormat, AsBindGroup, ShaderRef, SpecializedMeshPipelineError, RenderPipelineDescriptor, PrimitiveTopology, ShaderType, AsBindGroupShaderType, TextureFormat}, render_asset::RenderAssets}, reflect::TypeUuid, pbr::{MaterialPipeline, MaterialPipelineKey, StandardMaterialFlags}, asset::LoadState};
 use voxels::{chunk::{adjacent_keys, chunk_manager::ChunkManager}, utils::{key_to_world_coord_f32, posf32_to_world_key}, data::voxel_octree::{VoxelMode, MeshData}};
-use crate::{components::chunks::Chunks, data::GameResource};
+use crate::{components::chunks::Chunks, data::GameResource, graphics::ChunkGraphics};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -50,7 +50,6 @@ fn init_textures(
   mut meshes: ResMut<Assets<Mesh>>,
   mut custom_materials: ResMut<Assets<CustomMaterial>>,
   mut _materials: ResMut<Assets<StandardMaterial>>,
-  terrains: Query<(Entity, &TerrainGraphics)>,
   asset_server: Res<AssetServer>,
 
   mut chunk_texture: ResMut<ChunkTexture>,
@@ -83,7 +82,7 @@ fn add(
   mut _materials: ResMut<Assets<StandardMaterial>>,
   mut chunk_texture: ResMut<ChunkTexture>,
   mut images: ResMut<Assets<Image>>,
-  terrains: Query<(Entity, &TerrainGraphics)>,
+  terrains: Query<(Entity, &ChunkGraphics)>,
 
   chunk_query: Query<(Entity, &Chunks), Changed<Chunks>>,
 ) {
@@ -142,7 +141,7 @@ fn add(
         transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
         ..default()
       })
-      .insert(TerrainGraphics { key: *key })
+      .insert(ChunkGraphics { key: *key })
       ;
   }
 
@@ -297,15 +296,7 @@ impl From<&CustomMaterial> for TriplanarMaterialKey {
 
 
 
-#[derive(Component)]
-pub struct ChunkGraphics {
-}
 
-impl Default for ChunkGraphics {
-  fn default() -> Self {
-    Self { }
-  }
-}
 
 
 

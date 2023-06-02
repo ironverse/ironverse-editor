@@ -7,6 +7,14 @@ impl Plugin for CustomPlugin {
 }
 
 #[derive(Component)]
-pub struct TerrainGraphics {
-  pub key: [i64; 3]
+pub struct ChunkGraphics {
+  pub key: [i64; 3],
+}
+
+impl Default for ChunkGraphics {
+  fn default() -> Self {
+    Self {
+      key: [i64::MAX; 3],
+    }
+  }
 }

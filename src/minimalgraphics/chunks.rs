@@ -1,7 +1,6 @@
 use bevy::{prelude::*, render::{render_resource::{PrimitiveTopology, VertexFormat}, mesh::{MeshVertexAttribute, Indices}}};
 use voxels::utils::key_to_world_coord_f32;
-
-use crate::{data::GameResource, components::chunks::Chunks, graphics::TerrainGraphics};
+use crate::{data::GameResource, components::chunks::Chunks, graphics::{ChunkGraphics}};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -33,15 +32,15 @@ fn add(
   mut commands: Commands,
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<StandardMaterial>>,
-  terrains: Query<(Entity, &TerrainGraphics)>,
+  chunk_graphics: Query<(Entity, &ChunkGraphics)>,
 
   chunk_query: Query<(Entity, &Chunks), Changed<Chunks>>,
 ) {
   let config = game_res.chunk_manager.config.clone();
   for (_, chunks) in &chunk_query {
     for mesh in &chunks.data {
-      'inner: for (entity, terrain) in &terrains {
-        if mesh.key == terrain.key {
+      'inner: for (entity, graphics) in &chunk_graphics {
+        if mesh.key == graphics.key {
           commands.entity(entity).despawn_recursive();
           break 'inner;
         }
@@ -66,7 +65,7 @@ fn add(
           transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
           ..default()
         })
-        .insert(TerrainGraphics { key: mesh.key.clone() })
+        .insert(ChunkGraphics { key: mesh.key.clone() })
         ;
       
     }
