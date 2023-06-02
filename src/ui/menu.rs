@@ -1,7 +1,6 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_egui::{egui::{self, Color32, Frame, Vec2, Button}, EguiContexts};
 use bevy_egui::egui::Rect;
-use flume::{Sender, Receiver};
 use crate::data::{CursorState, GameState, GameResource, Data};
 use super::{UIResource, UIState};
 
@@ -124,16 +123,11 @@ fn render(
 
 #[derive(Resource)]
 pub struct UIMenuResource {
-  send: Sender<Vec<u8>>,
-  pub recv: Receiver<Vec<u8>>,
 }
 
 impl Default for UIMenuResource {
   fn default() -> Self {
-    let (send, recv) = flume::bounded(1);
     Self {
-      send: send,
-      recv: recv,
     }
   }
 }

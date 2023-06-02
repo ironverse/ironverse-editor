@@ -37,7 +37,7 @@ fn update(
     render.entities.clear();
 
     for (key, chunk) in chunk_preview.chunks.iter() {
-      info!("chunk_preview");
+      // info!("chunk_preview");
       
       let data = chunk.octree.compute_mesh2(
         VoxelMode::SurfaceNets, 

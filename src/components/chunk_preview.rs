@@ -75,7 +75,7 @@ fn on_add(
       //   chunk.octree.
       // }
 
-      info!("nearest_new {:?}", nearest_new);
+      // info!("nearest_new {:?}", nearest_new);
       let range = 1;
       for x in -range..range + 1 {
         for y in -range..range + 1 {

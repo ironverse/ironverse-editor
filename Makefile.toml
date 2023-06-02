@@ -25,5 +25,12 @@ clear
 script = '''
 clear
 clear
-cargo run
+cargo run --features normal
+'''
+
+[tasks.run_minimal]
+script = '''
+clear
+clear
+cargo run --features minimal
 '''

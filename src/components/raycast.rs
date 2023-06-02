@@ -45,7 +45,7 @@ fn update(
       hit_point_op = Some(hit_point.clone());
       
       raycast.point = Vec3::new(hit_point[0], hit_point[1], hit_point[2]);
-      info!("hit {:?}", hit_point);
+      // info!("hit {:?}", hit_point);
     }
 
     // if hit_point_op.is_none() {

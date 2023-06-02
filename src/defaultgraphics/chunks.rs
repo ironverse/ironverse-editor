@@ -11,8 +11,6 @@ impl Plugin for CustomPlugin {
       .add_startup_system(startup)
       .add_system(init_textures)
       .add_system(add)
-      // .add_system(exit_load.in_schedule(OnExit(GameState::Load)))
-      // .add_system(remove)
       ;
   }
 }
@@ -224,7 +222,7 @@ pub struct CustomMaterial {
 
 impl Material for CustomMaterial {
   fn vertex_shader() -> ShaderRef {
-    "shaders/triplanar_vertices.wgsl".into()
+    "shaders/triplanar.wgsl".into()
   }
   fn fragment_shader() -> ShaderRef {
     "shaders/triplanar.wgsl".into()
@@ -296,12 +294,6 @@ impl From<&CustomMaterial> for TriplanarMaterialKey {
   }
 }
 
-
-
-#[derive(Component)]
-pub struct TerrainGraphics {
-  pub key: [i64; 3]
-}
 
 
 

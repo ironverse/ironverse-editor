@@ -1,12 +1,13 @@
 use bevy::prelude::*;
 
+mod chunks;
+
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
+    app
+      // .add_plugin(player::CustomPlugin)
+      .add_plugin(chunks::CustomPlugin)
+      ;
   }
-}
-
-#[derive(Component)]
-pub struct TerrainGraphics {
-  pub key: [i64; 3]
 }

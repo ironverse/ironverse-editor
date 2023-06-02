@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bincode::config::Configuration;
 use flume::{Sender, Receiver};
 use serde::{Deserialize, Serialize};
 use crate::data::{Data, GameResource, GameState};

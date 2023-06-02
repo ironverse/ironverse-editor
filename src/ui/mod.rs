@@ -2,71 +2,26 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_egui::{egui::{self, Frame, Ui, Rect, Color32}, EguiPlugin, EguiContexts};
 use bevy_flycam::MovementSettings;
 
-
 pub mod hotbar;
 pub mod inventory;
 pub mod menu;
-
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_plugin(EguiPlugin)
       .insert_resource(UIResource::default())
       .add_state::<UIState>()
-      .add_plugin(hotbar::CustomPlugin)
-      .add_plugin(inventory::CustomPlugin)
-      .add_plugin(menu::CustomPlugin)
-      // .add_startup_system(startup)
-      // .add_system(update)
-      // .add_system(update_wasm_mouse)
-      .add_system(crosshair)
+      // .add_plugin(EguiPlugin)
+      // .add_plugin(hotbar::CustomPlugin)
+      // .add_plugin(inventory::CustomPlugin)
+      // .add_plugin(menu::CustomPlugin)
+      // .add_system(crosshair)
       ;
+
+    
   }
 }
-
-// fn startup(
-//   mut move_setting_res: ResMut<MovementSettings>,
-//   mut wasm_res: ResMut<WasmResource>,
-// ) {
-//   move_setting_res.sensitivity = 0.0;
-//   wasm_res.pointer_lock_enabled = false;
-// }
-
-// fn update(
-//   key_input: Res<Input<KeyCode>>,
-//   state: Res<State<UIState>>,
-//   mut next_state: ResMut<NextState<UIState>>,
-// ) {
-//   if key_input.just_pressed(KeyCode::RAlt) {
-//     match state.0 {
-//       UIState::Default => { next_state.set(UIState::Menu); },
-//       UIState::Menu => { next_state.set(UIState::Default); },
-//       _ => { next_state.set(UIState::Default); },
-//     }
-//     info!("Toggle show menu {:?}", state.0);
-//   }
-// }
-
-// fn update_wasm_mouse(
-//   mut move_setting_res: ResMut<MovementSettings>,
-//   mouse: Res<Input<MouseButton>>,
-//   ui_state: Res<State<UIState>>,
-//   mut pointer_lock: EventWriter<PointerLockEvent>,
-// ) {
-//   if mouse.just_pressed(MouseButton::Left) {
-//     // move_setting_res.sensitivity = 0.00012;
-//     if ui_state.0 != UIState::Menu && !is_pointer_locked() {
-//       pointer_lock.send(PointerLockEvent(true));
-//     }
-//   }
-
-//   if !is_pointer_locked() {
-//     move_setting_res.sensitivity = 0.0;
-//   }
-// }
-
 
 fn crosshair(
   mut ctx: EguiContexts,
