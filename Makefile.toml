@@ -13,7 +13,7 @@ wasm-bindgen --out-name ironverse-editor --out-dir assets/wasm --target web targ
 
 [tasks.compile_minimal]
 script = '''
-cargo build --release --target wasm32-unknown-unknown --features minimal
+cargo build --release --target wasm32-unknown-unknown --features minimal --no-default-features
 wasm-bindgen --out-name ironverse-editor --out-dir assets/wasm --target web target/wasm32-unknown-unknown/release/ironverse-editor.wasm
 '''
 
@@ -43,5 +43,5 @@ cargo run
 script = '''
 clear
 clear
-cargo run --features minimal
+cargo run --features minimal --no-default-features
 '''
