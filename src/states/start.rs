@@ -22,9 +22,6 @@ fn enter(
   mut next_state: ResMut<NextState<GameState>>,
 ) {
   let pos = [0.0, 5.0, -10.0];
-
-  info!("enter");
-
   let (body, collider) = physics.spawn_character(1.0, 0.5, Vec3::new(pos[0], pos[1], pos[2]));
   let k = posf32_to_world_key(&pos, game_res.chunk_manager.config.seamless_size);
   commands.spawn((

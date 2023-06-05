@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use std::fs;
-use crate::{data::{GameState, Data, GameResource}, ui::UIState};
+use crate::{data::{GameState, Data, GameResource}};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {

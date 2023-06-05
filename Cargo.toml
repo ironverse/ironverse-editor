@@ -30,9 +30,6 @@ features = [
   "Url",
 ]
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-bevy_framepace = "0.12.1"
-
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 flume = "0.10.14"
 js-sys = "0.3"
@@ -40,10 +37,13 @@ wasm-bindgen = "0.2.85"
 wasm-bindgen-futures = "0.4.19"
 
 [features]
-minimal = ["minimalgraphics"]
-normal = ["normalgraphics"]
+default = []
+minimal = ["minimalgraphics", "gui_none"]
+normal = ["normalgraphics", "gui_normal"]
 minimalgraphics = []
 normalgraphics = []
-default = []
+gui_none = []
+gui_normal = []
+
 
 

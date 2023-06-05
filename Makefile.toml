@@ -1,11 +1,22 @@
 [tasks.web]
 dependencies = ["clear", "web-wasm-bindgen-cli", "compile", "client"]
 
+[tasks.web_minimal]
+dependencies = ["clear", "web-wasm-bindgen-cli", "compile_minimal", "client"]
+
+
 [tasks.compile]
 script = '''
 cargo build --release --target wasm32-unknown-unknown
 wasm-bindgen --out-name ironverse-editor --out-dir assets/wasm --target web target/wasm32-unknown-unknown/release/ironverse-editor.wasm
 '''
+
+[tasks.compile_minimal]
+script = '''
+cargo build --release --target wasm32-unknown-unknown --features minimal
+wasm-bindgen --out-name ironverse-editor --out-dir assets/wasm --target web target/wasm32-unknown-unknown/release/ironverse-editor.wasm
+'''
+
 
 [tasks.client]
 script = '''
@@ -25,7 +36,7 @@ clear
 script = '''
 clear
 clear
-cargo run --features normal
+cargo run
 '''
 
 [tasks.run_minimal]

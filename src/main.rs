@@ -1,6 +1,6 @@
 use bevy_flycam::prelude::*;
 use bevy::{prelude::*, window::PresentMode};
-use bevy_framepace::{FramepacePlugin, Limiter, FramepaceSettings};
+use ui::UIMode;
 
 mod physics;
 mod data;
@@ -13,7 +13,7 @@ mod debugger;
 mod ui;
 
 // Comment out to make rust-analyzer work when compiling on linux/native
-#[cfg(not(target_arch = "wasm32"))] 
+#[cfg(not(target_arch = "wasm32"))]
 mod native;
 
 #[cfg(target_arch = "wasm32")]
@@ -27,26 +27,14 @@ mod normalgraphics;
 
 /*
   Able to modularized the features
-    To make it faster to iterate
-    We only need the test repo to show the trimmed down code
-      For other developers to examine the code
-      Otherwise the plugin here should modularized the features
 
-    Current feature
-      Center the origin of the mesh
-        Features to isolate and enable:
-          Physics
-            Raycast
-          Chunk Creation
-            Data chunk
-            Graphics chunk
 
-    Notes:
-      Debugger text and Egui are connected
-      Create a common plugins?
-      Disabling graphics module makes compilation time between ~12s to ~6s
-      Disabling Egui and ui compilation time between ~6s to 3s?
-      Use config file when necessary
+  Notes:
+    Debugger text and Egui are connected
+    Create a common plugins?
+    Disabling graphics module makes compilation time between ~12s to ~6s
+    Disabling Egui and ui compilation time between ~6s to 3s?
+    Use config file when necessary
  */
 
 fn main() {
@@ -69,10 +57,22 @@ fn main() {
     .add_plugin(states::CustomPlugin)
     .add_plugin(components::CustomPlugin)
     .add_plugin(input::CustomPlugin)
-    .add_plugin(ui::CustomPlugin)
     .add_plugin(graphics::CustomPlugin)
     // .add_plugin(debugger::CustomPlugin)
     ;
+
+  #[cfg(feature = "gui_none")]
+  info!("gui_none");
+  app
+    .add_plugin(ui::CustomPlugin(UIMode::None));
+
+
+  #[cfg(feature = "gui_normal")]
+  info!("gui_normal");
+  app
+    .add_plugin(ui::CustomPlugin(UIMode::Normal));
+
+
 
   #[cfg(feature = "minimalgraphics")]
   app
@@ -93,12 +93,5 @@ fn main() {
   app
     .add_plugin(wasm::CustomPlugin);
 
-  
-
   app.run();
 }
-
-// fn startup(mut frame_settings: ResMut<FramepaceSettings>) {
-//   // Not working on wasm?
-//   frame_settings.limiter = Limiter::from_framerate(30.0);
-// }

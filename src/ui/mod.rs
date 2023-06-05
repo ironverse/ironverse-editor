@@ -6,22 +6,33 @@ pub mod hotbar;
 pub mod inventory;
 pub mod menu;
 
-pub struct CustomPlugin;
+pub struct CustomPlugin(pub UIMode);
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
-    app
-      .insert_resource(UIResource::default())
-      .add_state::<UIState>()
-      .add_plugin(EguiPlugin)
-      // .add_plugin(hotbar::CustomPlugin)
-      // .add_plugin(inventory::CustomPlugin)
-      // .add_plugin(menu::CustomPlugin)
-      .add_system(crosshair)
-      ;
+    match self.0 {
+      UIMode::None => {
+        app
+          .insert_resource(UIResource::default())
+          .add_state::<UIState>();
+      },
+      UIMode::Minimal => {
 
-    
+      },
+      UIMode::Normal => {
+        app
+          .insert_resource(UIResource::default())
+          .add_state::<UIState>()
+          .add_plugin(EguiPlugin)
+          .add_plugin(hotbar::CustomPlugin)
+          .add_plugin(inventory::CustomPlugin)
+          .add_plugin(menu::CustomPlugin)
+          .add_system(crosshair);
+      },
+      _ => {}
+    }
   }
 }
+
 
 fn crosshair(
   mut ctx: EguiContexts,
@@ -100,7 +111,6 @@ pub enum UIState {
 pub struct UIUtils;
 
 impl UIUtils {
-
   pub fn window(
     name: &str,
     frame: Frame,
@@ -132,3 +142,10 @@ impl FromWorld for Images {
   }
 }
 
+
+#[derive(PartialEq, Eq, Debug, Clone, Hash)]
+pub enum UIMode {
+  None,
+  Minimal,
+  Normal,
+}

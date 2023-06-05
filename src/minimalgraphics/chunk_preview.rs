@@ -39,7 +39,7 @@ fn update(
   >,
   mut materials: ResMut<Assets<StandardMaterial>>,
 
-  mut local: Local<bool>,
+  // mut local: Local<bool>,
 ) {
   let config = game_res.chunk_manager.config.clone();
 

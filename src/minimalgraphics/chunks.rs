@@ -15,7 +15,6 @@ impl Plugin for CustomPlugin {
 fn startup(
   mut commands: Commands, 
 ) {
-  info!("startup minimal");
   commands.spawn(PointLightBundle {
     point_light: PointLight {
       intensity: 3000.0,

@@ -39,7 +39,6 @@ fn grab_mouse(
   key: Res<Input<KeyCode>>,
   mut cursor_state_next: ResMut<NextState<CursorState>>,
   cursor_state: Res<State<CursorState>>,
-  mut ui_state_next: ResMut<NextState<UIState>>,
   ui_state: Res<State<UIState>>,
 ) {
   if mouse.just_pressed(MouseButton::Left) {
