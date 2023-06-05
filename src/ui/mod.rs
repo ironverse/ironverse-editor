@@ -12,11 +12,11 @@ impl Plugin for CustomPlugin {
     app
       .insert_resource(UIResource::default())
       .add_state::<UIState>()
-      // .add_plugin(EguiPlugin)
+      .add_plugin(EguiPlugin)
       // .add_plugin(hotbar::CustomPlugin)
       // .add_plugin(inventory::CustomPlugin)
       // .add_plugin(menu::CustomPlugin)
-      // .add_system(crosshair)
+      .add_system(crosshair)
       ;
 
     

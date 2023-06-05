@@ -16,8 +16,8 @@ toml = "0.7.3"
 
 # bevy_flycam = { git = "https://github.com/Nickan/bevy_flycam.git", branch="MakeMouseMovementWorkOnWasm" }
 bevy_flycam = { path = "../bevy_flycam" }
-voxels = { git = "https://github.com/ironverse/voxels.git", branch="0.2" }
-# voxels = { path = "../voxels" }
+# voxels = { git = "https://github.com/ironverse/voxels.git", branch="0.2" }
+voxels = { path = "../voxels" }
 
 
 [dependencies.web-sys]
@@ -40,5 +40,10 @@ wasm-bindgen = "0.2.85"
 wasm-bindgen-futures = "0.4.19"
 
 [features]
-minimal = []
-normal = []
+minimal = ["minimalgraphics"]
+normal = ["normalgraphics"]
+minimalgraphics = []
+normalgraphics = []
+default = []
+
+

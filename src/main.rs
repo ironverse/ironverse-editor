@@ -19,11 +19,11 @@ mod native;
 #[cfg(target_arch = "wasm32")]
 mod wasm;
 
-#[cfg(feature = "minimal")]
+#[cfg(feature = "minimalgraphics")]
 mod minimalgraphics;
 
-#[cfg(feature = "normal")]
-mod defaultgraphics;
+#[cfg(feature = "normalgraphics")]
+mod normalgraphics;
 
 /*
   Able to modularized the features
@@ -46,7 +46,7 @@ mod defaultgraphics;
       Create a common plugins?
       Disabling graphics module makes compilation time between ~12s to ~6s
       Disabling Egui and ui compilation time between ~6s to 3s?
-
+      Use config file when necessary
  */
 
 fn main() {
@@ -74,14 +74,14 @@ fn main() {
     // .add_plugin(debugger::CustomPlugin)
     ;
 
-  #[cfg(feature = "minimal")]
+  #[cfg(feature = "minimalgraphics")]
   app
-    
     .add_plugin(minimalgraphics::CustomPlugin);
+  
 
-  #[cfg(feature = "normal")]
+  #[cfg(feature = "normalgraphics")]
   app
-    .add_plugin(defaultgraphics::CustomPlugin);
+    .add_plugin(normalgraphics::CustomPlugin);
 
 
   
