@@ -6,31 +6,31 @@ pub mod hotbar;
 pub mod inventory;
 pub mod menu;
 
-pub struct CustomPlugin(pub UIMode);
+
+pub struct NonePlugin;
+impl Plugin for NonePlugin {
+  fn build(&self, app: &mut App) {
+    info!("ui::NonePlugin");
+    app
+      .insert_resource(UIResource::default())
+      .add_state::<UIState>();
+  }
+}
+
+
+pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
-    match self.0 {
-      UIMode::None => {
-        app
-          .insert_resource(UIResource::default())
-          .add_state::<UIState>();
-      },
-      UIMode::Minimal => {
-
-      },
-      UIMode::Normal => {
-        app
-          .insert_resource(UIResource::default())
-          .add_state::<UIState>()
-          .add_plugin(EguiPlugin)
-          .add_plugin(hotbar::CustomPlugin)
-          .add_plugin(inventory::CustomPlugin)
-          .add_plugin(menu::CustomPlugin)
-          .add_system(crosshair);
-      },
-      _ => {}
-    }
-  }
+    info!("ui::CustomPlugin");
+    app
+      .insert_resource(UIResource::default())
+      .add_state::<UIState>()
+      .add_plugin(EguiPlugin)
+      .add_plugin(hotbar::CustomPlugin)
+      .add_plugin(inventory::CustomPlugin)
+      .add_plugin(menu::CustomPlugin)
+      .add_system(crosshair);
+}
 }
 
 
@@ -143,9 +143,3 @@ impl FromWorld for Images {
 }
 
 
-#[derive(PartialEq, Eq, Debug, Clone, Hash)]
-pub enum UIMode {
-  None,
-  Minimal,
-  Normal,
-}

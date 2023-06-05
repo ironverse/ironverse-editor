@@ -1,6 +1,5 @@
 use bevy_flycam::prelude::*;
 use bevy::{prelude::*, window::PresentMode};
-use ui::UIMode;
 
 mod physics;
 mod data;
@@ -62,16 +61,13 @@ fn main() {
     ;
 
   #[cfg(feature = "gui_none")]
-  info!("gui_none");
   app
-    .add_plugin(ui::CustomPlugin(UIMode::None));
+    .add_plugin(ui::NonePlugin);
 
 
   #[cfg(feature = "gui_normal")]
-  info!("gui_normal");
   app
-    .add_plugin(ui::CustomPlugin(UIMode::Normal));
-
+    .add_plugin(ui::CustomPlugin);
 
 
   #[cfg(feature = "minimalgraphics")]

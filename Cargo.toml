@@ -37,7 +37,7 @@ wasm-bindgen = "0.2.85"
 wasm-bindgen-futures = "0.4.19"
 
 [features]
-default = []
+default = ["normal"]
 minimal = ["minimalgraphics", "gui_none"]
 normal = ["normalgraphics", "gui_normal"]
 minimalgraphics = []
