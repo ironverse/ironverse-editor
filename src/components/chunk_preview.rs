@@ -148,7 +148,7 @@ fn on_add(
 }
 
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct ChunkPreview {
   pub target: [i64; 3],
   pub new: [i64; 3],
