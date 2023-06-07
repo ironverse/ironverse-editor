@@ -59,8 +59,6 @@ fn update(
       continue;
     }
 
-    
-    
     let mut res = Vec::new();
     let voxel = voxel_op.unwrap();
 

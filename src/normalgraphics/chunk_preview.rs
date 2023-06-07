@@ -4,6 +4,8 @@ use bevy::render::render_resource::PrimitiveTopology;
 use rapier3d::prelude::{Point, ColliderBuilder, InteractionGroups, Isometry};
 use rapier3d::geometry::Group;
 use voxels::{data::voxel_octree::VoxelMode, utils::key_to_world_coord_f32};
+use crate::data::Player;
+use crate::input::hotbar::HotbarResource;
 use crate::{data::GameResource, components::chunk_preview::ChunkPreview};
 
 use super::chunks::{ChunkTexture, CustomMaterial, VOXEL_WEIGHT, VOXEL_TYPE_1};
@@ -12,7 +14,19 @@ pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
+      .add_system(hook_to_player)
       .add_system(update);
+  }
+}
+
+fn hook_to_player(
+  mut commands: Commands,
+  mut players: Query<(Entity), Added<Player>>,
+) {
+  for entity in &players {
+    commands
+      .entity(entity)
+      .insert(ChunkPreviewRender::default());
   }
 }
 
@@ -26,11 +40,12 @@ fn update(
 
   chunk_texture: Res<ChunkTexture>,
   mut custom_materials: ResMut<Assets<CustomMaterial>>,
+
+  hotbar_res: Res<HotbarResource>,
 ) {
   let config = game_res.chunk_manager.config.clone();
 
   for (entity, chunk_preview, mut render) in &mut chunk_previews {
-    // info!("Test");
     for e in render.entities.iter() {
       commands.entity(*e).despawn_recursive();
     }
@@ -51,18 +66,36 @@ fn update(
         render_mesh.set_indices(Some(Indices::U32(data.indices.clone())));
     
         render_mesh.insert_attribute(VOXEL_WEIGHT, data.weights.clone());
-        render_mesh.insert_attribute(VOXEL_TYPE_1, data.types_1.clone());
+        // render_mesh.insert_attribute(VOXEL_TYPE_1, data.types_1.clone());
+
+        let bar_op = hotbar_res
+          .bars
+          .iter()
+          .find(|bar| bar.key_code == hotbar_res.selected_keycode);
+
+        let mut voxel = 0;
+        if bar_op.is_some() {
+          voxel = bar_op.unwrap().voxel as u32;
+        }
+
+        let mut voxels = Vec::<[u32; 4]>::new();
+        for _ in 0..data.types_1.len() {
+          voxels.push([voxel; 4]);
+        }
+        render_mesh.insert_attribute(VOXEL_TYPE_1, voxels);
     
         let mesh_handle = meshes.add(render_mesh);
         let material_handle = custom_materials.add(CustomMaterial {
-          base_color: Color::rgb(0.0, 0.0, 1.0),
+          base_color: Color::rgb(1.0, 1.0, 1.0),
           albedo: chunk_texture.albedo.clone(),
           normal: chunk_texture.normal.clone(),
         });
 
         let chunk_size = (chunk.octree.get_size() / 2) as f32;
-        let adj = [0.0, 2.0, 0.0];
-        let coord_f32 = [-chunk_size + adj[0], -chunk_size + adj[1], -chunk_size + adj[2]];
+        // let chunk_size = chunk.octree.get_size() as f32;
+        let p = &chunk_preview.new;
+        let adj = [p[0] as f32, p[1] as f32, p[2] as f32];
+        let coord_f32 = [adj[0] - chunk_size, adj[1] - chunk_size, adj[2] - chunk_size];
     
         // let coord_f32 = key_to_world_coord_f32(key, config.seamless_size);
         let entity = commands

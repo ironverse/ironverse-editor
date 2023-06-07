@@ -221,10 +221,10 @@ pub struct CustomMaterial {
 
 impl Material for CustomMaterial {
   fn vertex_shader() -> ShaderRef {
-    "shaders/triplanar.wgsl".into()
+    "shaders/triplanar_vertex.wgsl".into()
   }
   fn fragment_shader() -> ShaderRef {
-    "shaders/triplanar.wgsl".into()
+    "shaders/triplanar_fragment.wgsl".into()
   }
   fn specialize(
     _pipeline: &MaterialPipeline<Self>,

@@ -30,7 +30,7 @@ impl Plugin for CustomPlugin {
       .add_plugin(inventory::CustomPlugin)
       .add_plugin(menu::CustomPlugin)
       .add_system(crosshair);
-}
+  }
 }
 
 
