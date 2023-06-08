@@ -19,7 +19,8 @@ impl Plugin for CustomPlugin {
       .add_system(hook_to_player)
       .add_system(update)
       .add_system(selected_voxel_changed)
-      .add_system(spawn);
+      .add_system(spawn)
+      .add_system(toggle_showhide);
   }
 }
 
@@ -134,23 +135,23 @@ fn spawn(
     render_mesh.set_indices(Some(Indices::U32(data.indices.clone())));
 
     render_mesh.insert_attribute(VOXEL_WEIGHT, data.weights.clone());
-    // render_mesh.insert_attribute(VOXEL_TYPE_1, data.types_1.clone());
+    render_mesh.insert_attribute(VOXEL_TYPE_1, data.types_1.clone());
 
-    let bar_op = hotbar_res
-      .bars
-      .iter()
-      .find(|bar| bar.key_code == hotbar_res.selected_keycode);
+    // let bar_op = hotbar_res
+    //   .bars
+    //   .iter()
+    //   .find(|bar| bar.key_code == hotbar_res.selected_keycode);
 
-    let mut voxel = 0;
-    if bar_op.is_some() {
-      voxel = bar_op.unwrap().voxel as u32;
-    }
+    // let mut voxel = 0;
+    // if bar_op.is_some() {
+    //   voxel = bar_op.unwrap().voxel as u32 - 1;
+    // }
 
-    let mut voxels = Vec::<[u32; 4]>::new();
-    for _ in 0..data.types_1.len() {
-      voxels.push([voxel; 4]);
-    }
-    render_mesh.insert_attribute(VOXEL_TYPE_1, voxels);
+    // let mut voxels = Vec::<[u32; 4]>::new();
+    // for _ in 0..data.types_1.len() {
+    //   voxels.push([voxel; 4]);
+    // }
+    // render_mesh.insert_attribute(VOXEL_TYPE_1, voxels);
 
     let mesh_handle = meshes.add(render_mesh);
     let material_handle = custom_materials.add(CustomMaterial {
@@ -181,6 +182,39 @@ fn spawn(
 
 }
 
+
+fn toggle_showhide(
+  mut commands: Commands,
+  key_input: Res<Input<KeyCode>>,
+  mut chunk_previews: Query<
+    (&Handle<CustomMaterial>)
+  >,
+  previews: Query<&ChunkPreviewRender>,
+  mut local_res: ResMut<LocalResource>,
+
+  mut materials: ResMut<Assets<CustomMaterial>>,
+) {
+  // if local_res.chunk_op.is_none() {
+  //   return;
+  // }
+
+  if key_input.just_pressed(KeyCode::P) {
+    // info!("chunk_previes.len() {}", chunk_previews.iter().len());
+    for preview in &previews {
+      for e in preview.entities.iter() {
+        // commands.entity(*e).remove_parent()
+
+
+        // let (material_handle) = chunk_previews.get_mut(*e).unwrap();
+        // let mut material = materials.get_mut(material_handle).unwrap();
+        // material.base_color.set_a(0.0);
+
+      }
+    }
+    
+    info!("Hide");
+  }
+}
 
 #[derive(Component)]
 pub struct ChunkPreviewRender {

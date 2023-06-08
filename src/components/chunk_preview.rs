@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use voxels::chunk::{chunk_manager::Chunk, adjacent_keys};
-use crate::{data::{GameResource, Player}, utils::{nearest_voxel_point_0, nearest_voxel_point}};
+use crate::{data::{GameResource, Player}, utils::{nearest_voxel_point_0, nearest_voxel_point}, input::hotbar::HotbarResource};
 use super::raycast::Raycast;
 
 pub struct CustomPlugin;
@@ -8,7 +8,9 @@ impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_system(hook_to_player)
-      .add_system(on_add);
+      .add_system(on_add)
+      // .add_system(toggle_showhide)
+      ;
   }
 }
 
@@ -37,6 +39,8 @@ fn on_add(
   mut raycasts: Query<
   (Entity, &Raycast, &mut ChunkPreview), Changed<Raycast>
   >,
+
+  hotbar_res: Res<HotbarResource>,
 ) {
 
 
@@ -81,7 +85,18 @@ fn on_add(
     if chunk_preview.new != new {
       chunk_preview.new = new.clone();
 
-      let res = game_res.preview_chunk_manager.set_voxel2(&new, 1);
+      let bar_op = hotbar_res
+        .bars
+        .iter()
+        .find(|bar| bar.key_code == hotbar_res.selected_keycode);
+
+      let mut voxel = 0;
+      if bar_op.is_some() {
+        voxel = bar_op.unwrap().voxel;
+      }
+
+
+      let res = game_res.preview_chunk_manager.set_voxel2(&new, voxel);
       chunk_preview.chunks.clear();
       // chunk_preview.chunks.push((chunk.key, chunk));
 
@@ -110,49 +125,29 @@ fn on_add(
       chunk_preview.chunks.push((chunk.key, chunk));
     }
   }
-
-/*   
-  for (entity, raycast, mut chunk_preview) in &mut raycasts {
-    if raycast.point.x == f32::NAN {
-      continue;
-    }
-
-    game_res.preview_chunk_manager.chunks = game_res.chunk_manager.chunks.clone();
-
-    let nearest_op = nearest_voxel_point_0(
-      &game_res.chunk_manager, 
-      raycast.point, 
-      true
-    );
-    if nearest_op.is_none() { continue; }
-
-    let nearest = nearest_op.unwrap();
-    if chunk_preview.target != nearest {
-      chunk_preview.target = nearest;
-
-      let nearest_new_op = nearest_voxel_point(
-        &game_res.chunk_manager, 
-        raycast.point, 
-        true,
-        0
-      );
-
-      if nearest_new_op.is_none() { continue; }
-      let nearest_new = nearest_new_op.unwrap();
-
-      let res = game_res.preview_chunk_manager.set_voxel2(&nearest_new, 1);
-      chunk_preview.chunks = res;
-    }
-  }
- */
 }
 
+
+
+fn toggle_showhide(
+  key_input: Res<Input<KeyCode>>,
+  mut chunk_previews: Query<(&mut Visibility, &ChunkPreview)>,
+) {
+  if key_input.just_pressed(KeyCode::P) {
+    info!("chunk_previes.len() {}", chunk_previews.iter().len());
+    for (mut visibility, preview) in &mut chunk_previews {
+      *visibility = Visibility::Hidden;
+      info!("Hide");
+    }
+  }
+}
 
 #[derive(Component, Clone)]
 pub struct ChunkPreview {
   pub target: [i64; 3],
   pub new: [i64; 3],
-  pub chunks: Vec<([i64; 3], Chunk)>
+  pub chunks: Vec<([i64; 3], Chunk)>,
+  pub is_showing: bool,
 }
 
 impl Default for ChunkPreview {
@@ -161,6 +156,7 @@ impl Default for ChunkPreview {
       target: [i64::MAX; 3],
       new: [i64::MAX; 3],
       chunks: Vec::new(),
+      is_showing: true,
     }
   }
 }
