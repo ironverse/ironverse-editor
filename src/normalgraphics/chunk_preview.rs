@@ -6,7 +6,7 @@ use rapier3d::geometry::Group;
 use voxels::chunk::chunk_manager::Chunk;
 use voxels::{data::voxel_octree::VoxelMode, utils::key_to_world_coord_f32};
 use crate::data::Player;
-use crate::graphics::ChunkPreviewGraphics;
+use crate::graphics::{ChunkPreviewGraphics, GraphicsResource};
 use crate::input::hotbar::HotbarResource;
 use crate::{data::GameResource, components::chunk_preview::ChunkPreview};
 
@@ -20,8 +20,7 @@ impl Plugin for CustomPlugin {
       .add_system(hook_to_player)
       .add_system(update)
       .add_system(selected_voxel_changed)
-      .add_system(spawn)
-      .add_system(toggle_showhide);
+      .add_system(spawn);
   }
 }
 
@@ -100,6 +99,7 @@ fn selected_voxel_changed(
 
 fn spawn(
   mut local_res: ResMut<LocalResource>,
+  graphics_res: Res<GraphicsResource>,
   hotbar_res: Res<HotbarResource>,
 
   mut commands: Commands,
@@ -162,14 +162,12 @@ fn spawn(
     });
 
     let chunk_size = (chunk.octree.get_size() / 2) as f32;
-    // let chunk_size = chunk.octree.get_size() as f32;
     let p = &preview.new;
     let adj = [p[0] as f32, p[1] as f32, p[2] as f32];
     let coord_f32 = [adj[0] - chunk_size, adj[1] - chunk_size, adj[2] - chunk_size];
 
-    // let coord_f32 = key_to_world_coord_f32(key, config.seamless_size);
     let mut visibility = Visibility::Visible;
-    if !local_res.show_preview {
+    if !graphics_res.show_preview {
       visibility = Visibility::Hidden;
     }
 
@@ -191,34 +189,6 @@ fn spawn(
 }
 
 
-fn toggle_showhide(
-  mut commands: Commands,
-  key_input: Res<Input<KeyCode>>,
-  mut chunk_previews: Query<
-    (&Handle<CustomMaterial>)
-  >,
-  mut previews: Query<(&mut Visibility, &ChunkPreviewGraphics)>,
-  mut local_res: ResMut<LocalResource>,
-
-  mut materials: ResMut<Assets<CustomMaterial>>,
-) {
-  if key_input.just_pressed(KeyCode::P) {
-    local_res.show_preview = !local_res.show_preview;
-
-    info!("local_res.show_preview {}", local_res.show_preview);
-  }
-
-  for (mut visibility, preview) in &mut previews {
-
-    if !local_res.show_preview {
-      *visibility = Visibility::Hidden;
-    }
-
-    if local_res.show_preview {
-      *visibility = Visibility::Visible;
-    }
-  }
-}
 
 #[derive(Component)]
 pub struct ChunkPreviewRender {
@@ -241,7 +211,6 @@ struct LocalResource {
   selected_keycode: KeyCode,
   // chunk_preview: ChunkPreview,
   preview_entity: Entity,
-  show_preview: bool,
 }
 
 impl Default for LocalResource {
@@ -252,7 +221,6 @@ impl Default for LocalResource {
       selected_keycode: KeyCode::Key1,
       // chunk_preview: ChunkPreview::default()
       preview_entity: Entity::PLACEHOLDER,
-      show_preview: true,
     }
   }
 }

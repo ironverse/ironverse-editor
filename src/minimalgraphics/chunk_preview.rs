@@ -6,6 +6,7 @@ use rapier3d::geometry::Group;
 use voxels::{data::voxel_octree::VoxelMode, utils::key_to_world_coord_f32};
 use crate::components::raycast::Raycast;
 use crate::data::Player;
+use crate::graphics::{ChunkPreviewGraphics, GraphicsResource};
 use crate::{data::GameResource, components::chunk_preview::ChunkPreview};
 use super::chunks::{VOXEL_WEIGHT, VOXEL_TYPE_1};
 
@@ -40,6 +41,7 @@ fn update(
   mut materials: ResMut<Assets<StandardMaterial>>,
 
   // mut local: Local<bool>,
+  graphics_res: Res<GraphicsResource>,
 ) {
   let config = game_res.chunk_manager.config.clone();
 
@@ -74,20 +76,23 @@ fn update(
         render_mesh.insert_attribute(VOXEL_TYPE_1, data.types_1.clone());
 
         let chunk_size = (chunk.octree.get_size() / 2) as f32;
-        // let chunk_size = chunk.octree.get_size() as f32;
         let p = &chunk_preview.new;
         let adj = [p[0] as f32, p[1] as f32, p[2] as f32];
         let coord_f32 = [adj[0] - chunk_size, adj[1] - chunk_size, adj[2] - chunk_size];
         
-        // let coord_f32 = [0.0, 0.0, 0.0];
+        let mut visibility = Visibility::Visible;
+        if !graphics_res.show_preview {
+          visibility = Visibility::Hidden;
+        }
         let entity = commands
           .spawn(MaterialMeshBundle {
+            visibility: visibility,
             mesh: meshes.add(render_mesh),
             material: materials.add(Color::rgba(0.0, 0.0, 1.0, 0.25).into()),
             transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
-              // .with_scale(Vec3::new(0.99, 0.999, 0.99 )),
             ..default()
           })
+          .insert(ChunkPreviewGraphics { })
           .id();
 
         render.entities.push(entity);
