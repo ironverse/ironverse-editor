@@ -168,8 +168,14 @@ fn spawn(
     let coord_f32 = [adj[0] - chunk_size, adj[1] - chunk_size, adj[2] - chunk_size];
 
     // let coord_f32 = key_to_world_coord_f32(key, config.seamless_size);
+    let mut visibility = Visibility::Visible;
+    if !local_res.show_preview {
+      visibility = Visibility::Hidden;
+    }
+
     let entity = commands
       .spawn(MaterialMeshBundle {
+        visibility: visibility,
         mesh: mesh_handle,
         material: material_handle,
         transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
@@ -197,19 +203,19 @@ fn toggle_showhide(
   mut materials: ResMut<Assets<CustomMaterial>>,
 ) {
   if key_input.just_pressed(KeyCode::P) {
-    for (mut visibility, preview) in &mut previews {
-      
-      match *visibility {
-        Visibility::Visible => {
-          *visibility = Visibility::Hidden;
-        },
-        Visibility::Hidden => {
-          *visibility = Visibility::Visible;
-        },
-        Visibility::Inherited => {
-          *visibility = Visibility::Hidden;
-        }
-      }
+    local_res.show_preview = !local_res.show_preview;
+
+    info!("local_res.show_preview {}", local_res.show_preview);
+  }
+
+  for (mut visibility, preview) in &mut previews {
+
+    if !local_res.show_preview {
+      *visibility = Visibility::Hidden;
+    }
+
+    if local_res.show_preview {
+      *visibility = Visibility::Visible;
     }
   }
 }
@@ -235,6 +241,7 @@ struct LocalResource {
   selected_keycode: KeyCode,
   // chunk_preview: ChunkPreview,
   preview_entity: Entity,
+  show_preview: bool,
 }
 
 impl Default for LocalResource {
@@ -245,6 +252,7 @@ impl Default for LocalResource {
       selected_keycode: KeyCode::Key1,
       // chunk_preview: ChunkPreview::default()
       preview_entity: Entity::PLACEHOLDER,
+      show_preview: true,
     }
   }
 }
