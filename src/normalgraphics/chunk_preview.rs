@@ -6,6 +6,7 @@ use rapier3d::geometry::Group;
 use voxels::chunk::chunk_manager::Chunk;
 use voxels::{data::voxel_octree::VoxelMode, utils::key_to_world_coord_f32};
 use crate::data::Player;
+use crate::graphics::ChunkPreviewGraphics;
 use crate::input::hotbar::HotbarResource;
 use crate::{data::GameResource, components::chunk_preview::ChunkPreview};
 
@@ -175,6 +176,7 @@ fn spawn(
           // .with_scale(Vec3::new(0.99, 0.999, 0.99 )),
         ..default()
       })
+      .insert(ChunkPreviewGraphics { })
       .id();
 
     render.entities.push(entity);
@@ -189,30 +191,26 @@ fn toggle_showhide(
   mut chunk_previews: Query<
     (&Handle<CustomMaterial>)
   >,
-  previews: Query<&ChunkPreviewRender>,
+  mut previews: Query<(&mut Visibility, &ChunkPreviewGraphics)>,
   mut local_res: ResMut<LocalResource>,
 
   mut materials: ResMut<Assets<CustomMaterial>>,
 ) {
-  // if local_res.chunk_op.is_none() {
-  //   return;
-  // }
-
   if key_input.just_pressed(KeyCode::P) {
-    // info!("chunk_previes.len() {}", chunk_previews.iter().len());
-    for preview in &previews {
-      for e in preview.entities.iter() {
-        // commands.entity(*e).remove_parent()
-
-
-        // let (material_handle) = chunk_previews.get_mut(*e).unwrap();
-        // let mut material = materials.get_mut(material_handle).unwrap();
-        // material.base_color.set_a(0.0);
-
+    for (mut visibility, preview) in &mut previews {
+      
+      match *visibility {
+        Visibility::Visible => {
+          *visibility = Visibility::Hidden;
+        },
+        Visibility::Hidden => {
+          *visibility = Visibility::Visible;
+        },
+        Visibility::Inherited => {
+          *visibility = Visibility::Hidden;
+        }
       }
     }
-    
-    info!("Hide");
   }
 }
 

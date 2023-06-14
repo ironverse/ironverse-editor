@@ -104,7 +104,7 @@ fn on_add(
       let mut chunk = Chunk::default();
       let pos = chunk.octree.get_size() / 2;
 
-      let range = 1;
+      let range = 2;
       for x in -range..range + 1 {
         for y in -range..range + 1 {
           for z in -range..range + 1{

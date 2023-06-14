@@ -23,3 +23,7 @@ impl Default for ChunkGraphics {
     }
   }
 }
+
+
+#[derive(Component, Clone)]
+pub struct ChunkPreviewGraphics { }

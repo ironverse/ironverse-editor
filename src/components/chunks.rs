@@ -6,9 +6,6 @@ use voxels::data::voxel_octree::MeshData;
 use voxels::{chunk::{chunk_manager::ChunkManager, adjacent_keys}, data::voxel_octree::VoxelMode, utils::key_to_world_coord_f32};
 use crate::{data::{Player, GameResource}, physics::Physics};
 
-// #[cfg(target_arch = "wasm32")]
-// use crate::{wasm::WasmInputEvent, input::hotbar::HotbarResource};
-
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
