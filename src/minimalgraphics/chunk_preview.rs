@@ -21,7 +21,7 @@ impl Plugin for CustomPlugin {
 
 fn hook_to_player(
   mut commands: Commands,
-  mut players: Query<(Entity), Added<Player>>,
+  players: Query<Entity, Added<Player>>,
 ) {
   for entity in &players {
     commands

@@ -7,12 +7,12 @@ pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system(update)
-      ;
+      .add_system(raycast_hitpoint)
+      .add_system(raycast_rangepoint);
   }
 }
 
-fn update(
+fn raycast_hitpoint(
   physics: Res<Physics>,
   game_res: Res<GameResource>,
   mut query: Query<(&Transform, &mut Raycast), With<FlyCam>>,
@@ -31,8 +31,6 @@ fn update(
     let solid = true;
     let filter = QueryFilter::only_fixed();
 
-    
-    let mut hit_point_op = None;
     if let Some((_handle, toi)) = physics.query_pipeline.cast_ray(
       &physics.rigid_body_set, 
       &physics.collider_set, 
@@ -42,10 +40,16 @@ fn update(
       filter
     ) {
       let hit_point = ray.point_at(toi);
-      hit_point_op = Some(hit_point.clone());
-      
-      raycast.point = Vec3::new(hit_point[0], hit_point[1], hit_point[2]);
-      // info!("hit {:?}", hit_point);
+
+      let point = Vec3::new(
+        hit_point[0].round(), 
+        hit_point[1].round(), 
+        hit_point[2].round()
+      );
+      if raycast.point != point {
+        raycast.point = point;
+        info!("hit {:?}", point);
+      }
     }
 
     // if hit_point_op.is_none() {
@@ -72,6 +76,21 @@ fn update(
     //   let pos_i64 = nearest_op.unwrap();
     //   // raycast.target_voxel_op = Some(pos_i64);
     // }
+  }
+}
+
+fn raycast_rangepoint(
+  physics: Res<Physics>,
+  game_res: Res<GameResource>,
+  mut query: Query<(&Transform, &mut Raycast), With<FlyCam>>,
+) {
+  for (trans, mut raycast) in query.iter_mut() {
+    let look_at = trans.forward();
+    // info!("{:?}", look_at);
+
+    let start_pos = trans.translation + raycast.adj;
+    let dir = look_at.clone();
+    // let range = 
   }
 }
 
