@@ -59,7 +59,7 @@ fn update(
       // if !*local {
       //   *local = true;
       // }
-      info!("chunk_preview");
+      // info!("chunk_preview");
       
       let data = chunk.octree.compute_mesh2(
         VoxelMode::SurfaceNets, 
