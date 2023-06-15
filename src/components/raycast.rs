@@ -7,12 +7,11 @@ pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system(raycast_hitpoint)
-      .add_system(raycast_rangepoint);
+      .add_system(update);
   }
 }
 
-fn raycast_hitpoint(
+fn update(
   physics: Res<Physics>,
   game_res: Res<GameResource>,
   mut query: Query<(&Transform, &mut Raycast), With<FlyCam>>,
@@ -40,6 +39,12 @@ fn raycast_hitpoint(
       filter
     ) {
       let hit_point = ray.point_at(toi);
+
+      // let point = Vec3::new(
+      //   hit_point[0], 
+      //   hit_point[1], 
+      //   hit_point[2]
+      // );
 
       let point = Vec3::new(
         hit_point[0].round(), 
@@ -76,21 +81,6 @@ fn raycast_hitpoint(
     //   let pos_i64 = nearest_op.unwrap();
     //   // raycast.target_voxel_op = Some(pos_i64);
     // }
-  }
-}
-
-fn raycast_rangepoint(
-  physics: Res<Physics>,
-  game_res: Res<GameResource>,
-  mut query: Query<(&Transform, &mut Raycast), With<FlyCam>>,
-) {
-  for (trans, mut raycast) in query.iter_mut() {
-    let look_at = trans.forward();
-    // info!("{:?}", look_at);
-
-    let start_pos = trans.translation + raycast.adj;
-    let dir = look_at.clone();
-    // let range = 
   }
 }
 

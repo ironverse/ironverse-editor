@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-
 mod player;
+mod range;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -9,6 +9,7 @@ impl Plugin for CustomPlugin {
     app
       .insert_resource(GraphicsResource::default())
       .add_plugin(player::CustomPlugin)
+      .add_plugin(range::CustomPlugin)
       .add_system(toggle_showhide);
   }
 }

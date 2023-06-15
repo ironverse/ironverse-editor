@@ -1,7 +1,6 @@
 use bevy::prelude::*;
-use rapier3d::na::Vector3;
 
-use crate::{physics::Physics, data::Player};
+use crate::{data::Player};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {

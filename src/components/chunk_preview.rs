@@ -45,6 +45,7 @@ fn on_add(
 
 
   for (entity, raycast, mut chunk_preview) in &mut raycasts {
+    info!("raycasts");
     if raycast.point.x == f32::NAN {
       continue;
     }
@@ -83,6 +84,7 @@ fn on_add(
     let new = new_op.unwrap();
 
     if chunk_preview.new != new {
+      info!("create");
       chunk_preview.new = new.clone();
 
       let bar_op = hotbar_res
