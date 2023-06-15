@@ -1,7 +1,7 @@
-use bevy::prelude::*;
-use voxels::chunk::{chunk_manager::Chunk, adjacent_keys};
+use bevy::{prelude::*, utils::HashMap};
+use voxels::chunk::{chunk_manager::Chunk};
 use crate::{data::{GameResource, Player}, utils::{nearest_voxel_point_0, nearest_voxel_point}, input::hotbar::HotbarResource};
-use super::raycast::Raycast;
+use super::{raycast::Raycast, range::Range};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -9,6 +9,7 @@ impl Plugin for CustomPlugin {
     app
       .add_system(hook_to_player)
       .add_system(on_add)
+      .add_system(on_range)
       // .add_system(toggle_showhide)
       ;
   }
@@ -24,14 +25,6 @@ fn hook_to_player(
       .insert(ChunkPreview::default());
   }
 }
-
-/*
-  Have to toggle it on/off
-  Create a single chunk just for previewing
-  Able to move it, translate the position to world position
-    Relative to the original chunk
-    
- */
 
 fn on_add(
   mut commands: Commands,
@@ -129,6 +122,66 @@ fn on_add(
   }
 }
 
+
+fn on_range(
+  mut commands: Commands,
+  mut game_res: ResMut<GameResource>,
+  mut ranges: Query<
+  (Entity, &Range, &mut ChunkPreview), Changed<Range>
+  >,
+) {
+  for (entity, range, mut chunk_preview) in &mut ranges {
+    if range.point.x == f32::NAN {
+      continue;
+    }
+
+    game_res.preview_chunk_manager.chunks = game_res.chunk_manager.chunks.clone();
+
+    let min = -(range.scale as i64);
+    let max = (range.scale as i64) + 1;
+
+    info!("min {} max {}", min, max);
+
+    chunk_preview.chunks.clear();
+    chunk_preview.new = [
+      range.point.x as i64,
+      range.point.y as i64,
+      range.point.z as i64,
+    ];
+
+    let mut chunk = Chunk::default();
+    let chunk_pos = chunk.octree.get_size() / 2;
+
+    for x in min..max {
+      // info!("x {}", x);
+
+      for y in min..max {
+        for z in min..max {
+
+          let pos = [
+            range.point.x as i64 + x,
+            range.point.y as i64 + y,
+            range.point.z as i64 + z
+          ];
+
+          // game_res.preview_chunk_manager.set_voxel2(&pos, voxel);
+
+          // info!("pos {:?}", pos);
+
+          // let val = game_res.preview_chunk_manager.get_voxel(&pos);
+
+          let local_x = chunk_pos as i64 + x;
+          let local_y = chunk_pos as i64 + y;
+          let local_z = chunk_pos as i64 + z;
+          chunk.octree.set_voxel(local_x as u32, local_y as u32, local_z as u32, 1);
+        }
+      }
+    }
+    chunk_preview.chunks.push((chunk.key, chunk));
+  }
+
+  
+}
 
 
 fn toggle_showhide(

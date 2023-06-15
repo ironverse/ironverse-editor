@@ -33,7 +33,7 @@ fn update_range(
     // info!("{:?}", event);
 
     for mut range in query.iter_mut() {
-      range.dist += event.y * time.delta_seconds() * 20.0;
+      range.dist += event.y * time.delta_seconds() * 30.0;
       info!("dist {}", range.dist);
     }
   }
@@ -46,13 +46,15 @@ fn update_range(
 pub struct Range {
   pub point: Vec3,
   pub dist: f32,
+  pub scale: u8,
 }
 
 impl Default for Range {
   fn default() -> Self {
     Self {
       point: Vec3::new(f32::NAN, f32::NAN, f32::NAN),
-      dist: 1.0,
+      dist: 8.0,
+      scale: 2,
     }
   }
 }
