@@ -1,6 +1,6 @@
 use bevy::{prelude::*, render::{render_resource::{PrimitiveTopology, VertexFormat}, mesh::{MeshVertexAttribute, Indices}}};
-use voxels::utils::key_to_world_coord_f32;
-use crate::{data::GameResource, components::chunks::Chunks, graphics::{ChunkGraphics}};
+use voxels::{utils::key_to_world_coord_f32, chunk::adjacent_keys};
+use crate::{data::{GameResource, Player}, components::chunks::Chunks, graphics::{ChunkGraphics}};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -8,6 +8,7 @@ impl Plugin for CustomPlugin {
     app
       .add_startup_system(startup)
       .add_system(add)
+      .add_system(remove)
       ;
   }
 }
@@ -38,12 +39,14 @@ fn add(
   let config = game_res.chunk_manager.config.clone();
   for (_, chunks) in &chunk_query {
     for mesh in &chunks.data {
+      
       'inner: for (entity, graphics) in &chunk_graphics {
         if mesh.key == graphics.key {
           commands.entity(entity).despawn_recursive();
           break 'inner;
         }
       }
+
       let data = &mesh.data;
 
       let mut render_mesh = Mesh::new(PrimitiveTopology::TriangleList);
@@ -68,6 +71,29 @@ fn add(
         ;
       
     }
+    
+  }
+}
+
+fn remove(
+  mut game_res: ResMut<GameResource>,
+
+  mut commands: Commands,
+  mut meshes: ResMut<Assets<Mesh>>,
+  mut materials: ResMut<Assets<StandardMaterial>>,
+  chunk_graphics: Query<(Entity, &ChunkGraphics)>,
+
+  chunk_query: Query<(Entity, &Chunks, &Player), Changed<Chunks>>,
+) {
+  let config = game_res.chunk_manager.config.clone();
+  for (_, chunks, player) in &chunk_query {
+    let adj_keys = adjacent_keys(&player.key, 1, true);
+    for (entity, graphics) in &chunk_graphics {
+      if !adj_keys.contains(&graphics.key) {
+        commands.entity(entity).despawn_recursive();
+      }
+    }
+  
     
   }
 }

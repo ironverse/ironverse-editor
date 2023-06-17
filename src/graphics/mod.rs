@@ -9,7 +9,7 @@ impl Plugin for CustomPlugin {
     app
       .insert_resource(GraphicsResource::default())
       .add_plugin(player::CustomPlugin)
-      .add_plugin(range::CustomPlugin)
+      // .add_plugin(range::CustomPlugin)
       .add_system(toggle_showhide);
   }
 }
@@ -26,7 +26,7 @@ fn toggle_showhide(
     info!("graphics_res.show_preview {}", graphics_res.show_preview);
   }
 
-  for (mut visibility, preview) in &mut previews {
+  for (mut visibility, _preview) in &mut previews {
 
     if !graphics_res.show_preview {
       *visibility = Visibility::Hidden;

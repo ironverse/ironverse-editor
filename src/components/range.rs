@@ -1,4 +1,4 @@
-use bevy::{prelude::*, input::{mouse::MouseWheel, keyboard::KeyboardInput}};
+use bevy::{prelude::*, input::{mouse::MouseWheel}};
 use bevy_flycam::FlyCam;
 
 pub struct CustomPlugin;
@@ -28,34 +28,33 @@ fn update_range(
   mut mouse_wheels: EventReader<MouseWheel>,
   keyboard_input: Res<Input<KeyCode>>,
   time: Res<Time>,
-
-  // mut keyboard_input_events: EventReader<KeyboardInput>,
 ) {
-
-  // for event in keyboard_input_events.iter() {
-  //   info!("{:?}", event);
-  // }
-
   for event in mouse_wheels.iter() {
     // info!("{:?}", event);
 
     for mut range in query.iter_mut() {
-      range.dist += event.y * time.delta_seconds() * 30.0;
+      range.dist += event.y * time.delta_seconds() * 50.0;
       // info!("dist {}", range.dist);
     }
   }
 
   if keyboard_input.just_pressed(KeyCode::Equals) {
     for mut range in query.iter_mut() {
-      range.scale += 1;
-      info!("range.scale {}", range.scale);
+      if range.scale < 6 {
+        range.scale += 1;
+        info!("range.scale {}", range.scale);
+      }
+      
     }
   }
 
   if keyboard_input.just_pressed(KeyCode::Minus) {
     for mut range in query.iter_mut() {
-      range.scale -= 1;
-      info!("range.scale {}", range.scale);
+      if range.scale > 0 {
+        range.scale -= 1;
+        info!("range.scale {}", range.scale);
+      }
+      
     }
   }
 }

@@ -190,7 +190,7 @@ fn update_by_range(
     let min = -(range.scale as i64);
     let max = (range.scale as i64) + 1;
 
-    info!("min {} max {}", min, max);
+    // info!("min {} max {}", min, max);
 
     let mut res = HashMap::new();
     for x in min..max {
