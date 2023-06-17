@@ -1,6 +1,6 @@
 use bevy::{prelude::*, input::ButtonState, utils::HashMap};
 use rapier3d::prelude::{ColliderBuilder, InteractionGroups, Isometry, Point};
-use voxels::{data::voxel_octree::VoxelMode, utils::key_to_world_coord_f32};
+use voxels::{data::voxel_octree::VoxelMode, utils::key_to_world_coord_f32, chunk::chunk_manager::ChunkManager};
 use crate::{physics::Physics, data::{GameResource, CursorState}, utils::{nearest_voxel_point, nearest_voxel_point_0}, input::{MouseInput, hotbar::HotbarResource}};
 use super::{raycast::Raycast, chunks::{Chunks, Mesh}, range::Range};
 use rapier3d::geometry::Group;
@@ -190,6 +190,11 @@ fn update_by_range(
     let min = -(range.scale as i64);
     let max = (range.scale as i64) + 1;
 
+    if is_inside_chunk(min, max, range.point, &game_res.chunk_manager) {
+      info!("is_inside_chunk");
+      continue;
+    }
+
     // info!("min {} max {}", min, max);
 
     let mut res = HashMap::new();
@@ -268,6 +273,34 @@ fn update_by_range(
   }
 }
 
+
+fn is_inside_chunk(
+  min: i64,
+  max: i64,
+  point: Vec3,
+  chunk_manager: &ChunkManager,
+) -> bool {
+  let buffered_min = min - 1;
+  let buffered_max = max + 1;
+  for x in buffered_min..buffered_max {
+    for y in buffered_min..buffered_max {
+      for z in buffered_min..buffered_max {
+        let pos = [
+          point.x as i64 + x,
+          point.y as i64 + y,
+          point.z as i64 + z
+        ];
+
+        let voxel = chunk_manager.get_voxel(&pos);
+        if voxel == 0 {
+          return false
+        }
+      }
+    }
+  }
+
+  true
+}
 
 #[derive(Component)]
 pub struct ChunkEdit { }
