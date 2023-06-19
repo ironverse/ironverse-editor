@@ -1,6 +1,5 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_egui::{egui::{self, Frame, Ui, Rect, Color32}, EguiPlugin, EguiContexts};
-use bevy_flycam::MovementSettings;
 
 pub mod hotbar;
 pub mod inventory;
@@ -10,10 +9,10 @@ pub mod menu;
 pub struct NonePlugin;
 impl Plugin for NonePlugin {
   fn build(&self, app: &mut App) {
-    info!("ui::NonePlugin");
     app
       .insert_resource(UIResource::default())
-      .add_state::<UIState>();
+      .add_state::<UIState>()
+      .add_plugin(menu::NonePlugin);
   }
 }
 
@@ -21,7 +20,6 @@ impl Plugin for NonePlugin {
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
-    info!("ui::CustomPlugin");
     app
       .insert_resource(UIResource::default())
       .add_state::<UIState>()

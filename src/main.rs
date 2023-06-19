@@ -11,10 +11,6 @@ mod utils;
 mod debugger;
 mod ui;
 
-// Comment out to make rust-analyzer work when compiling on linux/native
-#[cfg(not(target_arch = "wasm32"))]
-mod native;
-
 #[cfg(target_arch = "wasm32")]
 mod wasm;
 
@@ -64,7 +60,6 @@ fn main() {
   app
     .add_plugin(ui::NonePlugin);
 
-
   #[cfg(feature = "gui_normal")]
   app
     .add_plugin(ui::CustomPlugin);
@@ -79,15 +74,18 @@ fn main() {
   app
     .add_plugin(normalgraphics::CustomPlugin);
 
-
-  
-  #[cfg(not(target_arch = "wasm32"))]
-  app
-    .add_plugin(native::CustomPlugin);
   
   #[cfg(target_arch = "wasm32")]
   app
     .add_plugin(wasm::CustomPlugin);
 
+  #[cfg(not(target_arch = "wasm32"))]
+  app
+    .add_plugin(native::CustomPlugin);
+
   app.run();
 }
+
+// Comment out to make rust-analyzer work when compiling on linux/native
+#[cfg(not(target_arch = "wasm32"))]
+mod native;
