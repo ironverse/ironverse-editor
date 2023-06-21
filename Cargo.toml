@@ -9,6 +9,7 @@ edition = "2021"
 array-bytes = "6.1.0"
 bevy = "0.10.1"
 bevy_egui = "0.20.3"
+cfg-if = "1.0.0"
 rapier3d = { version = "0.17.2", features = [ "simd-stable" ] }
 rfd = "0.11"
 serde = { version = "1", features = ["derive"] }
@@ -45,5 +46,8 @@ normalgraphics = []
 gui_none = []
 gui_normal = []
 
+tests = ["test_chunk"]
+test_chunk = []
+test_raycast = []
 
 

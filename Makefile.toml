@@ -45,3 +45,10 @@ clear
 clear
 cargo run --features minimal --no-default-features
 '''
+
+[tasks.tests]
+script = '''
+clear
+clear
+cargo run --features tests --no-default-features
+'''
