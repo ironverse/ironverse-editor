@@ -9,7 +9,8 @@ impl Plugin for CustomPlugin {
     app
       .add_plugin(EguiPlugin)
       .add_startup_system(setup_camera)
-      .add_startup_system(startup)
+      // .add_startup_system(startup)
+      .add_startup_system(test_fast_surface_net)
       .add_system(update);
   }
 }
@@ -19,10 +20,9 @@ fn setup_camera(
 ) {
   commands
     .spawn(Camera3dBundle {
-      transform: Transform::from_xyz(2.0, 14.0, 10.0)
-        // .looking_to(Vec3::new(0.0, -0.7, 0.0), Vec3::Y),
-        // .looking_at(Vec3::Z, Vec3::Y),
-        .looking_to(Vec3::new(0.76, -0.24, 0.59), Vec3::Y),
+      // transform: Transform::from_xyz(2.0, 14.0, 10.0)
+      transform: Transform::from_xyz(1.4, 9.5, 14.0)
+        .looking_to(Vec3::new(0.0, -0.24, -0.9), Vec3::Y),
       ..Default::default()
     })
     .insert(FlyCam);
@@ -68,6 +68,55 @@ fn startup(
       ..default()
     });
 }
+
+
+fn test_fast_surface_net(
+  mut commands: Commands,
+  mut meshes: ResMut<Assets<Mesh>>,
+  mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+  use fast_surface_nets::ndshape::{ConstShape, ConstShape3u32};
+  use fast_surface_nets::{surface_nets, SurfaceNetsBuffer};
+
+  // A 16^3 chunk with 1-voxel boundary padding.
+  type ChunkShape = ConstShape3u32<18, 18, 18>;
+
+  // This chunk will cover just a single octant of a sphere SDF (radius 15).
+  let mut sdf = [1.0; ChunkShape::USIZE];
+  for i in 0u32..ChunkShape::SIZE {
+      let [x, y, z] = ChunkShape::delinearize(i);
+      // sdf[i as usize] = ((x * x + y * y + z * z) as f32).sqrt() - 15.0;
+
+      // info!("sdf[i as usize] {:?}", sdf[i as usize]);
+
+      if x < 5 && y < 5 && z < 5 {
+        sdf[i as usize] = -1.0;
+      }
+      
+  }
+
+  let mut buffer = SurfaceNetsBuffer::default();
+  surface_nets(&sdf, &ChunkShape {}, [0; 3], [17; 3], &mut buffer);
+
+
+  let mut render_mesh = Mesh::new(PrimitiveTopology::TriangleList);
+  render_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, buffer.positions);
+  render_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, buffer.normals);
+  render_mesh.set_indices(Some(Indices::U32(buffer.indices)));
+
+  let mesh_handle = meshes.add(render_mesh);
+
+  // let coord_f32 = key_to_world_coord_f32(&[0, 0, 0], manager.config.seamless_size);
+  let coord_f32 = [0.0, 0.0, 0.0];
+  commands
+    .spawn(MaterialMeshBundle {
+      mesh: mesh_handle,
+      material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+      transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
+      ..default()
+    });
+}
+
 
 fn update(
   cameras: Query<&Transform, With<FlyCam>>,
