@@ -39,11 +39,11 @@ clear
 cargo run
 '''
 
-[tasks.run_minimal]
+[tasks.minimum]
 script = '''
 clear
 clear
-cargo run --features minimal --no-default-features
+cargo run --features minimum --no-default-features
 '''
 
 [tasks.tests]
@@ -52,3 +52,19 @@ clear
 clear
 cargo run --features tests --no-default-features
 '''
+
+
+# [tasks.run_minimal]
+# script = '''
+# clear
+# clear
+# cargo run --features minimal --no-default-features
+# '''
+
+# [tasks.tests]
+# script = '''
+# clear
+# clear
+# cargo run --features tests --no-default-features
+# '''
+
