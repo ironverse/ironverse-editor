@@ -1,3 +1,6 @@
+
+// mod utils;
+
 #[cfg(feature = "minimum")]
 use bevy::{prelude::*, window::PresentMode};
 use bevy_flycam::NoCameraPlayerPlugin;

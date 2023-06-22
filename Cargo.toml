@@ -40,7 +40,7 @@ wasm-bindgen-futures = "0.4.19"
 [features]
 minimum = []
 
-tests = ["minimum", "test_chunk"]
+tests = ["minimum", "test_chunk", "bevy_egui"]
 test_chunk = []
 test_raycast = []
 
