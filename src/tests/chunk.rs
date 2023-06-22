@@ -16,7 +16,9 @@ fn setup_camera(
 ) {
   commands
     .spawn(Camera3dBundle {
-      transform: Transform::from_xyz(0.0, 2.0, -5.0).looking_to(Vec3::Z, Vec3::Y),
+      transform: Transform::from_xyz(0.0, 30.0, -5.0)
+        // .looking_to(Vec3::new(0.0, -0.7, 0.0), Vec3::Y),
+        .looking_at(Vec3::NEG_Y, Vec3::Y),
       ..Default::default()
     })
     .insert(FlyCam);
@@ -36,6 +38,7 @@ fn startup(
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+/*   
   let start = 2;
   let end = 14;
 
@@ -45,20 +48,36 @@ fn startup(
       for z in start..end {
 
         if y < 7 {
-          voxels.push([x as u32, y as u32, z as u32, 1 as u32]);
+
+          if x == 6 && y == 6 && z == 6 {
+
+          } else {
+            voxels.push([x as u32, y as u32, z as u32, 1 as u32]);
+          }
+          
         }
       }
     }
   }
 
-  let mut octree = VoxelOctree::new_from_3d_array(
+  let octree = VoxelOctree::new_from_3d_array(
     0, 
     4, 
     &voxels, ParentValueType::DefaultValue
   );
+ */
 
   let mut manager = ChunkManager::default();
-  let data = octree.compute_mesh2(VoxelMode::SurfaceNets, &mut manager.voxel_reuse);
+
+  // let data = octree.compute_mesh2(VoxelMode::SurfaceNets, &mut manager.voxel_reuse);
+
+  let mut chunk = manager.new_chunk3(&[0, -1, 0], manager.config.lod);
+  // chunk.octree.set_voxel(4, 13, 10, 0);
+  chunk.octree.set_voxel(4, 13, 12, 0);
+
+  let data = chunk
+    .octree
+    .compute_mesh2(VoxelMode::SurfaceNets, &mut manager.voxel_reuse);
 
   let mut render_mesh = Mesh::new(PrimitiveTopology::TriangleList);
   render_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, data.positions.clone());
@@ -85,12 +104,3 @@ pub const VOXEL_WEIGHT: MeshVertexAttribute =
 
 pub const VOXEL_TYPE_1: MeshVertexAttribute =
   MeshVertexAttribute::new("Voxel_Type_1", 988540918, VertexFormat::Uint32x4);
-
-
-
-
-/*
-  Data and rendering include here
-  Just separate later
-
-*/
