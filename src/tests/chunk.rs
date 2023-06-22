@@ -50,15 +50,12 @@ fn startup(
 
   let data = chunk
     .octree
-    .compute_mesh2(VoxelMode::SurfaceNets, &mut manager.voxel_reuse);
+    .compute_mesh(VoxelMode::SurfaceNets, &mut manager.voxel_reuse);
 
   let mut render_mesh = Mesh::new(PrimitiveTopology::TriangleList);
   render_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, data.positions.clone());
   render_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, data.normals.clone());
   render_mesh.set_indices(Some(Indices::U32(data.indices.clone())));
-
-  render_mesh.insert_attribute(VOXEL_WEIGHT, data.weights.clone());
-  render_mesh.insert_attribute(VOXEL_TYPE_1, data.types_1.clone());
 
   let mesh_handle = meshes.add(render_mesh);
 
@@ -80,7 +77,7 @@ fn update(
 ) {
   let mut window = match windows.get_single_mut() {
     Ok(w) => { w },
-    Err(e) => return,
+    Err(_e) => return,
   };
 
   if key_input.just_pressed(KeyCode::LControl) {
@@ -135,8 +132,3 @@ fn update(
 }
 
 
-pub const VOXEL_WEIGHT: MeshVertexAttribute =
-  MeshVertexAttribute::new("Voxel_Weight", 988540917, VertexFormat::Float32x4);
-
-pub const VOXEL_TYPE_1: MeshVertexAttribute =
-  MeshVertexAttribute::new("Voxel_Type_1", 988540918, VertexFormat::Uint32x4);

@@ -21,6 +21,8 @@ bevy_flycam = { path = "../bevy_flycam" }
 voxels = { path = "../voxels" }
 
 
+fast-surface-nets = "0.2.0"
+
 [dependencies.web-sys]
 version = "0.3.61"
 features = [
