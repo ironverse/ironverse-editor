@@ -2,6 +2,7 @@ use bevy::{prelude::*, render::{render_resource::{PrimitiveTopology, VertexForma
 use bevy_egui::{EguiContexts, egui::{self, TextureId, Frame, Color32, Style, ImageButton, Rect, Vec2, Pos2, RichText}, EguiPlugin};
 use bevy_flycam::FlyCam;
 use voxels::{data::{voxel_octree::{VoxelOctree, ParentValueType, VoxelMode}, surface_nets::VoxelReuse}, utils::key_to_world_coord_f32, chunk::chunk_manager::ChunkManager};
+use noise::*;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -20,9 +21,8 @@ fn setup_camera(
 ) {
   commands
     .spawn(Camera3dBundle {
-      // transform: Transform::from_xyz(2.0, 14.0, 10.0)
-      transform: Transform::from_xyz(1.4, 9.5, 14.0)
-        .looking_to(Vec3::new(0.0, -0.24, -0.9), Vec3::Y),
+      transform: Transform::from_xyz(4.0, 12.0, 16.0)
+        .looking_to(Vec3::new(0.0, -0.4, -0.9), Vec3::Y),
       ..Default::default()
     })
     .insert(FlyCam);
@@ -75,13 +75,8 @@ fn test_fast_surface_net(
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-  let mut manager = ChunkManager::default();
 
-  let mut chunk = manager.new_chunk3(&[0, -1, 0], manager.config.lod);
-  // chunk.octree.set_voxel(4, 13, 11, 0);
-  chunk.octree.set_voxel(4, 13, 12, 0);
-
-
+  let noise = OpenSimplex::new().set_seed(1234);
 
   use fast_surface_nets::ndshape::{ConstShape, ConstShape3u32};
   use fast_surface_nets::{surface_nets, SurfaceNetsBuffer};
@@ -92,22 +87,25 @@ fn test_fast_surface_net(
   // This chunk will cover just a single octant of a sphere SDF (radius 15).
   let mut sdf = [1.0; ChunkShape::USIZE];
   for i in 0u32..ChunkShape::SIZE {
-      let [x, y, z] = ChunkShape::delinearize(i);
-      
-      if x < 16 && y < 16 && z < 16 {
-        let voxel = chunk.octree.get_voxel(x, y, z);
-        if voxel > 0 {
-          sdf[i as usize] = -1.0;
-        }
-      } else {
-        // sdf[i as usize] = -1.0;
-      }
-      
+    let [x, y, z] = ChunkShape::delinearize(i);
 
-      // if x < 5 && y < 5 && z < 5 {
-      //   sdf[i as usize] = -1.0;
-      // }
-      
+    let elevation = elevation(&x, &z, &0, noise);
+    info!("elevation {:?}", elevation);
+    if elevation < 0 {
+      sdf[i as usize] = -1.0;
+    }
+    
+    // if x <= 8 && y <= 8 && z <= 8 {
+    //   sdf[i as usize] = -1.0;
+    // }
+
+    // if x <= 4 && y >= 7 {
+    //   sdf[i as usize] = 1.0;
+    // }
+
+    // if x == 5 && y == 6 && z == 4 {
+    //   sdf[i as usize] = 1.0;
+    // }
   }
 
   let mut buffer = SurfaceNetsBuffer::default();
@@ -130,6 +128,17 @@ fn test_fast_surface_net(
       transform: Transform::from_xyz(coord_f32[0], coord_f32[1], coord_f32[2]),
       ..default()
     });
+}
+
+fn elevation(x: &u32, z: &u32, middle: &i64, noise: OpenSimplex) -> i64 {
+  let frequency = 0.0125;
+  // let frequency = 0.05;
+  let height_scale = 16.0;
+  let fx = (*x as i64 - middle) as f64 * frequency;
+  let fz = (*z as i64 - middle) as f64 * frequency;
+  let noise = noise.get([fx, fz]);
+  let elevation = (noise * height_scale) as i64;
+  elevation
 }
 
 
