@@ -21,8 +21,8 @@ fn setup_camera(
 ) {
   commands
     .spawn(Camera3dBundle {
-      transform: Transform::from_xyz(4.0, 12.0, 16.0)
-        .looking_to(Vec3::new(0.0, -0.4, -0.9), Vec3::Y),
+      transform: Transform::from_xyz(-2.0, 4.0, 4.0)
+        .looking_to(Vec3::new(0.7, -0.4, 0.6), Vec3::Y),
       ..Default::default()
     })
     .insert(FlyCam);
@@ -32,7 +32,7 @@ fn setup_camera(
       intensity: 6000.0,
       ..Default::default()
     },
-    transform: Transform::from_xyz(0.0, 15.0, 0.0),
+    transform: Transform::from_xyz(0.0, 8.0, 8.0),
     ..Default::default()
   });
 }
@@ -90,22 +90,19 @@ fn test_fast_surface_net(
     let [x, y, z] = ChunkShape::delinearize(i);
 
     let elevation = elevation(&x, &z, &0, noise);
+    let mid = y as i64 - 4;
     info!("elevation {:?}", elevation);
-    if elevation < 0 {
+    if elevation > mid {
       sdf[i as usize] = -1.0;
     }
-    
-    // if x <= 8 && y <= 8 && z <= 8 {
-    //   sdf[i as usize] = -1.0;
-    // }
 
-    // if x <= 4 && y >= 7 {
-    //   sdf[i as usize] = 1.0;
-    // }
+    if x == 5 && y == 5 && z == 10 {
+      sdf[i as usize] = -1.0;
+    }
 
-    // if x == 5 && y == 6 && z == 4 {
-    //   sdf[i as usize] = 1.0;
-    // }
+    if x == 2 && y == 3 && z == 10 {
+      sdf[i as usize] = 1.0;
+    }
   }
 
   let mut buffer = SurfaceNetsBuffer::default();
