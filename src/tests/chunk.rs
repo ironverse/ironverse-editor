@@ -75,6 +75,14 @@ fn test_fast_surface_net(
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+  let mut manager = ChunkManager::default();
+
+  let mut chunk = manager.new_chunk3(&[0, -1, 0], manager.config.lod);
+  // chunk.octree.set_voxel(4, 13, 11, 0);
+  chunk.octree.set_voxel(4, 13, 12, 0);
+
+
+
   use fast_surface_nets::ndshape::{ConstShape, ConstShape3u32};
   use fast_surface_nets::{surface_nets, SurfaceNetsBuffer};
 
@@ -85,13 +93,20 @@ fn test_fast_surface_net(
   let mut sdf = [1.0; ChunkShape::USIZE];
   for i in 0u32..ChunkShape::SIZE {
       let [x, y, z] = ChunkShape::delinearize(i);
-      // sdf[i as usize] = ((x * x + y * y + z * z) as f32).sqrt() - 15.0;
-
-      // info!("sdf[i as usize] {:?}", sdf[i as usize]);
-
-      if x < 5 && y < 5 && z < 5 {
-        sdf[i as usize] = -1.0;
+      
+      if x < 16 && y < 16 && z < 16 {
+        let voxel = chunk.octree.get_voxel(x, y, z);
+        if voxel > 0 {
+          sdf[i as usize] = -1.0;
+        }
+      } else {
+        // sdf[i as usize] = -1.0;
       }
+      
+
+      // if x < 5 && y < 5 && z < 5 {
+      //   sdf[i as usize] = -1.0;
+      // }
       
   }
 
