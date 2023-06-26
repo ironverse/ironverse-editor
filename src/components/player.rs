@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use rapier3d::na::Vector3;
+use rapier3d::{na::Vector3, prelude::{RigidBodyHandle, ColliderHandle}};
 use voxels::utils::posf32_to_world_key;
-use crate::{physics::Physics, data::{GameResource, Player}};
+use crate::{physics::Physics, data::{GameResource}};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -12,7 +12,7 @@ impl Plugin for CustomPlugin {
 }
 
 fn update(
-  mut query: Query<(&mut Transform, &mut Player), With<PlayerMovement>>,
+  mut query: Query<(&mut Transform, &mut Player)>,
   mut physics: ResMut<Physics>,
   mut game_res: ResMut<GameResource>,
 ) {
@@ -29,6 +29,22 @@ fn update(
   }
 }
 
+#[derive(Component, Debug, Clone)]
+pub struct Player {
+  pub body: RigidBodyHandle,
+  pub collider: ColliderHandle,
+  pub prev_key: [i64; 3],
+  pub key: [i64; 3],
+}
 
-#[derive(Component)]
-pub struct PlayerMovement {}
+impl Player {
+  pub fn new(b: RigidBodyHandle, c: ColliderHandle, k: [i64; 3]) -> Self {
+    
+    Self {
+      body: b,
+      collider: c,
+      prev_key: k.clone(),
+      key: k
+    }
+  }
+}

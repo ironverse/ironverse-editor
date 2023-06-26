@@ -1,12 +1,38 @@
-
-// mod utils;
-
-#[cfg(feature = "minimum")]
 use bevy::{prelude::*, window::PresentMode};
-use bevy_flycam::NoCameraPlayerPlugin;
 
-#[cfg(feature = "tests")]
-mod tests;
+use cfg_if::cfg_if;
+
+cfg_if! {
+  if #[cfg(feature = "chunk")] {
+    mod components;
+    mod data;
+    mod physics;
+  } else {}
+
+  // if #[cfg(feature = "chunk_graphics")] {
+  //   mod graphics;
+  // }
+
+
+  // if #[cfg(feature = "tests")] {
+
+  // }
+}
+
+cfg_if! {
+  if #[cfg(feature = "chunk_graphics")] {
+    mod graphics;
+  }
+}
+
+cfg_if! {
+  if #[cfg(feature = "tests")] {
+    mod tests;
+    use bevy_flycam::NoCameraPlayerPlugin;
+  }
+}
+
+
 
 fn main() {
   let mut app = App::new();
@@ -21,13 +47,44 @@ fn main() {
         ..default()
       }),
       ..default()
-    }))
-    .add_plugin(NoCameraPlayerPlugin);
+    }));
+  
+  cfg_if! {
+    if #[cfg(feature = "chunk")] {
+      app
+        .add_plugin(data::CustomPlugin)
+        .add_plugin(physics::CustomPlugin)
+        .add_plugin(components::chunk::CustomPlugin);
+    }
+  }
 
-  #[cfg(feature = "tests")]
-  app
-    .add_plugin(tests::ChunkPlugin);
+  cfg_if! {
+    if #[cfg(feature = "chunk_graphics")] {
+      app
+        .add_plugin(graphics::chunks::CustomPlugin);
+    }
+  }
 
+  cfg_if! {
+    if #[cfg(feature = "tests")] {
+      app
+        .add_plugin(NoCameraPlayerPlugin)
+        .add_plugin(tests::ChunkPlugin);
+    }
+  }
+  
+
+  // #[cfg(feature = "chunk_graphics")]
+  // app
+  //   .add_plugin(graphics::chunks::CustomPlugin);
+
+  // cfg_if::cfg_if! {
+  //   if #[cfg(feature = "tests")] {
+  //     app
+  //       .add_plugin(NoCameraPlayerPlugin)
+  //       .add_plugin(tests::ChunkPlugin);
+  //   }
+  // }
   app.run();
 }
 

@@ -53,18 +53,10 @@ clear
 cargo run --features tests --no-default-features
 '''
 
-
-# [tasks.run_minimal]
-# script = '''
-# clear
-# clear
-# cargo run --features minimal --no-default-features
-# '''
-
-# [tasks.tests]
-# script = '''
-# clear
-# clear
-# cargo run --features tests --no-default-features
-# '''
+[tasks.native]
+script = '''
+clear
+clear
+cargo run --features native --no-default-features
+'''
 

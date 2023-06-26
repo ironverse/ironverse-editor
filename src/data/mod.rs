@@ -1,4 +1,3 @@
-use rapier3d::prelude::{RigidBodyHandle, ColliderHandle};
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use voxels::chunk::chunk_manager::ChunkManager;
@@ -27,26 +26,6 @@ impl Default for GameResource {
       chunk_manager: ChunkManager::default(),
       data: Data::default(),
       preview_chunk_manager: ChunkManager::default(),
-    }
-  }
-}
-
-#[derive(Component, Debug, Clone)]
-pub struct Player {
-  pub body: RigidBodyHandle,
-  pub collider: ColliderHandle,
-  pub prev_key: [i64; 3],
-  pub key: [i64; 3],
-}
-
-impl Player {
-  pub fn new(b: RigidBodyHandle, c: ColliderHandle, k: [i64; 3]) -> Self {
-    
-    Self {
-      body: b,
-      collider: c,
-      prev_key: k.clone(),
-      key: k
     }
   }
 }

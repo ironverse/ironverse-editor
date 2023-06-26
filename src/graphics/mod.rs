@@ -1,14 +1,17 @@
 use bevy::prelude::*;
 
-mod player;
-mod range;
+
+pub mod chunks;
+
+// mod player;
+// mod range;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
       .insert_resource(GraphicsResource::default())
-      .add_plugin(player::CustomPlugin)
+      // .add_plugin(player::CustomPlugin)
       // .add_plugin(range::CustomPlugin)
       .add_system(toggle_showhide);
   }

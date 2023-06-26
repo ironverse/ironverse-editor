@@ -10,9 +10,10 @@ impl Plugin for CustomPlugin {
     app
       .add_plugin(EguiPlugin)
       .add_startup_system(setup_camera)
-      // .add_startup_system(startup)
+      .add_startup_system(startup)
       .add_startup_system(test_fast_surface_net)
-      .add_system(update);
+      .add_system(update)
+      ;
   }
 }
 
@@ -88,10 +89,9 @@ fn test_fast_surface_net(
   let mut sdf = [1.0; ChunkShape::USIZE];
   for i in 0u32..ChunkShape::SIZE {
     let [x, y, z] = ChunkShape::delinearize(i);
-
+    // info!("test");
     let elevation = elevation(&x, &z, &0, noise);
     let mid = y as i64 - 4;
-    info!("elevation {:?}", elevation);
     if elevation > mid {
       sdf[i as usize] = -1.0;
     }
@@ -141,9 +141,10 @@ fn elevation(x: &u32, z: &u32, middle: &i64, noise: OpenSimplex) -> i64 {
 
 fn update(
   cameras: Query<&Transform, With<FlyCam>>,
-  mut ctx: EguiContexts,
   mut windows: Query<&mut Window, With<PrimaryWindow>>,
   key_input: Res<Input<KeyCode>>,
+
+  mut ctx: EguiContexts,
 ) {
   let mut window = match windows.get_single_mut() {
     Ok(w) => { w },

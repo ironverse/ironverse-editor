@@ -1,11 +1,12 @@
 use bevy::prelude::*;
 use rapier3d::prelude::{Point, ColliderBuilder, InteractionGroups, Isometry, ColliderHandle};
 use rapier3d::geometry::Group;
-use voxels::chunk::adj_delta_keys;
 use voxels::chunk::chunk_manager::Chunk;
 use voxels::data::voxel_octree::MeshData;
 use voxels::{chunk::{chunk_manager::ChunkManager, adjacent_keys}, data::voxel_octree::VoxelMode, utils::key_to_world_coord_f32};
-use crate::{data::{Player, GameResource}, physics::Physics};
+use crate::data::GameResource;
+use crate::physics::Physics;
+use super::player::Player;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
@@ -17,14 +18,13 @@ impl Plugin for CustomPlugin {
 }
 
 fn spawn_on_add_player(
-  mut commands: Commands,
   mut game_res: ResMut<GameResource>,
   mut physics: ResMut<Physics>,
 
   mut player_query: Query<(Entity, &Player, &mut Chunks), Added<Chunks>>,
 ) {
   // info!("testing");
-  for (entity, player, mut chunks) in &mut player_query {
+  for (_entity, player, mut chunks) in &mut player_query {
     let config = game_res.chunk_manager.config.clone();
     let keys = adjacent_keys(&player.key, 1, true);
     for key in keys.iter() {
@@ -41,7 +41,7 @@ fn spawn_on_add_player(
         );
       }
   
-      let data = chunk.octree.compute_mesh2(
+      let data = chunk.octree.compute_mesh(
         VoxelMode::SurfaceNets, 
         &mut game_res.chunk_manager.voxel_reuse
       );
@@ -107,7 +107,7 @@ fn on_player_move(
     // }
 
     let keys = adjacent_keys(&player.key, 1, true);
-    'inner: for i in 0..chunks.data.len() {
+    for i in 0..chunks.data.len() {
       let m = &chunks.data[i];
 
       physics.remove_collider(m.handle);
@@ -130,7 +130,7 @@ fn on_player_move(
         );
       }
 
-      let data = chunk.octree.compute_mesh2(
+      let data = chunk.octree.compute_mesh(
         VoxelMode::SurfaceNets, 
         &mut game_res.chunk_manager.voxel_reuse
       );
