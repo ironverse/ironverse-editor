@@ -21,6 +21,12 @@ cfg_if! {
 }
 
 cfg_if! {
+  if #[cfg(feature = "ui")] {
+    mod ui;
+  }
+}
+
+cfg_if! {
   if #[cfg(feature = "tests")] {
     mod tests;
     use bevy_flycam::NoCameraPlayerPlugin;
@@ -75,6 +81,15 @@ fn main() {
         .add_plugin(minimalgraphics::chunk_preview::CustomPlugin);
     }
   }
+
+  cfg_if! {
+    if #[cfg(feature = "ui")] {
+      app
+        .add_plugin(ui::CustomPlugin);
+    }
+  }
+
+
 
   cfg_if! {
     if #[cfg(not(target_arch = "wasm32"))] {

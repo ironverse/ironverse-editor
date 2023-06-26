@@ -9,9 +9,7 @@ impl Plugin for CustomPlugin {
     app
       .add_system(add)
       // .add_system(on_raycast)
-      .add_system(on_range)
-      // .add_system(toggle_showhide)
-      ;
+      .add_system(on_range);
   }
 }
 
@@ -123,13 +121,12 @@ fn on_raycast(
 
 
 fn on_range(
-  mut commands: Commands,
   mut game_res: ResMut<GameResource>,
   mut ranges: Query<
-  (Entity, &Range, &mut ChunkPreview), Changed<Range>
+  (&Range, &mut ChunkPreview), Changed<Range>
   >,
 ) {
-  for (entity, range, mut chunk_preview) in &mut ranges {
+  for (range, mut chunk_preview) in &mut ranges {
     if range.point.x == f32::NAN {
       continue;
     }
@@ -180,20 +177,6 @@ fn on_range(
   }
 
   
-}
-
-
-fn toggle_showhide(
-  key_input: Res<Input<KeyCode>>,
-  mut chunk_previews: Query<(&mut Visibility, &ChunkPreview)>,
-) {
-  if key_input.just_pressed(KeyCode::P) {
-    info!("chunk_previes.len() {}", chunk_previews.iter().len());
-    for (mut visibility, preview) in &mut chunk_previews {
-      *visibility = Visibility::Hidden;
-      info!("Hide");
-    }
-  }
 }
 
 #[derive(Component, Clone)]

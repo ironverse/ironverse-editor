@@ -4,16 +4,6 @@ use bevy_egui::egui::Rect;
 use crate::data::{CursorState, GameState, GameResource, Data};
 use super::{UIResource, UIState};
 
-
-pub struct NonePlugin;
-impl Plugin for NonePlugin {
-  fn build(&self, app: &mut App) {
-    app
-      .add_system(toggle_show);
-  }
-}
-
-
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
@@ -21,12 +11,12 @@ impl Plugin for CustomPlugin {
       .insert_resource(UIMenuResource::default());
 
     app
-      .add_system(toggle_show)
+      // .add_system(toggle_show)
       .add_system(render.in_set(OnUpdate(UIState::Menu)));
   }
 }
 
-
+/* 
 fn toggle_show(
   key: Res<Input<KeyCode>>,
   mut cursor_state_next: ResMut<NextState<CursorState>>,
@@ -49,6 +39,7 @@ fn toggle_show(
     
   }
 }
+ */
 
 fn render(
   mut commands: Commands,
@@ -66,6 +57,7 @@ fn render(
   if res.is_err() {
     return;
   }
+  // info!("Test");
   let (entity, window) = res.unwrap();
   let frame = Frame {
     fill: Color32::from_rgba_unmultiplied(0, 0, 0, 255),

@@ -5,18 +5,6 @@ pub mod hotbar;
 pub mod inventory;
 pub mod menu;
 
-
-pub struct NonePlugin;
-impl Plugin for NonePlugin {
-  fn build(&self, app: &mut App) {
-    app
-      .insert_resource(UIResource::default())
-      .add_state::<UIState>()
-      .add_plugin(menu::NonePlugin);
-  }
-}
-
-
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {

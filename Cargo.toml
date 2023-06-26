@@ -48,6 +48,7 @@ native = [
   "chunk",
 
   "min_graphics",
+  "ui",
 ]
 
 minimum = []
@@ -57,6 +58,7 @@ chunk = []
 # Graphics
 min_graphics = []
 graphics = []
+ui = ["bevy_egui"]
 
 
 tests = ["minimum", "test_chunk", "bevy_egui", "noise"]

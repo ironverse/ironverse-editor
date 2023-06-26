@@ -87,4 +87,3 @@ fn cursor_locked(
   move_setting_res.speed = 12.0;
 }
 
-
