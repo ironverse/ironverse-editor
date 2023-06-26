@@ -44,12 +44,14 @@ wasm-bindgen-futures = "0.4.19"
 native = [
   "rapier3d",
   "serde",
+  "player",
   "chunk",
 
   "chunk_graphics"
 ]
 
 minimum = []
+player = []
 chunk = []
 
 # Graphics

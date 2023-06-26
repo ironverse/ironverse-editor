@@ -2,6 +2,7 @@
 
 pub mod chunk;
 pub mod player;
+pub mod camera;
 // pub mod raycast;
 // pub mod range;
 // pub mod chunk_edit;

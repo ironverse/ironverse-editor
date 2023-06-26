@@ -1,18 +1,18 @@
 use bevy::{prelude::*, input::mouse::MouseButtonInput, window::CursorGrabMode};
 use bevy_flycam::MovementSettings;
-use crate::{input::MouseInput, data::CursorState, ui::UIState};
+use crate::{input::MouseInput, data::CursorState};
 
-mod load_file;
-mod save;
+// mod load_file;
+// mod save;
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_plugin(load_file::CustomPlugin)
-      .add_plugin(save::CustomPlugin)
+      // .add_plugin(load_file::CustomPlugin)
+      // .add_plugin(save::CustomPlugin)
       .add_system(update)
-      .add_system(grab_mouse)
+      // .add_system(grab_mouse)
       .add_system(cursor_free.in_schedule(OnEnter(CursorState::None)))
       .add_system(cursor_locked.in_schedule(OnEnter(CursorState::Locked)))
       ;
@@ -33,7 +33,7 @@ fn update(
   }
 }
 
-
+/* 
 fn grab_mouse(
   mouse: Res<Input<MouseButton>>,
   key: Res<Input<KeyCode>>,
@@ -58,6 +58,7 @@ fn grab_mouse(
     
   }
 }
+ */
 
 fn cursor_free(
   mut windows: Query<&mut Window>,

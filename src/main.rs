@@ -1,5 +1,4 @@
 use bevy::{prelude::*, window::PresentMode};
-
 use cfg_if::cfg_if;
 
 cfg_if! {
@@ -8,15 +7,6 @@ cfg_if! {
     mod data;
     mod physics;
   } else {}
-
-  // if #[cfg(feature = "chunk_graphics")] {
-  //   mod graphics;
-  // }
-
-
-  // if #[cfg(feature = "tests")] {
-
-  // }
 }
 
 cfg_if! {
@@ -31,6 +21,9 @@ cfg_if! {
     use bevy_flycam::NoCameraPlayerPlugin;
   }
 }
+
+mod input;
+mod native;
 
 
 
@@ -47,13 +40,27 @@ fn main() {
         ..default()
       }),
       ..default()
-    }));
+    }))
+    .add_plugin(data::CustomPlugin)
+    .add_plugin(physics::CustomPlugin)
+    .add_plugin(input::CustomPlugin)
+
+    .add_plugin(native::CustomPlugin)
+    ;
+
+  cfg_if! {
+    if #[cfg(feature = "player")] {
+      use bevy_flycam::NoCameraAndGrabPlugin;
+      app
+        .add_plugin(NoCameraAndGrabPlugin)
+        .add_plugin(components::camera::CustomPlugin)
+        .add_plugin(components::player::CustomPlugin);
+    }
+  }
   
   cfg_if! {
     if #[cfg(feature = "chunk")] {
       app
-        .add_plugin(data::CustomPlugin)
-        .add_plugin(physics::CustomPlugin)
         .add_plugin(components::chunk::CustomPlugin);
     }
   }
@@ -73,18 +80,6 @@ fn main() {
     }
   }
   
-
-  // #[cfg(feature = "chunk_graphics")]
-  // app
-  //   .add_plugin(graphics::chunks::CustomPlugin);
-
-  // cfg_if::cfg_if! {
-  //   if #[cfg(feature = "tests")] {
-  //     app
-  //       .add_plugin(NoCameraPlayerPlugin)
-  //       .add_plugin(tests::ChunkPlugin);
-  //   }
-  // }
   app.run();
 }
 

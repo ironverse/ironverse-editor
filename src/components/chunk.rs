@@ -12,21 +12,24 @@ pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system(spawn_on_add_player)
+      .add_system(on_player_add)
       .add_system(on_player_move);
   }
 }
-
-fn spawn_on_add_player(
+fn on_player_add(
+  mut commands: Commands,
   mut game_res: ResMut<GameResource>,
   mut physics: ResMut<Physics>,
 
-  mut player_query: Query<(Entity, &Player, &mut Chunks), Added<Chunks>>,
+  mut player_query: Query<(Entity, &Player), Added<Player>>,
 ) {
-  // info!("testing");
-  for (_entity, player, mut chunks) in &mut player_query {
+  
+  for (entity, player) in &mut player_query {
     let config = game_res.chunk_manager.config.clone();
     let keys = adjacent_keys(&player.key, 1, true);
+
+    let mut chunks = Chunks { data: Vec::new() };
+
     for key in keys.iter() {
       let mut chunk = Chunk::default();
       let chunk_op = game_res.chunk_manager.get_chunk(key);
@@ -77,7 +80,15 @@ fn spawn_on_add_player(
         chunk: chunk.clone(),
         handle: handle,
       });
+
+      
     }
+
+    commands
+      .entity(entity)
+      .insert(chunks);
+
+    info!("chunks");
   }
 }
 
