@@ -3,11 +3,25 @@ use bevy_flycam::FlyCam;
 use rapier3d::{prelude::{Vector, QueryFilter, Ray}, na::Point3};
 use crate::{utils::{Math, nearest_voxel_point_0}, physics::Physics, data::GameResource};
 
+use super::player::Player;
+
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
+      .add_system(add)
       .add_system(update);
+  }
+}
+
+fn add(
+  mut commands: Commands,
+  player_query: Query<Entity, Added<Player>>,
+) {
+  for entity in &player_query {
+    commands
+      .entity(entity)
+      .insert(Raycast::default());
   }
 }
 
@@ -40,12 +54,6 @@ fn update(
     ) {
       let hit_point = ray.point_at(toi);
 
-      // let point = Vec3::new(
-      //   hit_point[0], 
-      //   hit_point[1], 
-      //   hit_point[2]
-      // );
-
       let point = Vec3::new(
         hit_point[0].round(), 
         hit_point[1].round(), 
@@ -53,34 +61,8 @@ fn update(
       );
       if raycast.point != point {
         raycast.point = point;
-        info!("hit {:?}", point);
       }
     }
-
-    // if hit_point_op.is_none() {
-    //   continue;
-    // }
-
-    // let range = 12.0;
-    // let max_range_squared = range * range;
-    // let mut target_diff_squared = f32::MAX;
-
-    // let hit_point = hit_point_op.unwrap();
-    // let target = Vec3::new(hit_point[0], hit_point[1], hit_point[2]);
-    // let target_diff = start_pos - target;
-    // target_diff_squared = target_diff.length_squared();
-
-
-    // let nearest_op = nearest_voxel_point_0(
-    //   &game_res.chunk_manager, 
-    //   hit_point, 
-    //   true
-    // );
-
-    // if target_diff_squared < max_range_squared && nearest_op.is_some() {
-    //   let pos_i64 = nearest_op.unwrap();
-    //   // raycast.target_voxel_op = Some(pos_i64);
-    // }
   }
 }
 

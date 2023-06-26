@@ -3,7 +3,6 @@ use cfg_if::cfg_if;
 
 cfg_if! {
   if #[cfg(feature = "chunk")] {
-    mod components;
     mod data;
     mod physics;
   } else {}
@@ -24,7 +23,8 @@ cfg_if! {
 
 mod input;
 mod native;
-
+mod utils;
+mod components;
 
 
 fn main() {
@@ -44,9 +44,9 @@ fn main() {
     .add_plugin(data::CustomPlugin)
     .add_plugin(physics::CustomPlugin)
     .add_plugin(input::CustomPlugin)
-
-    .add_plugin(native::CustomPlugin)
-    ;
+    .add_plugin(components::raycast::CustomPlugin)
+    .add_plugin(components::range::CustomPlugin)
+    .add_plugin(components::chunk_edit::CustomPlugin);
 
   cfg_if! {
     if #[cfg(feature = "player")] {
@@ -69,6 +69,13 @@ fn main() {
     if #[cfg(feature = "chunk_graphics")] {
       app
         .add_plugin(graphics::chunks::CustomPlugin);
+    }
+  }
+
+  cfg_if! {
+    if #[cfg(not(target_arch = "wasm32"))] {
+      app
+        .add_plugin(native::CustomPlugin);
     }
   }
 

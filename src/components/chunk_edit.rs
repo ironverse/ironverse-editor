@@ -1,8 +1,8 @@
 use bevy::{prelude::*, input::ButtonState, utils::HashMap};
 use rapier3d::prelude::{ColliderBuilder, InteractionGroups, Isometry, Point};
 use voxels::{data::voxel_octree::VoxelMode, utils::key_to_world_coord_f32, chunk::chunk_manager::ChunkManager};
-use crate::{physics::Physics, data::{GameResource, CursorState}, utils::{nearest_voxel_point, nearest_voxel_point_0}, input::{MouseInput, hotbar::HotbarResource}};
-use super::{raycast::Raycast, chunks::{Chunks, Mesh}, range::Range};
+use crate::{physics::Physics, data::{GameResource}, utils::{nearest_voxel_point, nearest_voxel_point_0}, input::{MouseInput, hotbar::HotbarResource}};
+use super::{raycast::Raycast, chunk::{Chunks, Mesh}, range::Range};
 use rapier3d::geometry::Group;
 
 pub struct CustomPlugin;
@@ -19,10 +19,8 @@ impl Plugin for CustomPlugin {
   Adapter for Mouse event for wasm and native
  */
 fn update_by_terrain_hit(
-  mut commands: Commands,
-  mut raycasts: Query<(Entity, &Raycast, &mut Chunks), Changed<Raycast>>,
+  mut raycasts: Query<(Entity, &Raycast, &mut Chunks)>,
   mut game_res: ResMut<GameResource>,
-  // mut wasm_events: EventReader<WasmInputEvent>,
 
   mut physics: ResMut<Physics>,
   hotbar_res: Res<HotbarResource>,
@@ -32,8 +30,6 @@ fn update_by_terrain_hit(
   let mut voxel_op = None;
   for event in mouse_inputs.iter() {
     if event.mouse_button_input.state == ButtonState::Pressed {
-      // info!("clicked");
-
       if event.mouse_button_input.button == MouseButton::Left {
         voxel_op = Some(0);
       }
@@ -55,7 +51,7 @@ fn update_by_terrain_hit(
   }
 
   let config = game_res.chunk_manager.config.clone();
-  for (entity, raycast, mut chunks) in &mut raycasts {
+  for (_entity, raycast, mut chunks) in &mut raycasts {
     if raycast.point.x == f32::NAN {
       continue;
     }
@@ -105,7 +101,7 @@ fn update_by_terrain_hit(
       }
       
 
-      let data = chunk.octree.compute_mesh2(
+      let data = chunk.octree.compute_mesh(
         VoxelMode::SurfaceNets, 
         &mut game_res.chunk_manager.voxel_reuse
       );
@@ -142,8 +138,6 @@ fn update_by_terrain_hit(
           handle: handle,
         })
       }
-
-
     }
   }
 
@@ -231,7 +225,7 @@ fn update_by_range(
       }
       
 
-      let data = chunk.octree.compute_mesh2(
+      let data = chunk.octree.compute_mesh(
         VoxelMode::SurfaceNets, 
         &mut game_res.chunk_manager.voxel_reuse
       );
