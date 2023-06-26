@@ -1,6 +1,6 @@
 use bevy::{prelude::*, input::mouse::MouseButtonInput, window::CursorGrabMode};
 use bevy_flycam::MovementSettings;
-use crate::{input::MouseInput, data::CursorState};
+use crate::{input::{MouseInput, InputResource}, data::CursorState};
 
 // mod load_file;
 // mod save;
@@ -12,7 +12,8 @@ impl Plugin for CustomPlugin {
       // .add_plugin(load_file::CustomPlugin)
       // .add_plugin(save::CustomPlugin)
       .add_system(update)
-      .add_system(toggle_mouse_grab)
+      // .add_system(toggle_mouse_grab)
+      .add_system(toggle_mouse_grab.in_base_set(CoreSet::PostUpdate))
       .add_system(cursor_free.in_schedule(OnEnter(CursorState::None)))
       .add_system(cursor_locked.in_schedule(OnEnter(CursorState::Locked)))
       ;
@@ -39,7 +40,12 @@ fn toggle_mouse_grab(
   key: Res<Input<KeyCode>>,
   mut cursor_state_next: ResMut<NextState<CursorState>>,
   cursor_state: Res<State<CursorState>>,
+
+  input_res: Res<InputResource>,
 ) {
+  if !input_res.enabled {
+    return;
+  }
 
   if mouse.just_pressed(MouseButton::Left) {
     match cursor_state.0 {

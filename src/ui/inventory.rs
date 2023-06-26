@@ -1,6 +1,6 @@
 use bevy::{prelude::*, window::PrimaryWindow, asset::LoadState};
 use bevy_egui::{EguiContexts, egui::{self, TextureId, Frame, Color32, Style, ImageButton, Rect, Vec2, Pos2, Sense}};
-use crate::{input::hotbar::HotbarResource, data::CursorState};
+use crate::{input::{hotbar::HotbarResource, InputResource}, data::CursorState};
 use super::{UIState, hotbar::HotbarUIResource};
 
 
@@ -14,8 +14,8 @@ impl Plugin for CustomPlugin {
       .add_system(toggle_show)
       .add_systems(
         (render, render_dragging.after(render))
-          .in_set(OnUpdate(UIState::Inventory)))
-      ;
+          .in_set(OnUpdate(UIState::Inventory))
+      );
   }
 }
 
@@ -48,30 +48,43 @@ fn prepare_texture(
 }
 
 fn toggle_show(
-  key_input: Res<Input<KeyCode>>,
+  key: Res<Input<KeyCode>>,
   mut next_state: ResMut<NextState<UIState>>,
   ui_state: Res<State<UIState>>,
   mut cursor_state_next: ResMut<NextState<CursorState>>,
+
+  mut input_res: ResMut<InputResource>,
 ) {
-  if key_input.just_pressed(KeyCode::I) {
+  if key.just_pressed(KeyCode::I) {
     match ui_state.0 {
       UIState::Default => {
         next_state.set(UIState::Inventory);
         cursor_state_next.set(CursorState::None);
+        input_res.enabled = false;
       },
       UIState::Inventory |
       UIState::Menu => {
         next_state.set(UIState::Default);
         cursor_state_next.set(CursorState::Locked);
+        input_res.enabled = true;
       },
       _ => ()
     }
+  }
 
-    info!("ui_state.0 {:?}", ui_state.0);
+  if key.just_pressed(KeyCode::Escape) {
+    match ui_state.0 {
+      UIState::Default => {},
+      UIState::Inventory |
+      UIState::Menu => {
+        next_state.set(UIState::Default);
+        cursor_state_next.set(CursorState::Locked);
+        input_res.enabled = true;
+      },
+      _ => ()
+    }
   }
 }
-
-
 
 fn render(
   mut ctx: EguiContexts,
