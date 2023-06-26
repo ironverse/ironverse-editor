@@ -1,14 +1,29 @@
 use bevy::{prelude::*, input::{mouse::MouseWheel}};
 use bevy_flycam::FlyCam;
 
+use super::player::Player;
+
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
+      .add_system(add)
       .add_system(update_point)
       .add_system(update_range);
   }
 }
+
+fn add(
+  mut commands: Commands,
+  player_query: Query<Entity, Added<Player>>,
+) {
+  for entity in &player_query {
+    commands
+      .entity(entity)
+      .insert(Range::default());
+  }
+}
+
 
 fn update_point(
   mut query: Query<(&Transform, &mut Range), With<FlyCam>>,

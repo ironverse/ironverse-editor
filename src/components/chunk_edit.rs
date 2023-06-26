@@ -9,15 +9,11 @@ pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system(update_by_terrain_hit)
+      // .add_system(update_by_terrain_hit)
       .add_system(update_by_range);
   }
 }
 
-
-/*
-  Adapter for Mouse event for wasm and native
- */
 fn update_by_terrain_hit(
   mut raycasts: Query<(Entity, &Raycast, &mut Chunks)>,
   mut game_res: ResMut<GameResource>,
@@ -144,7 +140,6 @@ fn update_by_terrain_hit(
 
 }
 
-
 fn update_by_range(
   mut ranges: Query<(&Range, &mut Chunks)>,
 
@@ -157,7 +152,7 @@ fn update_by_range(
   let mut voxel_op = None;
   for event in mouse_inputs.iter() {
     if event.mouse_button_input.state == ButtonState::Pressed {
-      // info!("clicked");
+      info!("update_by_range");
 
       if event.mouse_button_input.button == MouseButton::Left {
         voxel_op = Some(0);

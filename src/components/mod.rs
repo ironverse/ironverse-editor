@@ -6,4 +6,4 @@ pub mod raycast;
 pub mod range;
 
 
-// pub mod chunk_preview;
+pub mod chunk_preview;

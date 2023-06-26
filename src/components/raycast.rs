@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 use bevy_flycam::FlyCam;
 use rapier3d::{prelude::{Vector, QueryFilter, Ray}, na::Point3};
-use crate::{utils::{Math, nearest_voxel_point_0}, physics::Physics, data::GameResource};
-
+use crate::{physics::Physics, data::GameResource};
 use super::player::Player;
 
 pub struct CustomPlugin;

@@ -1,23 +1,23 @@
-use bevy::{prelude::*, utils::HashMap};
+use bevy::prelude::*;
 use voxels::chunk::{chunk_manager::Chunk};
-use crate::{data::{GameResource, Player}, utils::{nearest_voxel_point_0, nearest_voxel_point}, input::hotbar::HotbarResource};
-use super::{raycast::Raycast, range::Range};
+use crate::{data::{GameResource}, utils::{nearest_voxel_point_0, nearest_voxel_point}, input::hotbar::HotbarResource};
+use super::{raycast::Raycast, range::Range, player::Player};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system(hook_to_player)
-      .add_system(on_add)
+      .add_system(add)
+      // .add_system(on_raycast)
       .add_system(on_range)
       // .add_system(toggle_showhide)
       ;
   }
 }
 
-fn hook_to_player(
+fn add(
   mut commands: Commands,
-  mut players: Query<(Entity), Added<Player>>,
+  players: Query<(Entity), Added<Player>>,
 ) {
   for entity in &players {
     commands
@@ -26,8 +26,7 @@ fn hook_to_player(
   }
 }
 
-fn on_add(
-  mut commands: Commands,
+fn on_raycast(
   mut game_res: ResMut<GameResource>,
   mut raycasts: Query<
   (Entity, &Raycast, &mut ChunkPreview), Changed<Raycast>
@@ -37,7 +36,7 @@ fn on_add(
 ) {
 
 
-  for (entity, raycast, mut chunk_preview) in &mut raycasts {
+  for (_entity, raycast, mut chunk_preview) in &mut raycasts {
     info!("raycasts");
     if raycast.point.x == f32::NAN {
       continue;

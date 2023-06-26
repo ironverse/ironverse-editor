@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-
 pub mod chunks;
+pub mod chunk_preview;
 
 // mod player;
 // mod range;

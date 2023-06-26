@@ -1,6 +1,12 @@
 use bevy::{prelude::*, window::PresentMode};
 use cfg_if::cfg_if;
 
+mod input;
+mod native;
+mod utils;
+mod components;
+mod graphics;
+
 cfg_if! {
   if #[cfg(feature = "chunk")] {
     mod data;
@@ -9,8 +15,8 @@ cfg_if! {
 }
 
 cfg_if! {
-  if #[cfg(feature = "chunk_graphics")] {
-    mod graphics;
+  if #[cfg(feature = "min_graphics")] {
+    mod minimalgraphics;
   }
 }
 
@@ -20,11 +26,6 @@ cfg_if! {
     use bevy_flycam::NoCameraPlayerPlugin;
   }
 }
-
-mod input;
-mod native;
-mod utils;
-mod components;
 
 
 fn main() {
@@ -46,7 +47,9 @@ fn main() {
     .add_plugin(input::CustomPlugin)
     .add_plugin(components::raycast::CustomPlugin)
     .add_plugin(components::range::CustomPlugin)
-    .add_plugin(components::chunk_edit::CustomPlugin);
+    .add_plugin(components::chunk_edit::CustomPlugin)
+    .add_plugin(components::chunk_preview::CustomPlugin)
+    .add_plugin(graphics::CustomPlugin);
 
   cfg_if! {
     if #[cfg(feature = "player")] {
@@ -66,9 +69,10 @@ fn main() {
   }
 
   cfg_if! {
-    if #[cfg(feature = "chunk_graphics")] {
+    if #[cfg(feature = "min_graphics")] {
       app
-        .add_plugin(graphics::chunks::CustomPlugin);
+        .add_plugin(minimalgraphics::chunks::CustomPlugin)
+        .add_plugin(minimalgraphics::chunk_preview::CustomPlugin);
     }
   }
 

@@ -1,11 +1,9 @@
 use bevy::prelude::*;
 use bevy::render::mesh::Indices;
 use bevy::render::render_resource::PrimitiveTopology;
-use rapier3d::prelude::{Point, ColliderBuilder, InteractionGroups, Isometry};
-use rapier3d::geometry::Group;
-use voxels::{data::voxel_octree::VoxelMode, utils::key_to_world_coord_f32};
-use crate::components::raycast::Raycast;
-use crate::data::Player;
+use voxels::{data::voxel_octree::VoxelMode};
+use crate::components::player::Player;
+use crate::graphics::chunk_preview::ChunkPreviewRender;
 use crate::graphics::{ChunkPreviewGraphics, GraphicsResource};
 use crate::{data::GameResource, components::chunk_preview::ChunkPreview};
 use super::chunks::{VOXEL_WEIGHT, VOXEL_TYPE_1};
@@ -61,7 +59,7 @@ fn update(
       // }
       // info!("chunk_preview");
       
-      let data = chunk.octree.compute_mesh2(
+      let data = chunk.octree.compute_mesh(
         VoxelMode::SurfaceNets, 
         &mut game_res.chunk_manager.voxel_reuse
       );
@@ -97,21 +95,6 @@ fn update(
 
         render.entities.push(entity);
       }
-    }
-  }
-}
-
-
-
-#[derive(Component)]
-pub struct ChunkPreviewRender {
-  entities: Vec<Entity>,
-}
-
-impl Default for ChunkPreviewRender {
-  fn default() -> Self {
-    Self {
-      entities: Vec::new(),
     }
   }
 }
