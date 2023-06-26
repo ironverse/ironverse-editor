@@ -26,8 +26,6 @@ fn start(
     .spawn(
       (Player::new(body, collider, k),
     ));
-
-  info!("player start()");
 }
 
 fn update(

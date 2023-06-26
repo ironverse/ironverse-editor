@@ -12,7 +12,7 @@ impl Plugin for CustomPlugin {
       // .add_plugin(load_file::CustomPlugin)
       // .add_plugin(save::CustomPlugin)
       .add_system(update)
-      // .add_system(grab_mouse)
+      .add_system(toggle_mouse_grab)
       .add_system(cursor_free.in_schedule(OnEnter(CursorState::None)))
       .add_system(cursor_locked.in_schedule(OnEnter(CursorState::Locked)))
       ;
@@ -33,32 +33,35 @@ fn update(
   }
 }
 
-/* 
-fn grab_mouse(
+
+fn toggle_mouse_grab(
   mouse: Res<Input<MouseButton>>,
   key: Res<Input<KeyCode>>,
   mut cursor_state_next: ResMut<NextState<CursorState>>,
   cursor_state: Res<State<CursorState>>,
-
-  mut ui_state_next: ResMut<NextState<UIState>>,
-  ui_state: Res<State<UIState>>,
 ) {
+
   if mouse.just_pressed(MouseButton::Left) {
-    match ui_state.0 {
-      UIState::Default => {
-        ui_state_next.set(UIState::Default);
+    match cursor_state.0 {
+      CursorState::None => {
         cursor_state_next.set(CursorState::Locked);
       },
-      UIState::Inventory => { },
-      UIState::Menu => { 
-
-      },
-      _ => {  }
+      CursorState::Locked => {}
     };
-    
+  }
+
+  if key.just_pressed(KeyCode::Escape) {
+    match cursor_state.0 {
+      CursorState::None => {
+        cursor_state_next.set(CursorState::Locked);
+      },
+      CursorState::Locked => {
+        cursor_state_next.set(CursorState::None);
+      }
+    };
   }
 }
- */
+
 
 fn cursor_free(
   mut windows: Query<&mut Window>,
@@ -83,3 +86,5 @@ fn cursor_locked(
   move_setting_res.sensitivity = 0.00012;
   move_setting_res.speed = 12.0;
 }
+
+

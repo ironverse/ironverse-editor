@@ -69,8 +69,6 @@ fn add(
         })
         .insert(ChunkGraphics { key: mesh.key.clone() })
         ;
-      
-      info!("chunk graphics add");
     }
     
   }
