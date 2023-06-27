@@ -11,12 +11,12 @@ impl Plugin for CustomPlugin {
       .insert_resource(UIMenuResource::default());
 
     app
-      // .add_system(toggle_show)
+      .add_system(toggle_show)
       .add_system(render.in_set(OnUpdate(UIState::Menu)));
   }
 }
 
-/* 
+
 fn toggle_show(
   key: Res<Input<KeyCode>>,
   mut cursor_state_next: ResMut<NextState<CursorState>>,
@@ -39,7 +39,7 @@ fn toggle_show(
     
   }
 }
- */
+
 
 fn render(
   mut commands: Commands,

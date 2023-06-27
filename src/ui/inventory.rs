@@ -1,5 +1,5 @@
 use bevy::{prelude::*, window::PrimaryWindow, asset::LoadState};
-use bevy_egui::{EguiContexts, egui::{self, TextureId, Frame, Color32, Style, ImageButton, Rect, Vec2, Pos2, Sense}};
+use bevy_egui::{EguiContexts, egui::{self, TextureId, Frame, Color32, Rect, Vec2, Pos2, Sense}};
 use crate::{input::{hotbar::HotbarResource, InputResource}, data::CursorState};
 use super::{UIState, hotbar::HotbarUIResource};
 
