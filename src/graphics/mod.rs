@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 
-pub mod chunks;
-pub mod chunk_preview;
+// pub mod chunks;
+// pub mod chunk_preview;
 
-// mod player;
+// mod player;   
 // mod range;
 
 pub struct CustomPlugin;

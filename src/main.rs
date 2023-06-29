@@ -15,8 +15,14 @@ cfg_if! {
 }
 
 cfg_if! {
-  if #[cfg(feature = "min_graphics")] {
-    mod minimalgraphics;
+  if #[cfg(feature = "graphics_low")] {
+    mod graphics_low;
+  }
+}
+
+cfg_if! {
+  if #[cfg(feature = "graphics_normal")] {
+    mod graphics_normal;
   }
 }
 
@@ -75,10 +81,21 @@ fn main() {
   }
 
   cfg_if! {
-    if #[cfg(feature = "min_graphics")] {
+    if #[cfg(feature = "graphics_normal")] {
       app
-        .add_plugin(minimalgraphics::chunks::CustomPlugin)
-        .add_plugin(minimalgraphics::chunk_preview::CustomPlugin);
+        .add_plugin(graphics_normal::chunks::CustomPlugin)
+        .add_plugin(graphics_normal::chunk_preview::CustomPlugin);
+    }
+  }
+
+
+
+
+  cfg_if! {
+    if #[cfg(feature = "graphics_low")] {
+      app
+        .add_plugin(graphics_low::chunks::CustomPlugin)
+        .add_plugin(graphics_low::chunk_preview::CustomPlugin);
     }
   }
 

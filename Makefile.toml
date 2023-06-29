@@ -60,3 +60,9 @@ clear
 cargo run --features native --no-default-features
 '''
 
+[tasks.native_low]
+script = '''
+clear
+clear
+cargo run --features native_low --no-default-features
+'''

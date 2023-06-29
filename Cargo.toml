@@ -46,8 +46,16 @@ native = [
   "serde",
   "player",
   "chunk",
+  "graphics_normal",
+  "ui",
+]
 
-  "min_graphics",
+native_low = [
+  "rapier3d",
+  "serde",
+  "player",
+  "chunk",
+  "graphics_low",
   "ui",
 ]
 
@@ -56,8 +64,8 @@ player = []
 chunk = []
 
 # Graphics
-min_graphics = []
-graphics = []
+graphics_low = []
+graphics_normal = []
 ui = ["bevy_egui"]
 
 

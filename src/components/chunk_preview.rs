@@ -1,15 +1,17 @@
 use bevy::prelude::*;
 use voxels::chunk::{chunk_manager::Chunk};
-use crate::{data::{GameResource}, utils::{nearest_voxel_point_0, nearest_voxel_point}, input::hotbar::HotbarResource};
+use crate::{data::{GameResource}, utils::{nearest_voxel_point_0, nearest_voxel_point}, input::hotbar::{HotbarResource, self}};
 use super::{raycast::Raycast, range::Range, player::Player};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {
   fn build(&self, app: &mut App) {
     app
+      .insert_resource(LocalResource::default())
       .add_system(add)
       // .add_system(on_raycast)
-      .add_system(on_range);
+      .add_system(on_range)
+      .add_system(on_changed_selected_voxel);
   }
 }
 
@@ -125,7 +127,82 @@ fn on_range(
   mut ranges: Query<
   (&Range, &mut ChunkPreview), Changed<Range>
   >,
+  hotbar_res: Res<HotbarResource>,
 ) {
+  for (range, mut chunk_preview) in &mut ranges {
+    if range.point.x == f32::NAN {
+      continue;
+    }
+
+    game_res.preview_chunk_manager.chunks = game_res.chunk_manager.chunks.clone();
+
+    let min = -(range.scale as i64);
+    let max = (range.scale as i64) + 1;
+
+    // info!("min {} max {}", min, max);
+
+    chunk_preview.chunks.clear();
+    chunk_preview.new = [
+      range.point.x as i64,
+      range.point.y as i64,
+      range.point.z as i64,
+    ];
+
+    let bar_op = hotbar_res
+      .bars
+      .iter()
+      .find(|bar| bar.key_code == hotbar_res.selected_keycode);
+
+    let mut voxel = 0;
+    if bar_op.is_some() {
+      voxel = bar_op.unwrap().voxel;
+    }
+
+    let mut chunk = Chunk::default();
+    let chunk_pos = chunk.octree.get_size() / 2;
+
+    for x in min..max {
+      for y in min..max {
+        for z in min..max {
+          let pos = [
+            range.point.x as i64 + x,
+            range.point.y as i64 + y,
+            range.point.z as i64 + z
+          ];
+
+          let local_x = chunk_pos as i64 + x;
+          let local_y = chunk_pos as i64 + y;
+          let local_z = chunk_pos as i64 + z;
+          chunk.octree.set_voxel(local_x as u32, local_y as u32, local_z as u32, voxel);
+        }
+      }
+    }
+    chunk_preview.chunks.push((chunk.key, chunk));
+  }
+}
+
+fn on_changed_selected_voxel(
+  mut game_res: ResMut<GameResource>,
+  mut local_res: ResMut<LocalResource>,
+  hotbar_res: Res<HotbarResource>,
+
+  mut ranges: Query<(&Range, &mut ChunkPreview)>,
+) {
+  if local_res.selected_keycode == hotbar_res.selected_keycode {
+    return;
+  }
+  local_res.selected_keycode = hotbar_res.selected_keycode;
+
+  let bar_op = hotbar_res
+    .bars
+    .iter()
+    .find(|bar| bar.key_code == hotbar_res.selected_keycode);
+
+  let mut voxel = 0;
+  if bar_op.is_some() {
+    voxel = bar_op.unwrap().voxel;
+  }
+
   for (range, mut chunk_preview) in &mut ranges {
     if range.point.x == f32::NAN {
       continue;
@@ -169,14 +246,12 @@ fn on_range(
           let local_x = chunk_pos as i64 + x;
           let local_y = chunk_pos as i64 + y;
           let local_z = chunk_pos as i64 + z;
-          chunk.octree.set_voxel(local_x as u32, local_y as u32, local_z as u32, 1);
+          chunk.octree.set_voxel(local_x as u32, local_y as u32, local_z as u32, voxel);
         }
       }
     }
     chunk_preview.chunks.push((chunk.key, chunk));
   }
-
-  
 }
 
 #[derive(Component, Clone)]
@@ -197,3 +272,19 @@ impl Default for ChunkPreview {
     }
   }
 }
+
+
+#[derive(Resource)]
+struct LocalResource {
+  selected_keycode: KeyCode,
+}
+
+impl Default for LocalResource {
+  fn default() -> Self {
+    Self {
+      selected_keycode: KeyCode::Key1,
+    }
+  }
+}
+
+

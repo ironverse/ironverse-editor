@@ -1,6 +1,7 @@
 use bevy::{prelude::*, render::{mesh::{MeshVertexAttribute, MeshVertexBufferLayout, Indices}, render_resource::{VertexFormat, AsBindGroup, ShaderRef, SpecializedMeshPipelineError, RenderPipelineDescriptor, PrimitiveTopology, ShaderType, AsBindGroupShaderType, TextureFormat}, render_asset::RenderAssets}, reflect::TypeUuid, pbr::{MaterialPipeline, MaterialPipelineKey, StandardMaterialFlags}, asset::LoadState};
-use voxels::{chunk::{adjacent_keys, chunk_manager::ChunkManager}, utils::{key_to_world_coord_f32, posf32_to_world_key}, data::voxel_octree::{VoxelMode, MeshData}};
-use crate::{components::chunks::Chunks, data::GameResource, graphics::ChunkGraphics};
+use voxels::{utils::{key_to_world_coord_f32}, data::voxel_octree::{VoxelMode, MeshData}};
+
+use crate::{graphics::ChunkGraphics, components::chunk::Chunks, data::GameResource};
 
 pub struct CustomPlugin;
 impl Plugin for CustomPlugin {

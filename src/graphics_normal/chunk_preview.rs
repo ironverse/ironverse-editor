@@ -2,10 +2,9 @@ use bevy::prelude::*;
 use bevy::render::mesh::Indices;
 use bevy::render::render_resource::PrimitiveTopology;
 use rapier3d::prelude::{Point, ColliderBuilder, InteractionGroups, Isometry};
-use rapier3d::geometry::Group;
 use voxels::chunk::chunk_manager::Chunk;
-use voxels::{data::voxel_octree::VoxelMode, utils::key_to_world_coord_f32};
-use crate::data::Player;
+use voxels::{data::voxel_octree::VoxelMode};
+use crate::components::player::Player;
 use crate::graphics::{ChunkPreviewGraphics, GraphicsResource};
 use crate::input::hotbar::HotbarResource;
 use crate::{data::GameResource, components::chunk_preview::ChunkPreview};
@@ -19,7 +18,7 @@ impl Plugin for CustomPlugin {
       .insert_resource(LocalResource::default())
       .add_system(hook_to_player)
       .add_system(update)
-      .add_system(selected_voxel_changed)
+      // .add_system(selected_voxel_changed)
       .add_system(spawn);
   }
 }
@@ -112,7 +111,6 @@ fn spawn(
   chunk_texture: Res<ChunkTexture>,
   mut custom_materials: ResMut<Assets<CustomMaterial>>,
 ) {
-
   if local_res.chunk_op.is_none() {
     return;
   }
@@ -124,7 +122,7 @@ fn spawn(
   render.entities.clear();
 
   let chunk = local_res.chunk_op.take().unwrap();
-  let data = chunk.octree.compute_mesh2(
+  let data = chunk.octree.compute_mesh(
     VoxelMode::SurfaceNets, 
     &mut game_res.chunk_manager.voxel_reuse
   );
