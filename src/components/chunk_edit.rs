@@ -152,8 +152,6 @@ fn update_by_range(
   let mut voxel_op = None;
   for event in mouse_inputs.iter() {
     if event.mouse_button_input.state == ButtonState::Pressed {
-      info!("update_by_range");
-
       if event.mouse_button_input.button == MouseButton::Left {
         voxel_op = Some(0);
       }

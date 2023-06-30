@@ -103,7 +103,6 @@ fn on_player_move(
       continue;
     }
 
-    info!("player_move");
     let config = game_res.chunk_manager.config.clone();
 
     // let keys = adj_delta_keys(&player.prev_key, &player.key, 1);

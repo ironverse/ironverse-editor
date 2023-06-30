@@ -139,6 +139,9 @@ fn on_range(
     let min = -(range.scale as i64);
     let max = (range.scale as i64) + 1;
 
+    // let min = -3;
+    // let max = 3;
+
     // info!("min {} max {}", min, max);
 
     chunk_preview.chunks.clear();
@@ -161,6 +164,7 @@ fn on_range(
     let mut chunk = Chunk::default();
     let chunk_pos = chunk.octree.get_size() / 2;
 
+
     for x in min..max {
       for y in min..max {
         for z in min..max {
@@ -170,10 +174,28 @@ fn on_range(
             range.point.z as i64 + z
           ];
 
+          game_res.preview_chunk_manager.set_voxel2(&pos, voxel);
+        }
+      }
+    }
+
+    let min_prev = min - 2;
+    let max_prev = max + 2;
+    for x in min_prev..max_prev {
+      for y in min_prev..max_prev {
+        for z in min_prev..max_prev {
+          let pos = [
+            range.point.x as i64 + x,
+            range.point.y as i64 + y,
+            range.point.z as i64 + z
+          ];
+
+          let v = game_res.preview_chunk_manager.get_voxel(&pos);
+
           let local_x = chunk_pos as i64 + x;
           let local_y = chunk_pos as i64 + y;
           let local_z = chunk_pos as i64 + z;
-          chunk.octree.set_voxel(local_x as u32, local_y as u32, local_z as u32, voxel);
+          chunk.octree.set_voxel(local_x as u32, local_y as u32, local_z as u32, v);
         }
       }
     }
