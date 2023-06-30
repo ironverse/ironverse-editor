@@ -5,6 +5,7 @@ use rapier3d::prelude::{Point, ColliderBuilder, InteractionGroups, Isometry};
 use voxels::chunk::chunk_manager::Chunk;
 use voxels::{data::voxel_octree::VoxelMode};
 use crate::components::player::Player;
+use crate::graphics::chunk_preview::ChunkPreviewRender;
 use crate::graphics::{ChunkPreviewGraphics, GraphicsResource};
 use crate::input::hotbar::HotbarResource;
 use crate::{data::GameResource, components::chunk_preview::ChunkPreview};
@@ -184,21 +185,6 @@ fn spawn(
     render.entities.push(entity);
   }
 
-}
-
-
-
-#[derive(Component)]
-pub struct ChunkPreviewRender {
-  entities: Vec<Entity>,
-}
-
-impl Default for ChunkPreviewRender {
-  fn default() -> Self {
-    Self {
-      entities: Vec::new(),
-    }
-  }
 }
 
 
