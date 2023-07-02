@@ -1,19 +1,19 @@
-[tasks.web]
-dependencies = ["clear", "web-wasm-bindgen-cli", "compile", "client"]
+[tasks.web_normal]
+dependencies = ["clear", "web-wasm-bindgen-cli", "compile_normal", "client"]
 
-[tasks.web_minimal]
-dependencies = ["clear", "web-wasm-bindgen-cli", "compile_minimal", "client"]
+[tasks.web_low]
+dependencies = ["clear", "web-wasm-bindgen-cli", "compile_low", "client"]
 
 
-[tasks.compile]
+[tasks.compile_normal]
 script = '''
-cargo build --release --target wasm32-unknown-unknown
+cargo build --release --target wasm32-unknown-unknown --features normal --no-default-features
 wasm-bindgen --out-name ironverse-editor --out-dir assets/wasm --target web target/wasm32-unknown-unknown/release/ironverse-editor.wasm
 '''
 
-[tasks.compile_minimal]
+[tasks.compile_low]
 script = '''
-cargo build --release --target wasm32-unknown-unknown --features minimal --no-default-features
+cargo build --release --target wasm32-unknown-unknown --features low --no-default-features
 wasm-bindgen --out-name ironverse-editor --out-dir assets/wasm --target web target/wasm32-unknown-unknown/release/ironverse-editor.wasm
 '''
 
@@ -32,20 +32,6 @@ script = '''
 clear
 '''
 
-[tasks.run]
-script = '''
-clear
-clear
-cargo run
-'''
-
-[tasks.minimum]
-script = '''
-clear
-clear
-cargo run --features minimum --no-default-features
-'''
-
 [tasks.tests]
 script = '''
 clear
@@ -53,16 +39,16 @@ clear
 cargo run --features tests --no-default-features
 '''
 
-[tasks.native]
+[tasks.normal]
 script = '''
 clear
 clear
-cargo run --features native --no-default-features
+cargo run --features normal --no-default-features
 '''
 
-[tasks.native_low]
+[tasks.low]
 script = '''
 clear
 clear
-cargo run --features native_low --no-default-features
+cargo run --features low --no-default-features
 '''

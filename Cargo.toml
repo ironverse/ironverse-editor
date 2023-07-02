@@ -41,25 +41,31 @@ wasm-bindgen = "0.2.85"
 wasm-bindgen-futures = "0.4.19"
 
 [features]
-native = [
+normal = [
   "rapier3d",
   "serde",
   "player",
   "chunk",
   "graphics_normal",
   "ui",
+
+  "array-bytes",
+  "toml",
+  "rfd",
 ]
 
-native_low = [
+low = [
   "rapier3d",
   "serde",
   "player",
   "chunk",
   "graphics_low",
   "ui",
+
+  "array-bytes",
+  "toml",
 ]
 
-minimum = []
 player = []
 chunk = []
 
@@ -69,7 +75,7 @@ graphics_normal = []
 ui = ["bevy_egui"]
 
 
-tests = ["minimum", "test_chunk", "bevy_egui", "noise"]
+tests = ["test_chunk", "bevy_egui", "noise"]
 test_chunk = []
 test_raycast = []
 
